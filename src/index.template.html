@@ -1,0 +1,1505 @@
+<!doctype html>
+<html lang="ja">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width,initial-scale=1,viewport-fit=cover">
+  <meta name="color-scheme" content="light">
+  <meta name="theme-color" content="#f5f5f2">
+  <meta http-equiv="Content-Security-Policy" content="default-src 'self' data: blob:; script-src 'self' 'unsafe-inline' 'wasm-unsafe-eval' blob:; style-src 'self' 'unsafe-inline'; img-src 'self' data: blob:; font-src 'self' data: blob:; media-src 'self' data: blob:; worker-src 'self' blob:; connect-src 'none'; object-src 'none'; frame-src 'none'; base-uri 'none'; form-action 'none'">
+  <title>動画速度変更</title>
+  <link rel="icon" href="data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 64 64'%3E%3Crect width='64' height='64' rx='16' fill='%2316624F'/%3E%3Cpath d='M15 11h22l9 9v25a5 5 0 0 1-5 5H15a5 5 0 0 1-5-5V16a5 5 0 0 1 5-5Z' fill='none' stroke='white' stroke-width='4' stroke-linejoin='round'/%3E%3Cpath d='M37 11v9h9' fill='none' stroke='white' stroke-width='4' stroke-linejoin='round'/%3E%3Cpath d='M20 24l13 8-13 8Z' fill='white'/%3E%3Ccircle cx='46' cy='46' r='13' fill='white'/%3E%3Cpath d='M38 47a8 8 0 0 1 16 0' fill='none' stroke='%2316624F' stroke-width='3.8' stroke-linecap='round'/%3E%3Cpath d='M46 46 54 37.8' fill='none' stroke='%2316624F' stroke-width='3.8' stroke-linecap='round'/%3E%3Ccircle cx='46' cy='46' r='2.3' fill='%2316624F'/%3E%3C/svg%3E">
+  <style>
+    :root {
+      color-scheme: light;
+      --bg: #f5f5f2;
+      --surface: #ffffff;
+      --surface-muted: #f0f0ed;
+      --surface-hover: #e9e9e5;
+      --text: #20211f;
+      --muted: #666963;
+      --line: #dadbd6;
+      --line-strong: #bfc1ba;
+      --accent: #16624f;
+      --accent-hover: #0e503f;
+      --accent-soft: #e1f0ea;
+      --danger: #b3261e;
+      --danger-soft: #fce8e6;
+      --focus: #4d8bc7;
+      --shadow-sm: 0 1px 2px rgba(25, 28, 24, .08), 0 1px 6px rgba(25, 28, 24, .04);
+      --shadow-md: 0 12px 34px rgba(25, 28, 24, .10);
+      --radius: 12px;
+      --header-height: 66px;
+    }
+    * { box-sizing: border-box; }
+    html { min-height: 100%; background: var(--bg); scroll-behavior: smooth; }
+    body {
+      margin: 0; min-height: 100vh; background: var(--bg); color: var(--text);
+      font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", "Noto Sans JP", "Yu Gothic UI", "Hiragino Kaku Gothic ProN", Meiryo, sans-serif;
+      font-size: 15px; line-height: 1.5; -webkit-font-smoothing: antialiased;
+    }
+    button, input { font: inherit; }
+    button { color: inherit; }
+    button:focus-visible, input:focus-visible, [tabindex]:focus-visible, summary:focus-visible {
+      outline: 3px solid color-mix(in srgb, var(--focus) 55%, transparent); outline-offset: 2px;
+    }
+    [hidden] { display: none !important; }
+    .sr-only {
+      position: absolute; width: 1px; height: 1px; padding: 0; margin: -1px; overflow: hidden;
+      clip: rect(0, 0, 0, 0); white-space: nowrap; border: 0;
+    }
+    .app-header {
+      position: sticky; z-index: 30; top: 0; min-height: var(--header-height);
+      border-bottom: 1px solid color-mix(in srgb, var(--line) 82%, transparent);
+      background: color-mix(in srgb, var(--bg) 92%, transparent); backdrop-filter: blur(16px) saturate(1.2);
+    }
+    .header-inner {
+      width: min(1180px, 100%); min-height: var(--header-height); margin: 0 auto;
+      padding: 10px clamp(14px, 2.8vw, 30px); display: flex; align-items: center; gap: 14px;
+    }
+    .brand { display: flex; align-items: center; gap: 10px; min-width: 0; }
+    .brand-mark {
+      display: grid; place-items: center; width: 38px; height: 38px; flex: 0 0 auto;
+      border-radius: 11px; background: var(--accent); color: #fff; box-shadow: var(--shadow-sm);
+    }
+    .brand-mark svg { width: 22px; height: 22px; display: block; }
+    .brand-copy { min-width: 0; }
+    .brand-name {
+      margin: 0; font-size: 17px; line-height: 1.2; letter-spacing: .01em;
+      white-space: nowrap; overflow: hidden; text-overflow: ellipsis;
+    }
+    .version-badge {
+      display: inline-flex; align-items: center; margin-left: 7px; padding: 1px 6px;
+      border: 1px solid var(--line); border-radius: 999px; color: var(--muted);
+      background: var(--surface-muted); font-size: 10px; font-weight: 650; vertical-align: 2px;
+    }
+    .brand-meta {
+      margin: 2px 0 0; color: var(--muted); font-size: 12px; white-space: nowrap;
+      overflow: hidden; text-overflow: ellipsis;
+    }
+    .header-actions { margin-left: auto; display: flex; align-items: center; gap: 12px; }
+    .language-button {
+      min-width: 0; padding: 5px 1px; border: 0; background: transparent; color: var(--muted);
+      font-size: 12px; font-weight: 750; letter-spacing: .02em; cursor: pointer;
+      transition: color .16s ease, opacity .16s ease;
+    }
+    .language-button:hover { color: var(--text); }
+    .language-button:active { opacity: .65; }
+    .icon-button {
+      display: inline-grid; place-items: center; width: 38px; height: 38px; padding: 0;
+      border: 1px solid var(--line); border-radius: 10px; background: var(--surface); cursor: pointer;
+      transition: border-color .16s ease, background .16s ease, transform .16s ease;
+    }
+    .icon-button:hover { border-color: var(--line-strong); background: var(--surface-hover); }
+    .icon-button:active { transform: translateY(1px); }
+    .icon-button svg { width: 18px; height: 18px; display: block; }
+    .header-icon-button {
+      width: auto; height: auto; padding: 5px 1px; border: 0; border-radius: 0;
+      background: transparent; color: var(--muted); transition: color .16s ease, opacity .16s ease;
+    }
+    .header-icon-button:hover { border-color: transparent; background: transparent; color: var(--text); }
+    .header-icon-button:active { transform: none; opacity: .65; }
+    .header-icon-button svg { width: 20px; height: 20px; }
+    .main { width: min(1180px, 100%); margin: 0 auto; padding: 22px clamp(14px, 2.8vw, 30px) 54px; }
+    .page-intro {
+      display: flex; align-items: flex-start; justify-content: space-between; gap: 20px; padding: 0 2px 18px;
+    }
+    .page-intro h1 { margin: 0; font-size: clamp(21px, 3vw, 26px); line-height: 1.3; letter-spacing: -.025em; }
+    .page-intro p { margin: 5px 0 0; max-width: 760px; color: var(--muted); font-size: 13px; }
+    .local-badge {
+      display: inline-flex; align-items: center; gap: 7px; flex: 0 0 auto; margin-top: 3px;
+      padding: 7px 10px; border: 1px solid color-mix(in srgb, var(--accent) 24%, var(--line));
+      border-radius: 999px; color: var(--accent); background: var(--accent-soft);
+      font-size: 12px; font-weight: 700; white-space: nowrap;
+    }
+    .local-badge svg { width: 15px; height: 15px; display: block; }
+    .shell {
+      border: 1px solid var(--line); border-radius: 16px; background: var(--surface); box-shadow: var(--shadow-sm);
+    }
+    .workspace { overflow: hidden; }
+    .drop-stage { padding: clamp(18px, 3vw, 28px); }
+    .drop-zone {
+      position: relative; display: grid; place-items: center; min-height: 330px; padding: 36px 24px;
+      border: 1.5px dashed var(--line-strong); border-radius: 14px; background: #fbfbf9;
+      text-align: center; cursor: pointer; transition: border-color .16s ease, background .16s ease, box-shadow .16s ease;
+    }
+    .drop-zone:hover, .drop-zone.is-dragover { border-color: var(--accent); background: var(--accent-soft); }
+    .drop-zone.is-dragover { box-shadow: inset 0 0 0 1px var(--accent); }
+    .drop-icon {
+      display: grid; place-items: center; width: 58px; height: 58px; margin: 0 auto 15px;
+      border-radius: 16px; background: var(--accent-soft); color: var(--accent);
+    }
+    .drop-icon svg { width: 30px; height: 30px; }
+    .drop-zone h2 { margin: 0; font-size: 19px; letter-spacing: -.015em; }
+    .drop-zone p { margin: 7px auto 0; max-width: 480px; color: var(--muted); font-size: 13px; }
+    .drop-actions { display: flex; justify-content: center; gap: 8px; margin-top: 18px; }
+    .button {
+      min-height: 42px; padding: 8px 14px; border: 1px solid var(--line); border-radius: 10px;
+      background: var(--surface); color: var(--text); font-weight: 700; cursor: pointer;
+      transition: border-color .16s ease, background .16s ease, transform .16s ease;
+    }
+    .button:hover { border-color: var(--line-strong); background: var(--surface-hover); }
+    .button:active { transform: translateY(1px); }
+    .button.primary { border-color: var(--accent); background: var(--accent); color: #fff; }
+    .button.primary:hover { border-color: var(--accent-hover); background: var(--accent-hover); }
+    .button.ghost { border-color: transparent; background: transparent; color: var(--accent); }
+    .button.ghost:hover { background: var(--accent-soft); }
+    .format-hint { margin-top: 12px !important; font-size: 11px !important; }
+    .status-panel { display: grid; place-items: center; min-height: 330px; padding: 34px 24px; text-align: center; }
+    .status-spinner {
+      width: 34px; height: 34px; margin-bottom: 15px; border: 3px solid var(--surface-muted);
+      border-top-color: var(--accent); border-radius: 999px; animation: spin .8s linear infinite;
+    }
+    @keyframes spin { to { transform: rotate(360deg); } }
+    .status-panel h2 { margin: 0; font-size: 18px; }
+    .status-panel p { max-width: 520px; margin: 7px auto 0; color: var(--muted); font-size: 13px; }
+    .error-icon {
+      display: grid; place-items: center; width: 50px; height: 50px; margin-bottom: 15px;
+      border-radius: 14px; background: var(--danger-soft); color: var(--danger);
+    }
+    .error-icon svg { width: 26px; height: 26px; }
+    .ready-grid { display: grid; grid-template-columns: minmax(0, 1.55fr) minmax(280px, .85fr); min-height: 440px; }
+    .preview-pane { min-width: 0; padding: 20px; border-right: 1px solid var(--line); background: #181a18; }
+    .preview-frame {
+      position: relative; width: 100%; height: 100%; min-height: 400px; display: grid; place-items: center; overflow: hidden;
+      border-radius: 12px; background: #0b0c0b;
+    }
+    .preview-frame video { display: block; width: 100%; max-height: 66vh; aspect-ratio: 16/9; object-fit: contain; background: #0b0c0b; }
+    .preview-unavailable {
+      width: min(430px, calc(100% - 32px)); padding: 20px; border: 1px solid rgba(255,255,255,.16); border-radius: 12px;
+      background: rgba(255,255,255,.06); color: #f2f4f1; text-align: center;
+    }
+    .preview-unavailable svg { width: 30px; height: 30px; margin-bottom: 8px; opacity: .9; }
+    .preview-unavailable strong { display: block; font-size: 14px; }
+    .preview-unavailable span { display: block; margin-top: 6px; color: rgba(255,255,255,.68); font-size: 11px; line-height: 1.6; }
+    .info-pane { min-width: 0; padding: 22px; }
+    .info-head { display: flex; align-items: flex-start; justify-content: space-between; gap: 12px; }
+    .info-head h2 { margin: 0; font-size: 18px; letter-spacing: -.015em; }
+    .info-head p { margin: 4px 0 0; color: var(--muted); font-size: 12px; }
+    .file-name {
+      margin: 20px 0 0; padding: 12px 13px; border-radius: 11px; background: var(--surface-muted);
+      font-size: 13px; font-weight: 720; overflow-wrap: anywhere; word-break: break-word;
+    }
+    .meta-list { display: grid; gap: 0; margin: 16px 0 0; }
+    .meta-row {
+      display: grid; grid-template-columns: minmax(86px, .8fr) minmax(0, 1.2fr); gap: 12px;
+      padding: 12px 2px; border-bottom: 1px solid var(--line);
+    }
+    .meta-row dt { color: var(--muted); font-size: 12px; }
+    .meta-row dd { margin: 0; font-size: 13px; font-weight: 750; text-align: right; overflow-wrap: anywhere; }
+    .ready-note {
+      margin: 18px 0 0; padding: 11px 12px; border: 1px solid color-mix(in srgb, var(--accent) 22%, var(--line));
+      border-radius: 10px; background: var(--accent-soft); color: var(--text); font-size: 12px; line-height: 1.65;
+    }
+    .replace-row { margin-top: 18px; }
+    .settings-section { margin-top: 20px; padding-top: 20px; border-top: 1px solid var(--line); }
+    .settings-section:first-of-type { margin-top: 18px; }
+    .section-head { display: flex; align-items: baseline; justify-content: space-between; gap: 10px; }
+    .section-head h3 { margin: 0; font-size: 14px; }
+    .section-help { color: var(--muted); font-size: 11px; }
+    .speed-selector {
+      --speed-pos: 37.5%; margin-top: 11px; padding: 16px; border: 1px solid color-mix(in srgb, var(--accent) 16%, var(--line));
+      border-radius: 15px; background: linear-gradient(180deg, color-mix(in srgb, var(--accent-soft) 76%, white), var(--surface));
+      box-shadow: inset 0 1px 0 rgba(255,255,255,.85);
+    }
+    .speed-current { display: flex; align-items: end; justify-content: space-between; gap: 14px; }
+    .speed-current-copy { min-width: 0; }
+    .speed-selector-copy { margin: 8px 0 0; color: var(--muted); font-size: 11px; line-height: 1.55; }
+    .speed-current-copy { min-width: 0; }
+    .speed-current-label { display: block; color: var(--muted); font-size: 10px; font-weight: 700; }
+    .speed-current-value { display: block; margin-top: 1px; color: var(--accent); font-size: 29px; line-height: 1.12; letter-spacing: -.035em; }
+    .speed-mode-label {
+      display: inline-flex; align-items: center; min-height: 28px; padding: 4px 9px; border: 1px solid color-mix(in srgb, var(--accent) 20%, var(--line));
+      border-radius: 999px; background: rgba(255,255,255,.76); color: var(--accent); font-size: 10px; font-weight: 780; white-space: nowrap;
+    }
+    .speed-range-wrap { margin-top: 14px; }
+    .speed-range {
+      width: 100%; height: 24px; margin: 0; appearance: none; -webkit-appearance: none; background: transparent; cursor: pointer;
+    }
+    .speed-range::-webkit-slider-runnable-track {
+      height: 6px; border-radius: 999px; background: linear-gradient(to right, var(--accent) 0 var(--speed-pos), var(--line) var(--speed-pos) 100%);
+    }
+    .speed-range::-webkit-slider-thumb {
+      width: 22px; height: 22px; margin-top: -8px; appearance: none; -webkit-appearance: none; border: 4px solid #fff; border-radius: 50%;
+      background: var(--accent); box-shadow: 0 0 0 1px color-mix(in srgb, var(--accent) 30%, var(--line)), 0 2px 7px rgba(22,98,79,.2);
+    }
+    .speed-range::-moz-range-track { height: 6px; border: 0; border-radius: 999px; background: var(--line); }
+    .speed-range::-moz-range-progress { height: 6px; border-radius: 999px; background: var(--accent); }
+    .speed-range::-moz-range-thumb { width: 14px; height: 14px; border: 4px solid #fff; border-radius: 50%; background: var(--accent); box-shadow: 0 0 0 1px color-mix(in srgb, var(--accent) 30%, var(--line)); }
+    .speed-scale { position: relative; height: 17px; margin-top: 1px; color: var(--muted); font-size: 9px; font-weight: 700; }
+    .speed-scale span { position: absolute; top: 0; transform: translateX(-50%); white-space: nowrap; }
+    .speed-scale span:first-child { left: 0; transform: none; }
+    .speed-scale span:nth-child(2) { left: 37.5%; }
+    .speed-scale span:last-child { right: 0; left: auto; transform: none; }
+    .speed-input-row { display: grid; grid-template-columns: minmax(0, 1fr); align-items: end; gap: 10px; margin-top: 14px; }
+    .field-label { display: grid; gap: 6px; color: var(--muted); font-size: 11px; font-weight: 700; }
+    .number-wrap { position: relative; display: flex; align-items: center; }
+    .number-input {
+      width: 100%; min-height: 42px; padding: 8px 35px 8px 11px; border: 1px solid var(--line); border-radius: 10px; background: var(--surface);
+      color: var(--text); font: inherit; font-size: 14px; font-weight: 750; outline: none;
+    }
+    .number-input:focus { border-color: var(--accent); box-shadow: 0 0 0 3px var(--accent-soft); }
+    .number-input[aria-invalid="true"] { border-color: var(--danger); }
+    .number-suffix { position: absolute; right: 11px; color: var(--muted); font-size: 12px; pointer-events: none; }
+    .field-error { min-height: 17px; margin: 5px 0 0; color: var(--danger); font-size: 11px; }
+    .preview-rate { min-width: 88px; padding: 10px 11px; border-radius: 10px; background: var(--surface-muted); text-align: center; }
+    .preview-rate span { display: block; color: var(--muted); font-size: 10px; }
+    .preview-rate strong { display: block; margin-top: 2px; font-size: 14px; }
+    .duration-card { margin-top: 13px; padding: 13px; border: 1px solid var(--line); border-radius: 11px; background: color-mix(in srgb, var(--surface-muted) 68%, white); }
+    .duration-grid { display: grid; grid-template-columns: repeat(2, minmax(0, 1fr)); gap: 10px; }
+    .duration-item span { display: block; color: var(--muted); font-size: 10px; }
+    .duration-item strong { display: block; margin-top: 3px; font-size: 18px; letter-spacing: -.015em; }
+    .duration-item.after strong { color: var(--accent); }
+    .duration-diff { margin: 10px 0 0; padding-top: 10px; border-top: 1px solid var(--line); color: var(--muted); font-size: 11px; line-height: 1.55; }
+    .target-toggle { width: 100%; margin-top: 10px; }
+    .target-panel { margin-top: 10px; padding: 12px; border: 1px solid var(--line); border-radius: 11px; background: var(--surface-muted); }
+    .settings-section .button { font-weight: 700; }
+    .target-panel[hidden] { display: none; }
+    .target-fields { display: grid; grid-template-columns: repeat(3, minmax(0, 1fr)); gap: 8px; }
+    .target-fields .number-input { padding-right: 30px; }
+    .target-result { margin: 9px 0 0; color: var(--muted); font-size: 11px; line-height: 1.55; }
+    .switch-row { display: flex; align-items: flex-start; justify-content: space-between; gap: 14px; margin-top: 12px; }
+    .switch-copy strong { display: block; font-size: 12px; }
+    .switch-copy span { display: block; margin-top: 3px; color: var(--muted); font-size: 11px; line-height: 1.5; }
+    .switch { position: relative; flex: 0 0 auto; width: 44px; height: 26px; }
+    .switch input { position: absolute; opacity: 0; pointer-events: none; }
+    .switch-row.is-disabled { opacity: .58; }
+    .switch input:disabled + .switch-track { cursor: not-allowed; opacity: .72; }
+    .switch-track { position: absolute; inset: 0; border: 1px solid var(--line-strong); border-radius: 999px; background: var(--surface-muted); cursor: pointer; transition: background .16s ease, border-color .16s ease; }
+    .switch-track::after { content: ''; position: absolute; width: 20px; height: 20px; top: 2px; left: 2px; border-radius: 50%; background: white; box-shadow: 0 1px 3px rgba(0,0,0,.18); transition: transform .16s ease; }
+    .switch input:checked + .switch-track { border-color: var(--accent); background: var(--accent); }
+    .switch input:checked + .switch-track::after { transform: translateX(18px); }
+    .switch input:focus-visible + .switch-track { outline: 3px solid var(--accent-soft); outline-offset: 2px; }
+
+    .convert-panel { margin-top: 18px; padding-top: 18px; border-top: 1px solid var(--line); }
+    .sticky-actions-note { margin-top: 8px; color: var(--muted); font-size: 10px; line-height: 1.5; }
+    .convert-button { width: 100%; min-height: 46px; }
+    .convert-progress { margin-top: 11px; }
+    .convert-progress progress { width: 100%; height: 9px; accent-color: var(--accent); }
+    .convert-progress-row { display: flex; justify-content: space-between; gap: 12px; margin-top: 5px; color: var(--muted); font-size: 11px; }
+    .convert-progress-actions { display: flex; justify-content: flex-end; margin-top: 10px; }
+    .convert-progress-actions .button { min-height: 38px; padding-block: 6px; }
+    .technical-details { margin-top: 8px; }
+    .technical-details summary { color: var(--muted); font-size: 10px; font-weight: 750; cursor: pointer; }
+    .technical-details pre { max-height: 170px; overflow: auto; margin: 7px 0 0; padding: 9px 10px; border: 1px solid var(--line); border-radius: 9px; background: var(--surface-muted); color: var(--muted); font: 10px/1.55 ui-monospace, SFMono-Regular, Menlo, Consolas, monospace; white-space: pre-wrap; overflow-wrap: anywhere; }
+    .output-name-field { display: block; margin-top: 10px; }
+    .output-name-label { display: block; margin-bottom: 6px; color: var(--muted); font-size: 11px; font-weight: 750; }
+    .output-name-control { display: flex; align-items: stretch; min-width: 0; }
+    .text-input {
+      min-width: 0; width: 100%; min-height: 42px; padding: 8px 10px; border: 1px solid var(--line-strong); border-radius: 10px 0 0 10px;
+      background: var(--surface); color: var(--text); outline: none;
+    }
+    .text-input:focus { border-color: var(--accent); box-shadow: 0 0 0 3px var(--accent-soft); }
+    .file-extension {
+      display: inline-flex; align-items: center; flex: 0 0 auto; min-height: 42px; padding: 8px 10px;
+      border: 1px solid var(--line-strong); border-left: 0; border-radius: 0 10px 10px 0; background: var(--surface-muted); color: var(--muted); font-size: 12px; font-weight: 800;
+    }
+    .advanced-settings { margin-top: 12px; }
+    .advanced-settings summary { color: var(--muted); font-size: 11px; font-weight: 800; cursor: pointer; }
+    .quality-options { display: grid; grid-template-columns: repeat(3, minmax(0, 1fr)); gap: 8px; margin-top: 9px; }
+    .quality-option { position: relative; min-width: 0; }
+    .quality-option input { position: absolute; inset: 0; width: 100%; height: 100%; margin: 0; opacity: 0; cursor: pointer; }
+    .quality-option span {
+      display: grid; place-items: center; min-height: 40px; padding: 7px 8px; border: 1px solid var(--line); border-radius: 9px;
+      background: var(--surface); color: var(--muted); font-size: 11px; font-weight: 750; text-align: center; cursor: pointer;
+      transition: border-color .16s ease, background .16s ease, color .16s ease;
+    }
+    .quality-option span:hover { border-color: var(--line-strong); background: var(--surface-hover); }
+    .quality-option input:checked + span { border-color: var(--accent); background: var(--accent-soft); color: var(--accent); }
+    .quality-option input:focus-visible + span { outline: 3px solid var(--accent-soft); outline-offset: 2px; }
+    .quality-option input:disabled + span { cursor: not-allowed; opacity: .58; }
+    .quality-help { margin: 8px 0 0; color: var(--muted); font-size: 10px; line-height: 1.5; }
+    .convert-result { margin-top: 12px; padding: 13px; border: 1px solid color-mix(in srgb, var(--accent) 24%, var(--line)); border-radius: 12px; background: var(--surface); }
+    .result-heading { display: flex; align-items: center; gap: 9px; }
+    .result-heading-icon { display: grid; place-items: center; width: 30px; height: 30px; flex: 0 0 auto; border-radius: 9px; background: var(--accent-soft); color: var(--accent); }
+    .result-heading-icon svg { width: 18px; height: 18px; }
+    .result-heading strong { display: block; font-size: 13px; }
+    .result-stale { margin: 9px 0 0; padding: 8px 9px; border-radius: 8px; background: #fff6df; color: #7a5718 !important; font-size: 10px !important; line-height: 1.55; }
+    .result-preview { margin-top: 10px; overflow: hidden; border-radius: 10px; background: #0b0c0b; }
+    .result-preview video { display: block; width: 100%; max-height: 250px; aspect-ratio: 16/9; object-fit: contain; background: #0b0c0b; }
+    .result-metrics { display: grid; grid-template-columns: repeat(2, minmax(0, 1fr)); gap: 8px; margin-top: 10px; }
+    .result-metric { padding: 9px 10px; border: 1px solid var(--line); border-radius: 9px; background: var(--surface-muted); min-width: 0; }
+    .result-metric span { display: block; color: var(--muted); font-size: 9px; }
+    .result-metric strong { display: block; margin-top: 2px; font-size: 12px; overflow-wrap: anywhere; }
+    .convert-result-summary { margin: 9px 0 0; color: var(--muted); font-size: 10px; line-height: 1.55; }
+    .convert-actions { display: grid; grid-template-columns: 1fr 1fr; gap: 8px; margin-top: 10px; }
+    .convert-actions .button { width: 100%; }
+    .convert-actions .button.primary { grid-column: 1 / -1; }
+    .source-details { margin-top: 18px; }
+    .source-details summary { color: var(--muted); font-size: 11px; font-weight: 750; cursor: pointer; }
+    .source-details .meta-list { margin-top: 8px; }
+    .dev-note {
+      display: flex; gap: 10px; align-items: flex-start; margin-top: 14px; padding: 13px 14px;
+      border: 1px solid var(--line); border-radius: 12px; background: color-mix(in srgb, var(--surface-muted) 58%, white);
+      color: var(--muted); font-size: 12px;
+    }
+    .dev-note svg { flex: 0 0 auto; width: 17px; height: 17px; margin-top: 1px; color: var(--accent); }
+    footer { width: min(1180px, 100%); margin: 0 auto; padding: 0 clamp(14px, 2.8vw, 30px) 34px; color: var(--muted); font-size: 12px; }
+    .app-toast {
+      position: fixed; right: 18px; bottom: calc(18px + env(safe-area-inset-bottom)); z-index: 60;
+      display: flex; align-items: center; gap: 12px; max-width: min(420px, calc(100vw - 36px));
+      padding: 10px 12px 10px 14px; border: 1px solid var(--line); border-radius: 12px;
+      background: var(--surface); color: var(--text); box-shadow: var(--shadow-md); opacity: 0;
+      transform: translateY(12px); pointer-events: none; transition: opacity .18s ease, transform .18s ease;
+    }
+    .app-toast.show { opacity: 1; transform: translateY(0); pointer-events: auto; }
+    .app-toast[data-tone="success"] { border-color: color-mix(in srgb, var(--accent) 34%, var(--line)); }
+    .app-toast[data-tone="warning"] { border-color: #c58a24; }
+    .app-toast-message { min-width: 0; flex: 1 1 auto; font-size: 13px; line-height: 1.45; overflow-wrap: anywhere; }
+    .app-toast-action {
+      flex: 0 0 auto; min-height: 34px; padding: 5px 8px; border: 0; border-radius: 8px;
+      background: transparent; color: var(--accent); font: inherit; font-size: 12px; font-weight: 800; cursor: pointer;
+    }
+    .app-toast-action:hover { background: var(--surface-hover); }
+    dialog {
+      width: min(640px, calc(100% - 28px)); max-height: min(760px, calc(100dvh - 28px)); padding: 0;
+      overflow: hidden; border: 1px solid var(--line); border-radius: 16px; background: var(--surface);
+      color: var(--text); box-shadow: var(--shadow-md);
+    }
+    dialog::backdrop { background: rgba(15, 17, 14, .52); backdrop-filter: blur(4px); }
+    #helpDialog[open] { display: flex; flex-direction: column; height: min(760px, calc(100dvh - 28px)); }
+    .dialog-header {
+      display: flex; align-items: center; justify-content: space-between; gap: 12px; flex: 0 0 auto;
+      padding: 16px 18px; border-bottom: 1px solid var(--line);
+    }
+    .dialog-header h2 { margin: 0; font-size: 17px; }
+    .dialog-body {
+      flex: 1 1 auto; min-height: 0; padding: 20px 20px calc(28px + env(safe-area-inset-bottom));
+      overflow-y: auto; overflow-x: hidden; overscroll-behavior: contain; scrollbar-gutter: stable;
+    }
+    .dialog-body h3 {
+      margin: 25px 0 8px; padding-top: 19px; border-top: 1px solid color-mix(in srgb, var(--line) 78%, transparent); font-size: 14px;
+    }
+    .dialog-body h3:first-child { margin-top: 0; padding-top: 0; border-top: 0; }
+    .dialog-body p, .dialog-body li { color: var(--muted); font-size: 13px; line-height: 1.7; }
+    .dialog-body p { margin: 8px 0 0; }
+    .dialog-body ul, .dialog-body ol { margin: 8px 0 0; padding-left: 22px; }
+    .dialog-body li + li { margin-top: 7px; }
+    .dialog-note {
+      margin-top: 12px; padding: 11px 12px; border: 1px solid color-mix(in srgb, var(--accent) 22%, var(--line));
+      border-radius: 10px; background: var(--accent-soft); color: var(--text) !important;
+    }
+    .app-confirm-dialog { width: min(420px, calc(100% - 24px)); max-width: 100%; }
+    .app-confirm-header {
+      display: flex; align-items: center; justify-content: space-between; gap: 12px;
+      padding: 15px 18px 13px; border-bottom: 1px solid var(--line);
+    }
+    .app-confirm-title { margin: 0; font-size: 17px; }
+    .app-confirm-close {
+      display: grid; place-items: center; width: 36px; height: 36px; padding: 0; border: 0;
+      border-radius: 10px; background: transparent; color: var(--text); cursor: pointer;
+    }
+    .app-confirm-close:hover { background: var(--surface-hover); }
+    .app-confirm-close svg { width: 19px; height: 19px; }
+    .app-confirm-body { padding: 18px; }
+    .app-confirm-message { margin: 0; color: var(--muted); font-size: 13px; line-height: 1.7; overflow-wrap: anywhere; }
+    .app-confirm-actions { display: grid; grid-template-columns: repeat(2, minmax(0, 1fr)); gap: 8px; margin-top: 18px; }
+    .app-confirm-button {
+      min-height: 44px; padding: 8px 12px; border: 1px solid var(--line); border-radius: 11px;
+      background: var(--surface); color: var(--text); font: inherit; font-weight: 750; cursor: pointer;
+    }
+    .app-confirm-button.primary { border-color: var(--accent); background: var(--accent); color: white; }
+    .app-confirm-button.danger { border-color: var(--danger); background: var(--danger); color: white; }
+    @media (max-width: 760px) {
+      :root { --header-height: 58px; }
+      .header-inner { padding-block: 8px; }
+      .brand-mark { width: 34px; height: 34px; border-radius: 10px; }
+      .brand-name { font-size: 15px; }
+      .brand-meta { display: none; }
+      .header-actions { gap: 11px; }
+      .header-icon-button { padding-block: 6px; }
+      .main { padding-top: 17px; padding-bottom: 42px; }
+      .page-intro { display: block; padding-bottom: 14px; }
+      .page-intro h1 { font-size: 21px; }
+      .page-intro p { font-size: 12px; }
+      .local-badge { margin-top: 12px; }
+      .drop-stage { padding: 12px; }
+      .drop-zone { min-height: 290px; padding: 28px 18px; }
+      .ready-grid { grid-template-columns: 1fr; min-height: 0; }
+      .preview-pane { padding: 12px; border-right: 0; border-bottom: 1px solid var(--line); }
+      .preview-frame { min-height: 0; }
+      .preview-frame video { max-height: 48vh; }
+      .info-pane { padding: 18px; }
+      .info-head { display: block; }
+      .duration-item strong { font-size: 17px; }
+      .result-preview video { max-height: 42vh; }
+      .replace-row .button { width: 100%; }
+      .status-panel { min-height: 290px; }
+      .app-toast { right: 12px; bottom: calc(12px + env(safe-area-inset-bottom)); max-width: calc(100vw - 24px); }
+      dialog { width: calc(100% - 18px); max-height: calc(100dvh - 18px); }
+      #helpDialog[open] { height: calc(100dvh - 18px); }
+      .dialog-body { padding-inline: 18px; }
+      .app-confirm-dialog { width: 100%; max-width: 100%; margin: auto 0 0; border-radius: 18px 18px 0 0; border-bottom: 0; }
+      .app-confirm-actions { padding-bottom: env(safe-area-inset-bottom); }
+    }
+    @media (max-width: 420px) {
+      .brand-name { max-width: 185px; }
+      .main { padding-inline: 10px; }
+      .header-inner { padding-inline: 12px; }
+      .drop-zone h2 { font-size: 17px; }
+      .drop-actions { width: 100%; }
+      .drop-actions .button { width: 100%; }
+      .meta-row { grid-template-columns: minmax(72px, .75fr) minmax(0, 1.25fr); }
+      .quality-options { grid-template-columns: 1fr; }
+      .convert-actions { grid-template-columns: 1fr; }
+      .convert-actions .button.primary { grid-column: auto; }
+      footer { padding-inline: 12px; }
+    }
+    @media (prefers-reduced-motion: reduce) {
+      html { scroll-behavior: auto; }
+      *, *::before, *::after { animation-duration: .001ms !important; animation-iteration-count: 1 !important; transition-duration: .001ms !important; }
+    }
+  </style>
+</head>
+<body>
+  <header class="app-header">
+    <div class="header-inner">
+      <div class="brand">
+        <div class="brand-mark" aria-hidden="true">
+          <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.65" stroke-linecap="round" stroke-linejoin="round">
+            <path d="M5.6 3.8h8.1l4.3 4.3v9.7a2.2 2.2 0 0 1-2.2 2.2H5.6a2.2 2.2 0 0 1-2.2-2.2V6a2.2 2.2 0 0 1 2.2-2.2Z"/>
+            <path d="M13.7 3.8v4.3H18"/>
+            <path d="m8.2 10 4.8 3-4.8 3z" fill="currentColor" stroke="none"/>
+            <circle cx="17" cy="17" r="4.1" fill="white" stroke="white"/>
+            <path d="M14.6 17a2.5 2.5 0 0 1 4.8 0" stroke="#16624F"/>
+            <path d="M17 17l2.6-2.6" stroke="#16624F"/>
+            <circle cx="17" cy="17" r=".7" fill="#16624F" stroke="none"/>
+          </svg>
+        </div>
+        <div class="brand-copy">
+          <p class="brand-name"><span id="brandName">動画速度変更</span><span class="version-badge" id="versionBadge">v1.0.0</span></p>
+          <p class="brand-meta" data-i18n="brandMeta">動画の速度変更 · 目標時間から調整</p>
+        </div>
+      </div>
+      <div class="header-actions">
+        <button class="language-button" id="languageButton" type="button">EN</button>
+        <button class="icon-button header-icon-button" id="helpButton" type="button" data-i18n-title="helpTitle" data-i18n-aria-label="helpTitle" title="使い方と注意事項" aria-label="使い方と注意事項">
+          <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.9" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><circle cx="12" cy="12" r="9"/><path d="M9.7 9a2.5 2.5 0 0 1 4.8 1c0 1.8-2.5 2.1-2.5 4"/><path d="M12 17h.01"/></svg>
+        </button>
+      </div>
+    </div>
+  </header>
+
+  <main class="main">
+    <section class="page-intro" aria-labelledby="introTitle">
+      <div>
+        <h1 id="introTitle" data-i18n="introTitle">動画の速度と仕上がり時間を調整</h1>
+        <p data-i18n="lead">速く・遅くしたときの長さを確認しながら、再生速度を決められます。目標時間から倍率を逆算することもできます。</p>
+      </div>
+      <div class="local-badge">
+        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.9" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M12 3 5 6v5c0 4.6 2.8 8 7 10 4.2-2 7-5.4 7-10V6z"/><path d="m9 12 2 2 4-5"/></svg>
+        <span data-i18n="localBadge">完全ローカル処理</span>
+      </div>
+    </section>
+
+    <!-- APP:BEGIN Video source loading workspace. -->
+    <section class="shell workspace" aria-label="Video workspace">
+      <div class="drop-stage" id="emptyView">
+        <div class="drop-zone" id="dropZone" role="button" tabindex="0" data-i18n-aria-label="dropZoneAria">
+          <div>
+            <div class="drop-icon" aria-hidden="true">
+              <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><path d="M4 7.5A2.5 2.5 0 0 1 6.5 5h4l2 2h5A2.5 2.5 0 0 1 20 9.5v7A2.5 2.5 0 0 1 17.5 19h-11A2.5 2.5 0 0 1 4 16.5z"/><path d="M12 11v5m0-5-2 2m2-2 2 2"/></svg>
+            </div>
+            <h2 data-i18n="dropTitle">動画を追加</h2>
+            <p data-i18n="dropBody">動画をここにドロップするか、ファイルを選択してください。</p>
+            <div class="drop-actions">
+              <button class="button primary" id="chooseVideoButton" type="button" data-i18n="chooseVideo">動画を選択</button>
+            </div>
+            <p class="format-hint" data-i18n="formatHint">MP4 / MOV / WebM など</p>
+          </div>
+        </div>
+      </div>
+
+      <div class="status-panel" id="loadingView" hidden aria-live="polite">
+        <div>
+          <div class="status-spinner" aria-hidden="true"></div>
+          <h2 data-i18n="loadingTitle">動画を確認しています</h2>
+          <p data-i18n="loadingBody">プレビューに必要な情報を端末内で読み込んでいます。</p>
+        </div>
+      </div>
+
+      <div class="status-panel" id="errorView" hidden aria-live="assertive">
+        <div>
+          <div class="error-icon" aria-hidden="true">
+            <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.9" stroke-linecap="round" stroke-linejoin="round"><path d="M12 3 2.8 19h18.4z"/><path d="M12 9v4m0 3h.01"/></svg>
+          </div>
+          <h2 data-i18n="errorTitle">動画を読み込めませんでした</h2>
+          <p id="errorMessage" data-i18n="errorDecode">このブラウザーで再生できない形式か、ファイルが破損している可能性があります。</p>
+          <div class="drop-actions"><button class="button" id="retryChooseButton" type="button" data-i18n="chooseAnother">別の動画を選択</button></div>
+        </div>
+      </div>
+
+      <div class="ready-grid" id="readyView" hidden>
+        <div class="preview-pane">
+          <div class="preview-frame">
+            <video id="videoPreview" controls playsinline preload="metadata" data-i18n-aria-label="videoPreviewLabel"></video>
+            <div class="preview-unavailable" id="previewUnavailable" hidden>
+              <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M4 7.5A2.5 2.5 0 0 1 6.5 5h4l2 2h5A2.5 2.5 0 0 1 20 9.5v7A2.5 2.5 0 0 1 17.5 19h-11A2.5 2.5 0 0 1 4 16.5z"/><path d="m9 10 6 4-6 4z"/><path d="M17.5 4.5 20 2"/></svg>
+              <strong data-i18n="previewUnavailableTitle">この動画はブラウザーでプレビューできません</strong>
+              <span data-i18n="previewUnavailableBody">動画情報は読み取れたため、変換は試すことができます。</span>
+            </div>
+          </div>
+        </div>
+        <aside class="info-pane" aria-labelledby="speedSettingsTitle">
+          <div class="info-head">
+            <div>
+              <h2 id="speedSettingsTitle" data-i18n="speedSettingsTitle">再生速度</h2>
+              <p data-i18n="speedSettingsBody">変更した速度は左のプレビューへすぐ反映されます。</p>
+            </div>
+          </div>
+
+          <div class="settings-section">
+            <div class="section-head">
+              <h3 data-i18n="speedPresetTitle">速度を選ぶ</h3>
+              <span class="section-help" data-i18n="speedRangeHint">0.25〜4.00倍</span>
+            </div>
+            <div class="speed-selector">
+              <div class="speed-current">
+                <div class="speed-current-copy">
+                  <span class="speed-current-label" data-i18n="selectedSpeedLabel">現在の速度</span>
+                  <strong class="speed-current-value" id="previewSpeedValue" aria-live="polite">1.00×</strong>
+                </div>
+                <span class="speed-mode-label" id="speedModeLabel">標準</span>
+              </div>
+              <p class="speed-selector-copy" data-i18n="speedSettingsBody">変更した速度は左のプレビューへすぐ反映されます。</p>
+              <div class="speed-range-wrap">
+                <input class="speed-range" id="speedPresetRange" type="range" min="0" max="8" step="1" value="3" data-speed-control data-i18n-aria-label="speedPresetTitle" aria-label="速度を選ぶ">
+                <div class="speed-scale" aria-hidden="true"><span>0.25×</span><span>1×</span><span>4×</span></div>
+              </div>
+            </div>
+            <div class="speed-input-row">
+              <label class="field-label" for="speedInput">
+                <span data-i18n="customSpeedLabel">細かく調整</span>
+                <span class="number-wrap">
+                  <input class="number-input" id="speedInput" type="number" min="0.25" max="4" step="0.05" inputmode="decimal" value="1.00" aria-describedby="speedError">
+                  <span class="number-suffix">×</span>
+                </span>
+              </label>
+            </div>
+            <p class="field-error" id="speedError" role="status"></p>
+
+            <div class="duration-card" aria-live="polite">
+              <div class="duration-grid">
+                <div class="duration-item"><span data-i18n="originalDurationLabel">元の長さ</span><strong id="originalDurationValue">—</strong></div>
+                <div class="duration-item after"><span data-i18n="afterDurationLabel">変換後</span><strong id="afterDurationValue">—</strong></div>
+              </div>
+              <p class="duration-diff" id="durationDiff">—</p>
+            </div>
+
+            <button class="button target-toggle" id="targetDurationButton" type="button" aria-expanded="false" aria-controls="targetDurationPanel" data-i18n="targetDurationButton">目標時間から決める</button>
+            <div class="target-panel" id="targetDurationPanel" hidden>
+              <div class="section-head">
+                <h3 data-i18n="targetDurationTitle">変換後の長さ</h3>
+                <span class="section-help" data-i18n="targetDurationHint">入力すると倍率を逆算します</span>
+              </div>
+              <div class="target-fields">
+                <label class="field-label"><span data-i18n="hoursLabel">時間</span><span class="number-wrap"><input class="number-input target-time" id="targetHours" type="number" min="0" max="999" step="1" inputmode="numeric" value="0"><span class="number-suffix">h</span></span></label>
+                <label class="field-label"><span data-i18n="minutesLabel">分</span><span class="number-wrap"><input class="number-input target-time" id="targetMinutes" type="number" min="0" max="59" step="1" inputmode="numeric" value="0"><span class="number-suffix">m</span></span></label>
+                <label class="field-label"><span data-i18n="secondsLabel">秒</span><span class="number-wrap"><input class="number-input target-time" id="targetSeconds" type="number" min="0" max="59" step="1" inputmode="numeric" value="0"><span class="number-suffix">s</span></span></label>
+              </div>
+              <p class="target-result" id="targetResult" aria-live="polite">—</p>
+            </div>
+          </div>
+
+          <div class="settings-section">
+            <div class="section-head">
+              <h3 data-i18n="audioSettingsTitle">音声</h3>
+              <span class="section-help" data-i18n="audioSettingsHint">書き出しにも反映</span>
+            </div>
+            <div class="switch-row" id="preservePitchRow">
+              <div class="switch-copy"><strong data-i18n="preservePitchLabel">音程を保つ</strong><span data-i18n="preservePitchBody">速度を変えても声の高さをできるだけ保ちます。</span></div>
+              <label class="switch"><input id="preservePitchInput" type="checkbox" checked data-i18n-aria-label="preservePitchLabel" aria-label="音程を保つ"><span class="switch-track" aria-hidden="true"></span></label>
+            </div>
+            <div class="switch-row" id="noAudioRow">
+              <div class="switch-copy"><strong data-i18n="noAudioLabel">音声を削除</strong><span data-i18n="noAudioBody">出力動画から音声を削除します。プレビューも消音します。</span></div>
+              <label class="switch"><input id="noAudioInput" type="checkbox" data-i18n-aria-label="noAudioLabel" aria-label="音声を削除"><span class="switch-track" aria-hidden="true"></span></label>
+            </div>
+            <p class="quality-help" id="sourceAudioNote" hidden data-i18n="sourceNoAudioNote">元動画に音声がないため、音声設定は必要ありません。</p>
+          </div>
+
+          <div class="settings-section">
+            <div class="section-head">
+              <h3 data-i18n="outputSettingsTitle">出力</h3>
+              <span class="section-help" data-i18n="outputSettingsHint">MP4で保存</span>
+            </div>
+            <label class="output-name-field" for="outputNameInput">
+              <span class="output-name-label" data-i18n="outputNameLabel">ファイル名</span>
+              <span class="output-name-control">
+                <input class="text-input" id="outputNameInput" type="text" maxlength="180" autocomplete="off" spellcheck="false" value="video-speed-1.00x">
+                <span class="file-extension">.mp4</span>
+              </span>
+            </label>
+            <details class="advanced-settings" id="advancedSettings">
+              <summary data-i18n="advancedSettingsTitle">詳細設定</summary>
+              <div class="section-head" style="margin-top:10px">
+                <h3 data-i18n="qualityTitle">画質</h3>
+                <span class="section-help" data-i18n="qualityHint">再エンコード品質</span>
+              </div>
+              <div class="quality-options" role="radiogroup" data-i18n-aria-label="qualityTitle" aria-label="画質">
+                <label class="quality-option"><input type="radio" name="quality" value="high"><span data-i18n="qualityHigh">高画質</span></label>
+                <label class="quality-option"><input type="radio" name="quality" value="standard" checked><span data-i18n="qualityStandard">標準</span></label>
+                <label class="quality-option"><input type="radio" name="quality" value="small"><span data-i18n="qualitySmall">ファイルを小さく</span></label>
+              </div>
+              <p class="quality-help" data-i18n="qualityBody">画質を上げるとファイルが大きく、ファイルを小さくすると画質が下がる場合があります。</p>
+            </details>
+          </div>
+
+          <div class="convert-panel">
+            <button class="button primary convert-button" id="convertButton" type="button" data-i18n="convertButton">この設定で動画を変換</button>
+            <div class="convert-progress" id="convertProgress" hidden aria-live="polite">
+              <progress id="convertProgressBar" max="1" value="0"></progress>
+              <div class="convert-progress-row"><span data-i18n="convertingLabel">動画を変換しています</span><strong id="convertProgressText">0%</strong></div>
+              <div class="convert-progress-row"><span data-i18n="progressTimeLabel">処理位置の目安</span><span id="convertProgressTime">0:00 / 0:00</span></div>
+              <div class="convert-progress-actions"><button class="button" id="cancelConvertButton" type="button" data-i18n="cancelConvertButton">変換をキャンセル</button></div>
+            </div>
+            <div class="convert-result" id="convertResult" hidden aria-live="polite">
+              <div class="result-heading">
+                <span class="result-heading-icon" aria-hidden="true"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="m5 12 4 4L19 6"/></svg></span>
+                <strong data-i18n="convertDoneTitle">変換が完了しました</strong>
+              </div>
+              <p class="result-stale" id="resultStaleNotice" hidden data-i18n="resultStaleNotice">現在の設定は変換時から変更されています。保存されるのは下の変換結果です。</p>
+              <div class="result-preview">
+                <video id="resultPreview" controls playsinline preload="metadata" data-i18n-aria-label="resultPreviewLabel" aria-label="変換後動画のプレビュー"></video>
+              </div>
+              <div class="result-metrics">
+                <div class="result-metric"><span data-i18n="resultDurationLabel">動画の長さ</span><strong id="resultDurationMetric">—</strong></div>
+                <div class="result-metric"><span data-i18n="resultSizeLabel">ファイルサイズ</span><strong id="resultSizeMetric">—</strong></div>
+              </div>
+              <p class="convert-result-summary" id="convertResultSummary">—</p>
+              <div class="convert-actions">
+                <button class="button primary" id="downloadResultButton" type="button" data-i18n="downloadResultButton">MP4を保存</button>
+                <button class="button" id="editSettingsButton" type="button" data-i18n="editSettingsButton">設定を変更</button>
+                <button class="button" id="resultAnotherButton" type="button" data-i18n="chooseAnother">別の動画を選択</button>
+              </div>
+            </div>
+            <p class="field-error" id="convertError" role="status"></p>
+            <details class="technical-details" id="convertErrorDetails" hidden>
+              <summary data-i18n="technicalDetails">詳細情報</summary>
+              <pre id="convertErrorDetailText"></pre>
+            </details>
+          </div>
+
+          <details class="source-details">
+            <summary data-i18n="sourceDetailsSummary">元動画の情報</summary>
+            <p class="file-name" id="fileName">—</p>
+            <dl class="meta-list">
+              <div class="meta-row"><dt data-i18n="durationLabel">長さ</dt><dd id="durationValue">—</dd></div>
+              <div class="meta-row"><dt data-i18n="resolutionLabel">解像度</dt><dd id="resolutionValue">—</dd></div>
+              <div class="meta-row"><dt data-i18n="sizeLabel">容量</dt><dd id="sizeValue">—</dd></div>
+              <div class="meta-row"><dt data-i18n="formatLabel">形式</dt><dd id="formatValue">—</dd></div>
+            </dl>
+          </details>
+          <div class="replace-row">
+            <button class="button" id="replaceVideoButton" type="button" data-i18n="chooseAnother">別の動画を選択</button>
+          </div>
+        </aside>
+      </div>
+      <input class="sr-only" id="videoInput" type="file" accept="video/*,.mp4,.mov,.webm,.m4v,.mkv,.avi,.mpeg,.mpg,.ts,.mts,.m2ts">
+    </section>
+    <!-- APP:END -->
+
+  </main>
+
+  <footer><span id="footerName">動画速度変更</span> · MIT License · <span data-i18n="footer">完全ローカル処理</span></footer>
+
+  <div class="app-toast" id="appToast" role="status" aria-live="polite" aria-atomic="true" data-tone="default">
+    <span class="app-toast-message" id="appToastMessage"></span>
+    <button class="app-toast-action" id="appToastAction" type="button" hidden></button>
+  </div>
+
+  <dialog class="app-confirm-dialog" id="appConfirmDialog" aria-labelledby="appConfirmTitle" aria-describedby="appConfirmMessage">
+    <div class="app-confirm-header">
+      <h2 class="app-confirm-title" id="appConfirmTitle">確認</h2>
+      <button class="app-confirm-close" id="appConfirmClose" type="button" data-i18n-aria-label="close" aria-label="閉じる">
+        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" aria-hidden="true"><path d="M6 6l12 12M18 6 6 18"/></svg>
+      </button>
+    </div>
+    <div class="app-confirm-body">
+      <p class="app-confirm-message" id="appConfirmMessage"></p>
+      <div class="app-confirm-actions">
+        <button class="app-confirm-button" id="appConfirmCancel" type="button">キャンセル</button>
+        <button class="app-confirm-button primary" id="appConfirmOk" type="button">実行する</button>
+      </div>
+    </div>
+  </dialog>
+
+  <dialog id="helpDialog" aria-labelledby="helpTitle">
+    <div class="dialog-header">
+      <h2 id="helpTitle" data-i18n="helpTitle">使い方と注意事項</h2>
+      <button class="icon-button" id="closeHelpButton" type="button" data-i18n-title="close" data-i18n-aria-label="close" title="閉じる" aria-label="閉じる">
+        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.9" stroke-linecap="round" aria-hidden="true"><path d="m7 7 10 10M17 7 7 17"/></svg>
+      </button>
+    </div>
+    <div class="dialog-body">
+      <!-- APP:HELP:BEGIN -->
+      <h3 data-i18n="helpBasicsTitle">使い方</h3>
+      <ol>
+        <li data-i18n="helpStep1">「動画を選択」から動画を選ぶか、画面へ動画をドロップします。</li>
+        <li data-i18n="helpStep2">スライダーまたは倍率入力で速度を決めます。左の動画ですぐに速度感を確認できます。</li>
+        <li data-i18n="helpStep3">必要なら「目標時間から決める」で仕上げたい長さを入力し、必要な倍率を逆算します。</li>
+        <li data-i18n="helpStep4">ファイル名や画質を確認して変換し、結果をプレビューしてMP4を保存します。</li>
+      </ol>
+      <h3 data-i18n="helpFormatsTitle">対応形式</h3>
+      <p data-i18n="helpFormatsBody">プレビューはブラウザー標準の動画再生機能を使います。再生できない動画でも、動画情報を読み取れた場合は変換を試せます。</p>
+      <h3 data-i18n="helpPrivacyTitle">プライバシー</h3>
+      <p data-i18n="helpPrivacyBody">選択した動画はブラウザー内だけで扱います。このアプリからBrowser Kittyや外部サーバーへアップロードしません。</p>
+      <h3 data-i18n="helpNotesTitle">注意事項</h3>
+      <ul>
+        <li data-i18n="helpNotePreview">プレビューで確認した速度でMP4へ変換できます。</li>
+        <li data-i18n="helpNotePitch">音程維持のプレビュー結果はブラウザーの対応状況によって差が出る場合があります。</li>
+        <li data-i18n="helpNoteMemory">大きな動画では、端末性能やブラウザーのメモリ制限の影響を受ける場合があります。</li>
+        <li data-i18n="helpNoteCancel">変換中はキャンセルできます。キャンセルしても選択した動画と設定は残ります。</li>
+        <li data-i18n="helpNoteFallback">ブラウザーでプレビューできない動画でも、動画情報を読み取れた場合は変換を試せます。</li>
+        <li data-i18n="helpNoteDevelopment">変換に必要な処理は配布HTMLに含まれており、動画を外部サーバーへ送信せずブラウザー内で実行します。</li>
+      </ul>
+      <p class="dialog-note" data-i18n="helpOffline">配布用HTMLは実行時通信を必要とせず、ローカルで直接開ける構成です。</p>
+      <!-- APP:HELP:END -->
+    </div>
+  </dialog>
+
+  <script id="ffmpeg-js-gzip" type="application/octet-stream">__FFMPEG_JS_GZIP_BASE64__</script>
+  <script id="ffmpeg-wasm-gzip" type="application/octet-stream">__FFMPEG_WASM_GZIP_BASE64__</script>
+  <script>__FFMPEG_BROWSER_RUNTIME__</script>
+
+  <script>
+    (() => {
+      'use strict';
+
+      const APP_CONFIG = __APP_CONFIG_JSON__;
+      const BUILD_MANIFEST = __BUILD_MANIFEST_JSON__;
+      const assetBundle = __EMBEDDED_ASSET_BUNDLE_JSON__;
+      const blobUrls = new Set();
+      const assetByteCache = new Map();
+
+      function decodeBase64Bytes(base64) {
+        const binary = atob(base64);
+        const bytes = new Uint8Array(binary.length);
+        for (let index = 0; index < binary.length; index += 1) bytes[index] = binary.charCodeAt(index);
+        return bytes;
+      }
+      function getAsset(dependencyId, assetKey) {
+        const asset = assetBundle.dependencies?.[dependencyId]?.assets?.[assetKey];
+        if (!asset) throw new Error(`Embedded asset not found: ${dependencyId}/${assetKey}`);
+        return asset;
+      }
+      async function inflateAsset(asset) {
+        const stored = decodeBase64Bytes(asset.base64);
+        if (!asset.compression || asset.compression === 'none') return stored;
+        if (asset.compression !== 'gzip') throw new Error(`Unsupported embedded asset compression: ${asset.compression}`);
+        if (typeof DecompressionStream !== 'function') throw new Error('This browser cannot expand gzip-compressed embedded assets.');
+        const stream = new Blob([stored]).stream().pipeThrough(new DecompressionStream('gzip'));
+        const expanded = new Uint8Array(await new Response(stream).arrayBuffer());
+        if (Number.isFinite(asset.originalBytes) && expanded.byteLength !== asset.originalBytes) throw new Error('Embedded gzip asset size mismatch.');
+        return expanded;
+      }
+      window.StandaloneAssets = Object.freeze({
+        manifest: BUILD_MANIFEST,
+        list() { return Object.entries(assetBundle.dependencies || {}).flatMap(([dependencyId, dependency]) => Object.keys(dependency.assets || {}).map(assetKey => `${dependencyId}/${assetKey}`)); },
+        has(dependencyId, assetKey) { return Boolean(assetBundle.dependencies?.[dependencyId]?.assets?.[assetKey]); },
+        bytes(dependencyId, assetKey) {
+          const asset = getAsset(dependencyId, assetKey);
+          if (asset.compression && asset.compression !== 'none') throw new Error(`Embedded asset ${dependencyId}/${assetKey} is gzip-compressed; use await StandaloneAssets.bytesAsync().`);
+          return decodeBase64Bytes(asset.base64);
+        },
+        async bytesAsync(dependencyId, assetKey) {
+          const cacheKey = `${dependencyId}/${assetKey}`;
+          if (!assetByteCache.has(cacheKey)) assetByteCache.set(cacheKey, inflateAsset(getAsset(dependencyId, assetKey)));
+          return new Uint8Array(await assetByteCache.get(cacheKey));
+        },
+        text(dependencyId, assetKey) { return new TextDecoder().decode(this.bytes(dependencyId, assetKey)); },
+        async textAsync(dependencyId, assetKey) { return new TextDecoder().decode(await this.bytesAsync(dependencyId, assetKey)); },
+        blobUrl(dependencyId, assetKey) {
+          const asset = getAsset(dependencyId, assetKey);
+          const url = URL.createObjectURL(new Blob([this.bytes(dependencyId, assetKey)], { type: asset.mime || 'application/octet-stream' }));
+          blobUrls.add(url); return url;
+        },
+        async blobUrlAsync(dependencyId, assetKey) {
+          const asset = getAsset(dependencyId, assetKey);
+          const url = URL.createObjectURL(new Blob([await this.bytesAsync(dependencyId, assetKey)], { type: asset.mime || 'application/octet-stream' }));
+          blobUrls.add(url); return url;
+        },
+        async loadClassicScript(dependencyId, assetKey, globalName = '') {
+          const sourceUrl = await this.blobUrlAsync(dependencyId, assetKey);
+          try {
+            await new Promise((resolve, reject) => {
+              const script = document.createElement('script'); script.src = sourceUrl; script.onload = resolve;
+              script.onerror = () => reject(new Error(`Failed to load embedded script: ${dependencyId}/${assetKey}`)); document.head.append(script);
+            });
+            return globalName ? window[globalName] : true;
+          } finally { URL.revokeObjectURL(sourceUrl); blobUrls.delete(sourceUrl); }
+        },
+        async importModule(dependencyId, assetKey) {
+          const sourceUrl = await this.blobUrlAsync(dependencyId, assetKey);
+          try { return await import(sourceUrl); }
+          finally { URL.revokeObjectURL(sourceUrl); blobUrls.delete(sourceUrl); }
+        }
+      });
+
+      const translations = {
+        ja: {
+          brandMeta: '動画の速度変更 · 目標時間から調整', helpTitle: '使い方と注意事項', close: '閉じる',
+          introTitle: '動画の速度と仕上がり時間を調整', lead: '速く・遅くしたときの長さを確認しながら、再生速度を決められます。目標時間から倍率を逆算することもできます。', localBadge: '完全ローカル処理',
+          dropZoneAria: '動画を追加。クリックまたはEnterキーでファイルを選択できます。', dropTitle: '動画を追加', dropBody: '動画をここにドロップするか、ファイルを選択してください。', chooseVideo: '動画を選択', formatHint: 'MP4 / MOV / WebM など',
+          loadingTitle: '動画を確認しています', loadingBody: 'プレビューに必要な情報を端末内で読み込んでいます。',
+          errorTitle: '動画を読み込めませんでした', errorDecode: 'このブラウザーで再生できない形式か、ファイルが破損している可能性があります。', errorNotVideo: '動画ファイルを選択してください。',
+          chooseAnother: '別の動画を選択', videoPreviewLabel: '選択した動画の速度プレビュー', previewUnavailableTitle: 'この動画はブラウザーでプレビューできません', previewUnavailableBody: '動画情報は読み取れたため、変換は試すことができます。', speedSettingsTitle: '再生速度', speedSettingsBody: '変更した速度は左のプレビューへすぐ反映されます。',
+          speedPresetTitle: '速度を選ぶ', speedRangeHint: '0.25〜4.00倍', selectedSpeedLabel: '現在の速度', speedStateSlow: 'ゆっくり', speedStateNormal: '標準', speedStateFast: '速く', customSpeedLabel: '細かく調整', previewSpeedLabel: 'プレビュー', speedRangeError: '0.25〜4.00倍の範囲で指定してください。',
+          originalDurationLabel: '元の長さ', afterDurationLabel: '変換後', durationSame: '元の動画と同じ長さです。', durationShorter: '{time}短くなります。', durationLonger: '{time}長くなります。',
+          targetDurationButton: '目標時間から決める', targetDurationClose: '目標時間を閉じる', targetDurationTitle: '変換後の長さ', targetDurationHint: '入力すると倍率を逆算します', hoursLabel: '時間', minutesLabel: '分', secondsLabel: '秒',
+          targetNeedSpeed: '必要な速度: {speed}×', targetInvalidZero: '0秒より長い目標時間を入力してください。', targetOutOfRange: 'この長さは0.25〜4.00倍の範囲では指定できません。',
+          audioSettingsTitle: '音声', audioSettingsHint: '書き出しにも反映', preservePitchLabel: '音程を保つ', preservePitchBody: '速度を変えても声の高さをできるだけ保ちます。', preservePitchUnsupported: 'このブラウザーでは音程維持の切り替えを確認できない場合があります。', noAudioLabel: '音声を削除', noAudioBody: '出力動画から音声を削除します。プレビューも消音します。', sourceNoAudioNote: '元動画に音声がないため、音声設定は必要ありません。',
+          outputSettingsTitle: '出力', outputSettingsHint: 'MP4で保存', outputNameLabel: 'ファイル名', advancedSettingsTitle: '詳細設定', qualityTitle: '画質', qualityHint: '再エンコード品質', qualityHigh: '高画質', qualityStandard: '標準', qualitySmall: 'ファイルを小さく', qualityBody: '画質を上げるとファイルが大きく、ファイルを小さくすると画質が下がる場合があります。',
+          convertButton: 'この設定で動画を変換', reconvertButton: '変更した設定で再変換', repeatConvertButton: '同じ設定でもう一度変換', convertingLabel: '動画を変換しています', progressTimeLabel: '処理位置の目安', cancelConvertButton: '変換をキャンセル', cancellingLabel: 'キャンセルしています…', cancelledToast: '変換をキャンセルしました。設定はそのままです。', technicalDetails: '詳細情報', convertDoneTitle: '変換が完了しました', downloadResultButton: 'MP4を保存', editSettingsButton: '設定を変更', resultPreviewLabel: '変換後動画のプレビュー', resultDurationLabel: '動画の長さ', resultSizeLabel: 'ファイルサイズ', resultStaleNotice: '現在の設定は変換時から変更されています。保存されるのは下の変換結果です。', convertSummary: '{speed}× · {audio} · {quality}', audioSummaryPreserve: '音程を保つ', audioSummaryShift: '音程も変える', audioSummaryNone: '音声なし', convertErrorMessage: '動画を変換できませんでした。もう一度試してください。', convertErrorMemory: '端末のメモリが不足した可能性があります。他のタブを閉じるか、短い動画でお試しください。', convertErrorUnsupported: 'この動画の形式を変換できませんでした。別の動画でお試しください。', convertErrorRuntime: '動画変換の処理を開始できませんでした。ブラウザーを再読み込みしてお試しください。', wasmCspErrorMessage: '動画変換の実行がブラウザーのセキュリティ設定でブロックされました。配布用HTMLを再ビルドしてください。', saveStartedToast: 'MP4の保存を開始しました', unsavedResultTitle: '未保存の変換結果があります', unsavedResultMessage: '別の動画を選ぶと、まだ保存していない変換結果は破棄されます。', discardAndChoose: '破棄して選ぶ',
+          sourceDetailsSummary: '元動画の情報', durationLabel: '長さ', resolutionLabel: '解像度', sizeLabel: '容量', formatLabel: '形式',
+          developmentNote: 'v1.0.0 正式版です。動画の読み込みから速度変更、変換、保存までブラウザー内で完結します。', footer: '完全ローカル処理',
+          helpBasicsTitle: '使い方', helpStep1: '「動画を選択」から動画を選ぶか、画面へ動画をドロップします。', helpStep2: 'スライダーまたは倍率入力で速度を決めます。左の動画ですぐに速度感を確認できます。', helpStep3: '必要なら「目標時間から決める」で仕上げたい長さを入力し、必要な倍率を逆算します。', helpStep4: 'ファイル名や画質を確認して変換し、結果をプレビューしてMP4を保存します。',
+          helpFormatsTitle: '対応形式', helpFormatsBody: 'プレビューはブラウザー標準の動画再生機能を使います。再生できない動画でも、動画情報を読み取れた場合は変換を試せます。',
+          helpPrivacyTitle: 'プライバシー', helpPrivacyBody: '選択した動画はブラウザー内だけで扱います。このアプリからBrowser Kittyや外部サーバーへアップロードしません。',
+          helpNotesTitle: '注意事項', helpNotePreview: 'プレビューで確認した速度でMP4へ変換できます。', helpNotePitch: '「音程を保つ」をOFFにすると、速度に合わせて声の高さも変わります。ブラウザーのプレビューと書き出し結果にはわずかな差が出る場合があります。', helpNoteMemory: '大きな動画では、端末性能やブラウザーのメモリ制限の影響を受ける場合があります。', helpNoteCancel: '変換中はキャンセルできます。キャンセルしても選択した動画と設定は残ります。', helpNoteFallback: 'ブラウザーでプレビューできない動画でも、動画情報を読み取れた場合は変換を試せます。', helpNoteDevelopment: '変換に必要な処理は配布HTMLに含まれており、動画を外部サーバーへ送信せずブラウザー内で実行します。', helpOffline: '配布用HTMLは実行時通信を必要とせず、ローカルで直接開ける構成です。',
+          confirmTitle: '確認', confirmAction: '実行する', cancel: 'キャンセル', loadedToast: '動画を読み込みました'
+        },
+        en: {
+          brandMeta: 'Change video speed · Target duration', helpTitle: 'How to use & notes', close: 'Close',
+          introTitle: 'Adjust video speed and final duration', lead: 'Choose a faster or slower speed while seeing the resulting duration. You can also calculate the required speed from a target duration.', localBadge: 'Fully local processing',
+          dropZoneAria: 'Add a video. Click or press Enter to choose a file.', dropTitle: 'Add a video', dropBody: 'Drop a video here or choose a file from your device.', chooseVideo: 'Choose video', formatHint: 'MP4 / MOV / WebM and more',
+          loadingTitle: 'Checking the video', loadingBody: 'Reading the information needed for preview locally on this device.',
+          errorTitle: 'Could not load the video', errorDecode: 'The format may not be playable in this browser, or the file may be damaged.', errorNotVideo: 'Choose a video file.',
+          chooseAnother: 'Choose another video', videoPreviewLabel: 'Speed preview of the selected video', previewUnavailableTitle: 'This video cannot be previewed in the browser', previewUnavailableBody: 'Its media information was read successfully, so you can still try converting it.', speedSettingsTitle: 'Playback speed', speedSettingsBody: 'Speed changes are applied to the preview immediately.',
+          speedPresetTitle: 'Choose a speed', speedRangeHint: '0.25× to 4.00×', selectedSpeedLabel: 'Current speed', speedStateSlow: 'Slower', speedStateNormal: 'Normal', speedStateFast: 'Faster', customSpeedLabel: 'Fine tune', previewSpeedLabel: 'Preview', speedRangeError: 'Enter a speed from 0.25× to 4.00×.',
+          originalDurationLabel: 'Original', afterDurationLabel: 'After', durationSame: 'Same duration as the original.', durationShorter: '{time} shorter.', durationLonger: '{time} longer.',
+          targetDurationButton: 'Set by target duration', targetDurationClose: 'Close target duration', targetDurationTitle: 'Final duration', targetDurationHint: 'Calculates the speed as you type', hoursLabel: 'Hours', minutesLabel: 'Minutes', secondsLabel: 'Seconds',
+          targetNeedSpeed: 'Required speed: {speed}×', targetInvalidZero: 'Enter a target duration longer than 0 seconds.', targetOutOfRange: 'This duration requires a speed outside the 0.25× to 4.00× range.',
+          audioSettingsTitle: 'Audio', audioSettingsHint: 'Applied to export', preservePitchLabel: 'Preserve pitch', preservePitchBody: 'Keeps voices closer to their original pitch when speed changes.', preservePitchUnsupported: 'Pitch preservation may not be switchable in this browser.', noAudioLabel: 'Remove audio', noAudioBody: 'Removes audio from the exported video and mutes the preview.', sourceNoAudioNote: 'The source video has no audio, so audio settings are not needed.',
+          outputSettingsTitle: 'Output', outputSettingsHint: 'Save as MP4', outputNameLabel: 'File name', advancedSettingsTitle: 'Advanced settings', qualityTitle: 'Quality', qualityHint: 'Re-encode quality', qualityHigh: 'High quality', qualityStandard: 'Standard', qualitySmall: 'Smaller file', qualityBody: 'Higher quality can create a larger file. Smaller file can reduce image quality.',
+          convertButton: 'Convert with these settings', reconvertButton: 'Reconvert with changed settings', repeatConvertButton: 'Convert again with same settings', convertingLabel: 'Converting video', progressTimeLabel: 'Approx. media position', cancelConvertButton: 'Cancel conversion', cancellingLabel: 'Cancelling…', cancelledToast: 'Conversion cancelled. Your settings are unchanged.', technicalDetails: 'Technical details', convertDoneTitle: 'Conversion complete', downloadResultButton: 'Save MP4', editSettingsButton: 'Change settings', resultPreviewLabel: 'Preview of the converted video', resultDurationLabel: 'Video duration', resultSizeLabel: 'File size', resultStaleNotice: 'The current settings have changed since this result was created. Save downloads the result shown below.', convertSummary: '{speed}× · {audio} · {quality}', audioSummaryPreserve: 'Preserve pitch', audioSummaryShift: 'Shift pitch', audioSummaryNone: 'No audio', convertErrorMessage: 'Could not convert the video. Try again.', convertErrorMemory: 'The device may be low on memory. Close other tabs or try a shorter video.', convertErrorUnsupported: 'This video format could not be converted. Try another video.', convertErrorRuntime: 'Video conversion could not start. Reload the browser and try again.', wasmCspErrorMessage: 'Video conversion was blocked by the page security policy. Rebuild the distributable HTML.', saveStartedToast: 'Started saving the MP4', unsavedResultTitle: 'You have an unsaved converted video', unsavedResultMessage: 'Choosing another video will discard the converted result that has not been saved yet.', discardAndChoose: 'Discard and choose',
+          sourceDetailsSummary: 'Source video information', durationLabel: 'Duration', resolutionLabel: 'Resolution', sizeLabel: 'File size', formatLabel: 'Format',
+          developmentNote: 'v1.0.0 is the stable release. Loading, speed adjustment, conversion, and saving run in the browser.', footer: 'Fully local processing',
+          helpBasicsTitle: 'How to use', helpStep1: 'Choose a video with Choose video, or drop a video onto the page.', helpStep2: 'Use the slider or enter a speed directly. The video on the left previews the speed immediately.', helpStep3: 'If needed, use Set by target duration to enter the desired final length and calculate the required speed.', helpStep4: 'Check the file name and quality, convert the video, preview the result, and save the MP4.',
+          helpFormatsTitle: 'Formats', helpFormatsBody: 'Preview uses the browser’s native video playback support. If preview is unavailable but media information can be read, conversion can still be attempted.',
+          helpPrivacyTitle: 'Privacy', helpPrivacyBody: 'The selected video is handled only inside your browser. This app does not upload it to Browser Kitty or another server.',
+          helpNotesTitle: 'Notes', helpNotePreview: 'The selected preview speed can be converted and saved as MP4.', helpNotePitch: 'Turning Preserve pitch off changes voice pitch together with speed. Browser preview and export may differ slightly.', helpNoteMemory: 'Large videos can be affected by device performance and browser memory limits.', helpNoteCancel: 'You can cancel while converting. The selected video and settings remain after cancellation.', helpNoteFallback: 'If media information can be read, you can still try converting a video that the browser cannot preview.', helpNoteDevelopment: 'The conversion runtime is included in the distributable HTML, so selected videos are processed in the browser without being uploaded to an external server.', helpOffline: 'The distributable HTML needs no runtime network access and can be opened directly as a local file.',
+          confirmTitle: 'Confirm', confirmAction: 'Continue', cancel: 'Cancel', loadedToast: 'Video loaded'
+        }
+      };
+
+      const $ = selector => document.querySelector(selector);
+      const storageKeys = { language: `${APP_CONFIG.slug}:language` };
+      let language = readStorage(storageKeys.language) || detectLanguage();
+      let currentFile = null;
+      let currentObjectUrl = '';
+      let activeProbe = null;
+      let currentErrorKey = 'errorDecode';
+      let currentSpeed = 1;
+      let lastValidSpeed = 1;
+      let targetPanelOpen = false;
+      let ffmpegRunnerPromise = null;
+      let sourceInspectController = null;
+      let sourceInspection = null;
+      let resultBlob = null;
+      let resultUrl = "";
+      let resultSnapshot = null;
+      let resultSaved = false;
+      let outputNameDirty = false;
+      let pickerReplacementApproved = false;
+      let converting = false;
+      let conversionController = null;
+      let conversionGeneration = 0;
+      const QUALITY_PRESETS = Object.freeze({
+        high: Object.freeze({ crf: 20, key: 'qualityHigh' }),
+        standard: Object.freeze({ crf: 23, key: 'qualityStandard' }),
+        small: Object.freeze({ crf: 28, key: 'qualitySmall' })
+      });
+
+      function readStorage(key) { try { return localStorage.getItem(key); } catch { return null; } }
+      function writeStorage(key, value) { try { localStorage.setItem(key, value); } catch { /* unavailable storage is non-fatal */ } }
+      function detectLanguage() {
+        if (APP_CONFIG.defaultLanguage === 'ja' || APP_CONFIG.defaultLanguage === 'en') return APP_CONFIG.defaultLanguage;
+        return (navigator.language || '').toLowerCase().startsWith('ja') ? 'ja' : 'en';
+      }
+      function translate(key) { return translations[language]?.[key] ?? translations.en[key] ?? key; }
+
+      const AppAsyncState = (() => {
+        function create({ initialPhase = 'empty', phases = ['empty', 'loading', 'ready', 'error'], onChange = null } = {}) {
+          const allowed = new Set(phases); let generation = 0;
+          let state = Object.freeze({ phase: initialPhase, generation, message: '', progress: null, error: null });
+          function publish(next) { state = Object.freeze(next); if (typeof onChange === 'function') onChange(state); return state; }
+          function setPhase(phase, patch = {}) { if (!allowed.has(phase)) throw new Error(`Unknown phase: ${phase}`); return publish({ ...state, ...patch, phase, generation }); }
+          function invalidateSource(patch = {}) { generation += 1; return publish({ message: '', progress: null, error: null, ...patch, phase: 'empty', generation }); }
+          return Object.freeze({ get state() { return state; }, setPhase, invalidateSource, captureGeneration: () => generation, isCurrent: token => token === generation });
+        }
+        return Object.freeze({ create });
+      })();
+      window.AppAsyncState = AppAsyncState;
+
+      const AppToast = (() => {
+        const root = $('#appToast'); const message = $('#appToastMessage'); const action = $('#appToastAction');
+        let timer = 0; let actionHandler = null;
+        function dismiss() { clearTimeout(timer); timer = 0; root.classList.remove('show'); actionHandler = null; }
+        function show({ message: text = '', actionLabel = '', onAction = null, duration = 3200, tone = 'default' } = {}) {
+          clearTimeout(timer); message.textContent = String(text); root.dataset.tone = tone;
+          actionHandler = typeof onAction === 'function' ? onAction : null; action.textContent = actionLabel || ''; action.hidden = !actionHandler || !actionLabel;
+          root.classList.add('show'); if (duration > 0) timer = window.setTimeout(dismiss, duration); return Object.freeze({ dismiss });
+        }
+        action.addEventListener('click', () => { const handler = actionHandler; dismiss(); if (handler) handler(); });
+        return Object.freeze({ show, dismiss });
+      })();
+      window.AppToast = AppToast;
+
+      const AppConfirm = (() => {
+        const dialog = $('#appConfirmDialog'); const title = $('#appConfirmTitle'); const message = $('#appConfirmMessage');
+        const closeButton = $('#appConfirmClose'); const cancelButton = $('#appConfirmCancel'); const okButton = $('#appConfirmOk');
+        let resolver = null; let restoreFocus = null;
+        function finish(result) {
+          if (!dialog.open) return; const currentResolver = resolver; resolver = null; dialog.close();
+          if (restoreFocus instanceof HTMLElement && restoreFocus.isConnected) restoreFocus.focus({ preventScroll: true }); restoreFocus = null;
+          if (currentResolver) currentResolver(result);
+        }
+        function ask({ title: heading, message: body, confirmLabel, cancelLabel, tone = 'default' } = {}) {
+          if (dialog.open) finish(false); title.textContent = heading || translate('confirmTitle'); message.textContent = body || '';
+          cancelButton.textContent = cancelLabel || translate('cancel'); okButton.textContent = confirmLabel || translate('confirmAction');
+          okButton.classList.toggle('danger', tone === 'danger'); okButton.classList.toggle('primary', tone !== 'danger'); restoreFocus = document.activeElement;
+          return new Promise(resolve => { resolver = resolve; dialog.showModal(); requestAnimationFrame(() => cancelButton.focus({ preventScroll: true })); });
+        }
+        closeButton.addEventListener('click', () => finish(false)); cancelButton.addEventListener('click', () => finish(false)); okButton.addEventListener('click', () => finish(true));
+        dialog.addEventListener('cancel', event => { event.preventDefault(); finish(false); });
+        dialog.addEventListener('click', event => { const rect = dialog.getBoundingClientRect(); if (event.clientX < rect.left || event.clientX > rect.right || event.clientY < rect.top || event.clientY > rect.bottom) finish(false); });
+        return Object.freeze({ ask });
+      })();
+      window.AppConfirm = AppConfirm;
+
+      const asyncState = AppAsyncState.create({ onChange: renderPhase });
+
+      function renderPhase(state) {
+        $('#emptyView').hidden = state.phase !== 'empty';
+        $('#loadingView').hidden = state.phase !== 'loading';
+        $('#readyView').hidden = state.phase !== 'ready';
+        $('#errorView').hidden = state.phase !== 'error';
+        if (state.phase === 'error') $('#errorMessage').textContent = translate(currentErrorKey);
+      }
+      function applyLanguage() {
+        document.documentElement.lang = language;
+        document.querySelectorAll('[data-i18n]').forEach(element => { element.textContent = translate(element.dataset.i18n); });
+        document.querySelectorAll('[data-i18n-title]').forEach(element => { element.title = translate(element.dataset.i18nTitle); });
+        document.querySelectorAll('[data-i18n-aria-label]').forEach(element => { element.setAttribute('aria-label', translate(element.dataset.i18nAriaLabel)); });
+        $('#languageButton').textContent = language === 'ja' ? 'EN' : '日本語';
+        $('#languageButton').setAttribute('aria-label', language === 'ja' ? '英語に切り替え' : 'Switch to Japanese');
+        document.title = language === 'ja' ? APP_CONFIG.nameJa : APP_CONFIG.name;
+        $('#brandName').textContent = language === 'ja' ? APP_CONFIG.nameJa : APP_CONFIG.name;
+        $('#footerName').textContent = language === 'ja' ? APP_CONFIG.nameJa : APP_CONFIG.name;
+        if (asyncState.state.phase === 'error') $('#errorMessage').textContent = translate(currentErrorKey);
+        if (currentFile && asyncState.state.phase === 'ready') updateFileInfo(currentFile, Number($('#videoPreview').dataset.duration), Number($('#videoPreview').dataset.width), Number($('#videoPreview').dataset.height));
+        updateSpeedUi({ syncTarget: false });
+        updateTargetPanelLabel();
+        refreshResultUi();
+      }
+      function formatBytes(bytes) {
+        if (!Number.isFinite(bytes) || bytes < 0) return '—';
+        if (bytes < 1024) return `${bytes} B`;
+        const units = ['KB', 'MB', 'GB', 'TB']; let value = bytes / 1024; let index = 0;
+        while (value >= 1024 && index < units.length - 1) { value /= 1024; index += 1; }
+        return `${new Intl.NumberFormat(language, { maximumFractionDigits: value >= 100 ? 0 : value >= 10 ? 1 : 2 }).format(value)} ${units[index]}`;
+      }
+      function formatDuration(seconds) {
+        if (!Number.isFinite(seconds) || seconds < 0) return '—';
+        if (seconds > 0 && seconds < 1) { const tenths = Math.max(1, Math.round(seconds * 10)); return tenths >= 10 ? '0:01' : `0:00.${tenths}`; }
+        const rounded = Math.max(0, Math.round(seconds)); const h = Math.floor(rounded / 3600); const m = Math.floor((rounded % 3600) / 60); const s = rounded % 60;
+        return h > 0 ? `${h}:${String(m).padStart(2, '0')}:${String(s).padStart(2, '0')}` : `${m}:${String(s).padStart(2, '0')}`;
+      }
+      function formatSpeed(value) {
+        if (!Number.isFinite(value)) return '—';
+        return value.toFixed(2);
+      }
+      function interpolate(key, values = {}) {
+        return Object.entries(values).reduce((text, [name, value]) => text.replaceAll(`{${name}}`, String(value)), translate(key));
+      }
+      function sourceDurationSeconds() {
+        const value = Number($('#videoPreview').dataset.duration);
+        return Number.isFinite(value) && value >= 0 ? value : NaN;
+      }
+      function setPreservesPitch(preview, enabled) {
+        if ('preservesPitch' in preview) preview.preservesPitch = enabled;
+        else if ('webkitPreservesPitch' in preview) preview.webkitPreservesPitch = enabled;
+      }
+      function updateAudioUi() {
+        const sourceHasAudio = sourceInspection ? Boolean(sourceInspection.audio) : null;
+        const noAudioInput = $('#noAudioInput');
+        const preservePitch = $('#preservePitchInput');
+        if (sourceHasAudio === false) noAudioInput.checked = false;
+        const noAudio = noAudioInput.checked;
+        const audioControlsUnavailable = sourceHasAudio === false;
+        noAudioInput.disabled = audioControlsUnavailable || converting;
+        preservePitch.disabled = audioControlsUnavailable || noAudio || converting;
+        $('#preservePitchRow').classList.toggle('is-disabled', audioControlsUnavailable || noAudio);
+        $('#noAudioRow').classList.toggle('is-disabled', audioControlsUnavailable);
+        $('#sourceAudioNote').hidden = !audioControlsUnavailable;
+        const preview = $('#videoPreview');
+        preview.muted = noAudio;
+        setPreservesPitch(preview, preservePitch.checked);
+      }
+      function bytesContainAscii(bytes, text) {
+        if (!bytes || !text) return false;
+        const needle = Array.from(text, char => char.charCodeAt(0));
+        outer: for (let i = 0; i <= bytes.length - needle.length; i += 1) {
+          for (let j = 0; j < needle.length; j += 1) if (bytes[i + j] !== needle[j]) continue outer;
+          return true;
+        }
+        return false;
+      }
+      function audioSummaryMode(outputBytes = null) {
+        if ($('#noAudioInput').checked || (outputBytes && !bytesContainAscii(outputBytes, 'mp4a'))) return 'none';
+        return $('#preservePitchInput').checked ? 'preserve' : 'shift';
+      }
+      function audioSummaryText(outputBytes = null) {
+        const mode = audioSummaryMode(outputBytes);
+        return translate(mode === 'none' ? 'audioSummaryNone' : mode === 'preserve' ? 'audioSummaryPreserve' : 'audioSummaryShift');
+      }
+      function audioSummaryTextForMode(mode) {
+        return translate(mode === 'none' ? 'audioSummaryNone' : mode === 'preserve' ? 'audioSummaryPreserve' : 'audioSummaryShift');
+      }
+      const SPEED_PRESETS = Object.freeze([0.25, 0.5, 0.75, 1, 1.25, 1.5, 2, 3, 4]);
+      function nearestPresetIndex(speed) {
+        let nearest = 0; let distance = Infinity;
+        SPEED_PRESETS.forEach((preset, index) => { const nextDistance = Math.abs(preset - speed); if (nextDistance < distance) { distance = nextDistance; nearest = index; } });
+        return nearest;
+      }
+      function speedStateKey(speed) {
+        if (!Number.isFinite(speed)) return 'speedStateNormal';
+        if (speed < .9995) return 'speedStateSlow';
+        if (speed > 1.0005) return 'speedStateFast';
+        return 'speedStateNormal';
+      }
+      function clampInteger(value, min, max) {
+        const number = Math.trunc(Number(value));
+        if (!Number.isFinite(number)) return min;
+        return Math.min(max, Math.max(min, number));
+      }
+      function writeTargetFromSeconds(seconds) {
+        if (!Number.isFinite(seconds) || seconds < 0) return;
+        const rounded = Math.max(0, Math.round(seconds));
+        $('#targetHours').value = String(Math.floor(rounded / 3600));
+        $('#targetMinutes').value = String(Math.floor((rounded % 3600) / 60));
+        $('#targetSeconds').value = String(rounded % 60);
+      }
+      function readTargetSeconds() {
+        const hours = clampInteger($('#targetHours').value, 0, 999);
+        const minutes = clampInteger($('#targetMinutes').value, 0, 59);
+        const seconds = clampInteger($('#targetSeconds').value, 0, 59);
+        return hours * 3600 + minutes * 60 + seconds;
+      }
+      function updatePresetPressed() {
+        const range = $('#speedPresetRange');
+        if (!Number.isFinite(currentSpeed)) {
+          range.setAttribute('aria-valuetext', '—');
+          $('#speedModeLabel').textContent = '—';
+          return;
+        }
+        const index = nearestPresetIndex(currentSpeed);
+        range.value = String(index);
+        range.style.setProperty('--speed-pos', `${(index / (SPEED_PRESETS.length - 1)) * 100}%`);
+        range.setAttribute('aria-valuetext', `${formatSpeed(currentSpeed)}×`);
+        $('#speedModeLabel').textContent = translate(speedStateKey(currentSpeed));
+      }
+      function updateSpeedUi({ syncInput = true, syncTarget = false } = {}) {
+        const preview = $('#videoPreview');
+        const duration = sourceDurationSeconds();
+        const valid = Number.isFinite(currentSpeed) && currentSpeed >= 0.25 && currentSpeed <= 4;
+        if (syncInput && valid) $('#speedInput').value = formatSpeed(currentSpeed);
+        $('#speedInput').setAttribute('aria-invalid', valid ? 'false' : 'true');
+        $('#speedError').textContent = valid ? '' : translate('speedRangeError');
+        $('#previewSpeedValue').textContent = valid ? `${formatSpeed(currentSpeed)}×` : '—';
+        updatePresetPressed();
+        if (valid) {
+          preview.playbackRate = currentSpeed;
+          preview.defaultPlaybackRate = currentSpeed;
+        }
+        updateAudioUi();
+        $('#originalDurationValue').textContent = formatDuration(duration);
+        if (!valid || !Number.isFinite(duration)) {
+          $('#afterDurationValue').textContent = '—'; $('#durationDiff').textContent = '—'; return;
+        }
+        const after = duration / currentSpeed;
+        $('#afterDurationValue').textContent = formatDuration(after);
+        const diff = after - duration;
+        if (Math.abs(diff) < .5) $('#durationDiff').textContent = translate('durationSame');
+        else if (diff < 0) $('#durationDiff').textContent = interpolate('durationShorter', { time: formatDuration(Math.abs(diff)) });
+        else $('#durationDiff').textContent = interpolate('durationLonger', { time: formatDuration(diff) });
+        if (syncTarget && targetPanelOpen) writeTargetFromSeconds(after);
+      }
+      function setSpeed(value, { syncTarget = true } = {}) {
+        const number = Number(value);
+        if (!Number.isFinite(number) || number < 0.25 || number > 4) {
+          currentSpeed = number; updateSpeedUi({ syncInput: false, syncTarget: false }); markResultStaleIfNeeded(); return false;
+        }
+        const nextSpeed = Math.round(number * 1000) / 1000;
+        const changed = Math.abs(nextSpeed - currentSpeed) > 0.0005;
+        currentSpeed = nextSpeed; lastValidSpeed = currentSpeed;
+        if (changed) { syncDefaultOutputName(); markResultStaleIfNeeded(); }
+        updateSpeedUi({ syncInput: true, syncTarget });
+        return true;
+      }
+      function updateTargetPanelLabel() {
+        $('#targetDurationButton').textContent = translate(targetPanelOpen ? 'targetDurationClose' : 'targetDurationButton');
+        $('#targetDurationButton').setAttribute('aria-expanded', targetPanelOpen ? 'true' : 'false');
+      }
+      function setTargetPanel(open) {
+        targetPanelOpen = Boolean(open); $('#targetDurationPanel').hidden = !targetPanelOpen; updateTargetPanelLabel();
+        if (targetPanelOpen) {
+          const duration = sourceDurationSeconds();
+          if (Number.isFinite(duration) && Number.isFinite(currentSpeed) && currentSpeed > 0) writeTargetFromSeconds(duration / currentSpeed);
+          updateTargetFromInputs();
+        }
+      }
+      function updateTargetFromInputs() {
+        if (!targetPanelOpen) return;
+        ['#targetHours', '#targetMinutes', '#targetSeconds'].forEach(selector => {
+          const input = $(selector);
+          const max = Number(input.max); const value = clampInteger(input.value, 0, max); input.value = String(value);
+        });
+        const duration = sourceDurationSeconds(); const target = readTargetSeconds();
+        if (!Number.isFinite(duration) || duration <= 0) { $('#targetResult').textContent = '—'; return; }
+        if (target <= 0) { $('#targetResult').textContent = translate('targetInvalidZero'); return; }
+        const required = duration / target;
+        if (required < 0.25 || required > 4) { $('#targetResult').textContent = translate('targetOutOfRange'); return; }
+        setSpeed(required, { syncTarget: false });
+        $('#targetResult').textContent = interpolate('targetNeedSpeed', { speed: formatSpeed(currentSpeed) });
+      }
+      function base64ToBlob(text, type = 'application/gzip') {
+        const clean = String(text || '').replace(/\s+/g, '');
+        const chunks = [];
+        for (let offset = 0; offset < clean.length; offset += 32768) {
+          const binary = atob(clean.slice(offset, offset + 32768));
+          const bytes = new Uint8Array(binary.length);
+          for (let index = 0; index < binary.length; index += 1) bytes[index] = binary.charCodeAt(index);
+          chunks.push(bytes);
+        }
+        return new Blob(chunks, { type });
+      }
+      async function gunzipEmbedded(id, asText) {
+        if (typeof DecompressionStream !== 'function') throw new Error('DecompressionStream is unavailable.');
+        const source = base64ToBlob($(id).textContent);
+        const response = new Response(source.stream().pipeThrough(new DecompressionStream('gzip')));
+        return asText ? response.text() : response.arrayBuffer();
+      }
+      async function getFfmpegRunner() {
+        if (!ffmpegRunnerPromise) {
+          ffmpegRunnerPromise = (async () => {
+            if (!window.BrowserFFmpeg?.loadEmbedded) throw new Error('Embedded FFmpeg runtime is unavailable.');
+            const [coreJsText, wasmBytes] = await Promise.all([
+              gunzipEmbedded('#ffmpeg-js-gzip', true), gunzipEmbedded('#ffmpeg-wasm-gzip', false)
+            ]);
+            return BrowserFFmpeg.loadEmbedded({ coreJsText, wasmBytes });
+          })().catch(error => { ffmpegRunnerPromise = null; throw error; });
+        }
+        return ffmpegRunnerPromise;
+      }
+      function isAbortError(error) { return error?.name === 'AbortError' || /cancelled|canceled|aborted/i.test(String(error?.message || '')); }
+      function classifyConversionError(error) {
+        const detail = String(error?.message || error || '');
+        if (isAbortError(error)) return 'cancelled';
+        if (error instanceof WebAssembly.CompileError || /wasm-unsafe-eval|unsafe-eval|Content Security Policy/i.test(detail)) return 'csp';
+        if (/out of memory|memory access out of bounds|cannot enlarge memory|allocation failed|bad_alloc|ENOMEM|OOM/i.test(detail)) return 'memory';
+        if (/invalid data|unsupported|decoder|demux|codec|could not open input|stream not found|moov atom not found/i.test(detail)) return 'unsupported';
+        if (/Worker|WebAssembly|runtime is unavailable|runner has been disposed/i.test(detail)) return 'runtime';
+        return 'generic';
+      }
+      function setConversionError(error) {
+        const kind = classifyConversionError(error);
+        const key = kind === 'csp' ? 'wasmCspErrorMessage' : kind === 'memory' ? 'convertErrorMemory' : kind === 'unsupported' ? 'convertErrorUnsupported' : kind === 'runtime' ? 'convertErrorRuntime' : 'convertErrorMessage';
+        $('#convertError').textContent = kind === 'cancelled' ? '' : translate(key);
+        const detail = String(error?.stack || error?.message || error || '').trim();
+        $('#convertErrorDetailText').textContent = detail;
+        $('#convertErrorDetails').hidden = kind === 'cancelled' || !detail;
+      }
+      function clearConversionError() {
+        $('#convertError').textContent = '';
+        $('#convertErrorDetailText').textContent = '';
+        $('#convertErrorDetails').hidden = true;
+        $('#convertErrorDetails').open = false;
+      }
+      function setPreviewAvailability(nativePreviewAvailable) {
+        const preview = $('#videoPreview');
+        preview.hidden = !nativePreviewAvailable;
+        $('#previewUnavailable').hidden = nativePreviewAvailable;
+      }
+      async function inspectSourceWithFfmpeg(file, token) {
+        if (!window.BrowserFFmpeg?.videoSpeedChangerInspectArgs || !window.BrowserFFmpeg?.decodeJsonOutput) throw new Error('Video inspection runtime is unavailable.');
+        sourceInspectController?.abort();
+        const controller = new AbortController(); sourceInspectController = controller;
+        const runner = await getFfmpegRunner();
+        if (!asyncState.isCurrent(token)) { controller.abort(); return null; }
+        const output = '/inspect.json';
+        try {
+          const result = await runner.run({
+            files: [{ name: '/workerfs/input.bin', data: file, workerfs: true }],
+            outputs: [output],
+            args: BrowserFFmpeg.videoSpeedChangerInspectArgs({ input: '/workerfs/input.bin', output }),
+            signal: controller.signal
+          });
+          if (!asyncState.isCurrent(token)) return null;
+          return BrowserFFmpeg.decodeJsonOutput(result, output);
+        } finally {
+          if (sourceInspectController === controller) sourceInspectController = null;
+        }
+      }
+      function selectedQuality() {
+        const value = document.querySelector('input[name="quality"]:checked')?.value || 'standard';
+        return QUALITY_PRESETS[value] ? value : 'standard';
+      }
+      function qualitySummaryText(value = selectedQuality()) {
+        return translate(QUALITY_PRESETS[value]?.key || 'qualityStandard');
+      }
+      function conversionSettingsKey() {
+        return JSON.stringify({
+          speed: Number(Number(currentSpeed).toFixed(3)),
+          preservePitch: $('#preservePitchInput').checked,
+          noAudio: $('#noAudioInput').checked,
+          quality: selectedQuality()
+        });
+      }
+      function defaultOutputBaseName(speed = currentSpeed) {
+        const source = currentFile?.name || 'video.mp4';
+        const base = source.replace(/\.[^.]+$/, '') || 'video';
+        return `${base}-speed-${formatSpeed(speed)}x`;
+      }
+      function sanitizeOutputBaseName(value, speed = resultSnapshot?.speed ?? currentSpeed) {
+        const fallback = `video-speed-${formatSpeed(speed)}x`;
+        const cleaned = String(value || '').replace(/[\\/:*?"<>|]+/g, '-').replace(/[-. ]+$/g, '').trim();
+        return cleaned || fallback;
+      }
+      function syncDefaultOutputName({ force = false } = {}) {
+        if (outputNameDirty && !force) return;
+        if (resultBlob && !force) return;
+        $('#outputNameInput').value = defaultOutputBaseName();
+      }
+      function updateConvertButtonLabel() {
+        const button = $('#convertButton');
+        if (!button || converting) return;
+        if (!resultBlob) button.textContent = translate('convertButton');
+        else if (resultSnapshot?.settingsKey !== conversionSettingsKey()) button.textContent = translate('reconvertButton');
+        else button.textContent = translate('repeatConvertButton');
+      }
+      function markResultStaleIfNeeded() {
+        if (!resultBlob || !resultSnapshot) { updateConvertButtonLabel(); return; }
+        $('#resultStaleNotice').hidden = resultSnapshot.settingsKey === conversionSettingsKey();
+        updateConvertButtonLabel();
+      }
+      function refreshResultUi() {
+        if (!resultBlob || !resultSnapshot) { updateConvertButtonLabel(); return; }
+        $('#convertResultSummary').textContent = interpolate('convertSummary', {
+          speed: formatSpeed(resultSnapshot.speed),
+          audio: audioSummaryTextForMode(resultSnapshot.audioMode),
+          quality: qualitySummaryText(resultSnapshot.quality)
+        });
+        $('#resultDurationMetric').textContent = `${formatDuration(resultSnapshot.sourceDuration)} → ${formatDuration(resultSnapshot.outputDuration)}`;
+        $('#resultSizeMetric').textContent = `${formatBytes(resultSnapshot.sourceSize)} → ${formatBytes(resultBlob.size)}`;
+        markResultStaleIfNeeded();
+      }
+      function clearConvertedResult() {
+        const resultPreview = $('#resultPreview');
+        try { resultPreview.pause(); resultPreview.removeAttribute('src'); resultPreview.load(); } catch { /* best effort */ }
+        if (resultUrl) { URL.revokeObjectURL(resultUrl); blobUrls.delete(resultUrl); resultUrl = ''; }
+        resultBlob = null; resultSnapshot = null; resultSaved = false;
+        $('#convertResult').hidden = true; $('#resultStaleNotice').hidden = true;
+        $('#convertResultSummary').textContent = '—'; $('#resultDurationMetric').textContent = '—'; $('#resultSizeMetric').textContent = '—';
+        updateConvertButtonLabel();
+      }
+      function resultFileName() {
+        const speed = resultSnapshot?.speed ?? currentSpeed;
+        const base = sanitizeOutputBaseName($('#outputNameInput').value, speed);
+        $('#outputNameInput').value = base;
+        return `${base}.mp4`;
+      }
+      function setConversionControlsDisabled(disabled) {
+        document.querySelectorAll('#speedPresetRange, #speedInput, #targetDurationButton, .target-time, #preservePitchInput, #noAudioInput, input[name="quality"], #outputNameInput, #replaceVideoButton, #videoInput, #resultAnotherButton, #editSettingsButton').forEach(control => { control.disabled = disabled; });
+        if (!disabled) updateAudioUi();
+      }
+      function updateProgress(progress) {
+        const value = Math.max(0, Math.min(1, Number(progress) || 0));
+        $('#convertProgressBar').value = value; $('#convertProgressText').textContent = `${Math.round(value * 100)}%`;
+        const duration = sourceDurationSeconds();
+        $('#convertProgressTime').textContent = Number.isFinite(duration) ? `${formatDuration(duration * value)} / ${formatDuration(duration)}` : '—';
+      }
+      async function confirmReplaceIfNeeded() {
+        if (!resultBlob || resultSaved) return true;
+        return AppConfirm.ask({
+          title: translate('unsavedResultTitle'),
+          message: translate('unsavedResultMessage'),
+          confirmLabel: translate('discardAndChoose'),
+          cancelLabel: translate('cancel'),
+          tone: 'danger'
+        });
+      }
+      async function convertCurrentVideo() {
+        if (converting || !currentFile || !Number.isFinite(currentSpeed) || currentSpeed < .25 || currentSpeed > 4) return;
+        if (!outputNameDirty) syncDefaultOutputName({ force: true });
+        const runId = ++conversionGeneration;
+        const controller = new AbortController(); conversionController = controller;
+        converting = true; clearConversionError(); $('#convertProgress').hidden = false;
+        updateProgress(0); $('#convertButton').disabled = true; $('#convertButton').textContent = translate('convertingLabel'); $('#cancelConvertButton').disabled = false; $('#cancelConvertButton').textContent = translate('cancelConvertButton'); setConversionControlsDisabled(true);
+        const quality = selectedQuality();
+        const settingsSnapshot = {
+          settingsKey: conversionSettingsKey(), speed: currentSpeed, quality, sourceDuration: sourceDurationSeconds(), sourceSize: currentFile.size,
+          outputDuration: sourceDurationSeconds() / currentSpeed, audioMode: audioSummaryMode()
+        };
+        try {
+          const runner = await getFfmpegRunner();
+          if (runId !== conversionGeneration || controller.signal.aborted) throw new DOMException('Conversion cancelled.', 'AbortError');
+          const output = '/output.mp4';
+          const result = await runner.run({
+            files: [{ name: '/workerfs/input.bin', data: currentFile, workerfs: true }],
+            outputs: [output],
+            args: BrowserFFmpeg.videoSpeedChangerArgs({ input: '/workerfs/input.bin', output, rate: currentSpeed, encoderSpeed: 'fast', crf: QUALITY_PRESETS[quality].crf, audioBitrateKbps: 128, preservePitch: $('#preservePitchInput').checked, noAudio: $('#noAudioInput').checked }),
+            signal: controller.signal,
+            onProgress: progress => { if (runId === conversionGeneration && !controller.signal.aborted) updateProgress(progress); }
+          });
+          if (runId !== conversionGeneration || controller.signal.aborted) throw new DOMException('Conversion cancelled.', 'AbortError');
+          const file = result.files?.find(item => item.name === output);
+          if (!file?.data?.byteLength) throw new Error('Output MP4 was not returned.');
+          const nextBlob = new Blob([file.data], { type: 'video/mp4' });
+          clearConvertedResult();
+          resultBlob = nextBlob; resultUrl = URL.createObjectURL(resultBlob); blobUrls.add(resultUrl);
+          settingsSnapshot.audioMode = audioSummaryMode(file.data); resultSnapshot = Object.freeze(settingsSnapshot); resultSaved = false;
+          const preview = $('#resultPreview'); preview.src = resultUrl; preview.load();
+          $('#convertResult').hidden = false; updateProgress(1); refreshResultUi();
+          requestAnimationFrame(() => $('#convertResult').scrollIntoView({ behavior: 'smooth', block: 'nearest' }));
+        } catch (error) {
+          if (isAbortError(error)) AppToast.show({ message: translate('cancelledToast') });
+          else { console.error(error); setConversionError(error); }
+        } finally {
+          if (runId === conversionGeneration) {
+            conversionController = null; converting = false; setConversionControlsDisabled(false); $('#convertButton').disabled = false; $('#convertProgress').hidden = true; $('#cancelConvertButton').disabled = false; $('#cancelConvertButton').textContent = translate('cancelConvertButton'); updateConvertButtonLabel();
+          }
+        }
+      }
+      function cancelCurrentConversion() {
+        if (!converting || !conversionController || conversionController.signal.aborted) return;
+        $('#cancelConvertButton').disabled = true; $('#cancelConvertButton').textContent = translate('cancellingLabel');
+        conversionController.abort();
+      }
+
+      function extensionLabel(name) {
+        const match = String(name || '').match(/\.([a-z0-9]{1,8})$/i); return match ? match[1].toUpperCase() : 'VIDEO';
+      }
+      function plausibleVideo(file) {
+        if (file.type && file.type.startsWith('video/')) return true;
+        return /\.(mp4|mov|webm|m4v|mkv|avi|mpeg|mpg|ts|mts|m2ts)$/i.test(file.name || '');
+      }
+      function cleanupProbe() {
+        if (!activeProbe) return;
+        try { activeProbe.pause(); activeProbe.removeAttribute('src'); activeProbe.load(); } catch { /* best effort */ }
+        activeProbe = null;
+      }
+      function revokeCurrentUrl() {
+        if (!currentObjectUrl) return;
+        const url = currentObjectUrl; currentObjectUrl = '';
+        const preview = $('#videoPreview');
+        try { preview.pause(); preview.removeAttribute('src'); preview.load(); } catch { /* best effort */ }
+        URL.revokeObjectURL(url); blobUrls.delete(url);
+      }
+      function resetSourceBoundary() {
+        sourceInspectController?.abort(); sourceInspectController = null; sourceInspection = null;
+        clearConvertedResult(); asyncState.invalidateSource(); cleanupProbe(); revokeCurrentUrl(); currentFile = null;
+        $('#videoInput').value = ''; $('#fileName').textContent = '—'; $('#durationValue').textContent = '—'; $('#resolutionValue').textContent = '—'; $('#sizeValue').textContent = '—'; $('#formatValue').textContent = '—';
+        const preview = $('#videoPreview'); delete preview.dataset.duration; delete preview.dataset.width; delete preview.dataset.height; setPreviewAvailability(true);
+        currentSpeed = 1; lastValidSpeed = 1; targetPanelOpen = false; outputNameDirty = false; $('#targetDurationPanel').hidden = true; updateTargetPanelLabel(); updateSpeedUi({ syncInput: true, syncTarget: false }); syncDefaultOutputName({ force: true });
+      }
+      function updateFileInfo(file, duration, width, height) {
+        $('#fileName').textContent = file.name || 'video';
+        $('#durationValue').textContent = formatDuration(duration);
+        $('#resolutionValue').textContent = Number.isFinite(width) && Number.isFinite(height) && width > 0 && height > 0 ? `${width} × ${height}` : '—';
+        $('#sizeValue').textContent = formatBytes(file.size);
+        $('#formatValue').textContent = extensionLabel(file.name);
+      }
+      function failSource(token, errorKey) {
+        if (!asyncState.isCurrent(token)) return;
+        cleanupProbe(); sourceInspectController?.abort(); sourceInspectController = null; revokeCurrentUrl(); currentErrorKey = errorKey; asyncState.setPhase('error', { error: errorKey });
+      }
+      async function loadVideoWithFfmpegFallback(file, token) {
+        if (!asyncState.isCurrent(token)) return;
+        cleanupProbe();
+        try {
+          const report = await inspectSourceWithFfmpeg(file, token);
+          if (!report || !asyncState.isCurrent(token)) return;
+          const duration = Number(report.duration); const width = Number(report.video?.displayWidth || report.video?.width); const height = Number(report.video?.displayHeight || report.video?.height);
+          if (!Number.isFinite(duration) || duration < 0 || !width || !height) throw new Error('FFmpeg inspection did not return valid video metadata.');
+          sourceInspection = report;
+          const preview = $('#videoPreview'); preview.dataset.duration = String(duration); preview.dataset.width = String(width); preview.dataset.height = String(height);
+          setPreviewAvailability(false); revokeCurrentUrl(); updateFileInfo(file, duration, width, height); asyncState.setPhase('ready'); updateSpeedUi({ syncInput: true, syncTarget: true }); AppToast.show({ message: translate('loadedToast'), tone: 'success' });
+        } catch (error) {
+          if (isAbortError(error) || !asyncState.isCurrent(token)) return;
+          console.error(error); failSource(token, 'errorDecode');
+        }
+      }
+      function loadVideo(file) {
+        resetSourceBoundary();
+        const token = asyncState.captureGeneration();
+        if (!file || !plausibleVideo(file)) { currentErrorKey = 'errorNotVideo'; asyncState.setPhase('error', { error: 'not-video' }); return; }
+        currentFile = file; outputNameDirty = false; syncDefaultOutputName({ force: true }); currentObjectUrl = URL.createObjectURL(file); blobUrls.add(currentObjectUrl); asyncState.setPhase('loading'); setPreviewAvailability(true);
+
+        const probe = document.createElement('video'); activeProbe = probe; probe.preload = 'metadata'; probe.muted = true; probe.playsInline = true;
+        const onLoaded = () => {
+          if (!asyncState.isCurrent(token) || activeProbe !== probe) return;
+          const duration = probe.duration; const width = probe.videoWidth; const height = probe.videoHeight;
+          cleanupProbe();
+          if (!Number.isFinite(duration) || duration < 0 || !width || !height) { void loadVideoWithFfmpegFallback(file, token); return; }
+          const preview = $('#videoPreview'); preview.src = currentObjectUrl; preview.dataset.duration = String(duration); preview.dataset.width = String(width); preview.dataset.height = String(height); preview.load(); setPreviewAvailability(true);
+          updateFileInfo(file, duration, width, height); asyncState.setPhase('ready'); updateSpeedUi({ syncInput: true, syncTarget: true }); AppToast.show({ message: translate('loadedToast'), tone: 'success' });
+        };
+        const onError = () => { if (asyncState.isCurrent(token) && activeProbe === probe) void loadVideoWithFfmpegFallback(file, token); };
+        probe.addEventListener('loadedmetadata', onLoaded, { once: true }); probe.addEventListener('error', onError, { once: true }); probe.src = currentObjectUrl; probe.load();
+      }
+      function openPicker() { $('#videoInput').click(); }
+
+      $('#videoPreview').addEventListener('error', () => { if (currentFile && asyncState.state.phase === 'ready' && currentObjectUrl) setPreviewAvailability(false); });
+      $('#languageButton').addEventListener('click', () => { language = language === 'ja' ? 'en' : 'ja'; writeStorage(storageKeys.language, language); applyLanguage(); });
+      const helpDialog = $('#helpDialog');
+      $('#helpButton').addEventListener('click', () => helpDialog.showModal());
+      $('#closeHelpButton').addEventListener('click', () => helpDialog.close());
+      helpDialog.addEventListener('click', event => { const rect = helpDialog.getBoundingClientRect(); if (event.clientX < rect.left || event.clientX > rect.right || event.clientY < rect.top || event.clientY > rect.bottom) helpDialog.close(); });
+      $('#chooseVideoButton').addEventListener('click', event => { event.stopPropagation(); openPicker(); });
+      $('#replaceVideoButton').addEventListener('click', async () => { if (await confirmReplaceIfNeeded()) { pickerReplacementApproved = true; openPicker(); } }); $('#retryChooseButton').addEventListener('click', openPicker);
+      $('#videoInput').addEventListener('change', async event => { const [file] = event.target.files || []; if (!file) { pickerReplacementApproved = false; return; } const approved = pickerReplacementApproved || await confirmReplaceIfNeeded(); pickerReplacementApproved = false; if (!approved) { event.target.value = ''; return; } loadVideo(file); });
+      $('#videoInput').addEventListener('cancel', () => { pickerReplacementApproved = false; });
+
+      $('#speedPresetRange').addEventListener('input', event => setSpeed(SPEED_PRESETS[Number(event.target.value)]));
+      $('#speedInput').addEventListener('input', event => {
+        const value = Number(event.target.value);
+        if (event.target.value.trim() === '') { currentSpeed = NaN; updateSpeedUi({ syncInput: false }); return; }
+        setSpeed(value);
+      });
+      $('#speedInput').addEventListener('change', () => { if (!setSpeed($('#speedInput').value)) { currentSpeed = lastValidSpeed; updateSpeedUi({ syncInput: true, syncTarget: true }); } });
+      $('#targetDurationButton').addEventListener('click', () => setTargetPanel(!targetPanelOpen));
+      document.querySelectorAll('.target-time').forEach(input => input.addEventListener('input', updateTargetFromInputs));
+      $('#preservePitchInput').addEventListener('change', () => { updateSpeedUi({ syncInput: false, syncTarget: false }); markResultStaleIfNeeded(); });
+      $('#noAudioInput').addEventListener('change', () => { updateSpeedUi({ syncInput: false, syncTarget: false }); markResultStaleIfNeeded(); });
+      document.querySelectorAll('input[name="quality"]').forEach(input => input.addEventListener('change', markResultStaleIfNeeded));
+      $('#outputNameInput').addEventListener('input', () => { outputNameDirty = true; });
+      $('#convertButton').addEventListener('click', convertCurrentVideo);
+      $('#cancelConvertButton').addEventListener('click', cancelCurrentConversion);
+      $('#downloadResultButton').addEventListener('click', () => {
+        if (!resultUrl || !resultBlob) return;
+        const link = document.createElement('a'); link.href = resultUrl; link.download = resultFileName(); document.body.append(link); link.click(); link.remove(); resultSaved = true;
+        AppToast.show({ message: translate('saveStartedToast'), tone: 'success' });
+      });
+      $('#editSettingsButton').addEventListener('click', () => { $('#speedSettingsTitle').scrollIntoView({ behavior: 'smooth', block: 'start' }); requestAnimationFrame(() => $('#speedInput').focus({ preventScroll: true })); });
+      $('#resultAnotherButton').addEventListener('click', async () => { if (await confirmReplaceIfNeeded()) { pickerReplacementApproved = true; openPicker(); } });
+
+      const dropZone = $('#dropZone');
+      dropZone.addEventListener('click', event => { if (event.target.closest('button')) return; openPicker(); });
+      dropZone.addEventListener('keydown', event => { if (event.key === 'Enter' || event.key === ' ') { event.preventDefault(); openPicker(); } });
+      ['dragenter', 'dragover'].forEach(type => dropZone.addEventListener(type, event => { event.preventDefault(); event.stopPropagation(); dropZone.classList.add('is-dragover'); if (event.dataTransfer) event.dataTransfer.dropEffect = 'copy'; }));
+      ['dragleave', 'drop'].forEach(type => dropZone.addEventListener(type, event => { event.preventDefault(); event.stopPropagation(); dropZone.classList.remove('is-dragover'); }));
+      dropZone.addEventListener('drop', event => { const [file] = event.dataTransfer?.files || []; if (file) loadVideo(file); });
+      window.addEventListener('dragover', event => event.preventDefault());
+      window.addEventListener('drop', event => { if (!dropZone.contains(event.target)) event.preventDefault(); });
+      window.addEventListener('pagehide', () => { conversionController?.abort(); sourceInspectController?.abort(); cleanupProbe(); revokeCurrentUrl(); clearConvertedResult(); ffmpegRunnerPromise?.then(runner => runner.dispose()).catch(() => {}); blobUrls.forEach(url => URL.revokeObjectURL(url)); blobUrls.clear(); });
+
+      $('#versionBadge').textContent = `v${APP_CONFIG.version}`;
+      applyLanguage();
+      updateAudioUi();
+      syncDefaultOutputName({ force: true });
+      updateConvertButtonLabel();
+      renderPhase(asyncState.state);
+    })();
+  </script>
+</body>
+</html>

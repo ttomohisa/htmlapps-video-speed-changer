@@ -1,0 +1,8 @@
+{
+  "schemaVersion": 1,
+  "repository": "ttomohisa/htmlapps-ffmpeg-wasm-builder",
+  "tag": "v1.8.1",
+  "asset": "ffmpeg-wasm-video-speed-changer-v1.8.1.zip",
+  "profile": "video-speed-changer",
+  "builderVersion": "1.8.1"
+}

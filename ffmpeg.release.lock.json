@@ -1,0 +1,14 @@
+{
+  "schemaVersion": 1,
+  "repository": "ttomohisa/htmlapps-ffmpeg-wasm-builder",
+  "tag": "v1.8.1",
+  "asset": "ffmpeg-wasm-video-speed-changer-v1.8.1.zip",
+  "profile": "video-speed-changer",
+  "builderVersion": "1.8.1",
+  "releaseId": 383478756,
+  "assetId": 546791853,
+  "assetBytes": 3207461,
+  "sha256": "aef55e13bfb9f45cd042b3ec2582e449876a8e28bd612a01e4b7429dfbacac36",
+  "browserDownloadUrl": "https://github.com/ttomohisa/htmlapps-ffmpeg-wasm-builder/releases/download/v1.8.1/ffmpeg-wasm-video-speed-changer-v1.8.1.zip",
+  "pinnedAtUtc": "2026-09-06T05:42:53Z"
+}
