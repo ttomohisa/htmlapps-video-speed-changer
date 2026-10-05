@@ -65,7 +65,9 @@ Core user flow:
 - Conversion runs in a Worker.
 - `AbortSignal` cancellation terminates the active Worker.
 - Cancellation retains the source/settings and does not turn into a user-facing error.
-- If an earlier successful result exists, cancelling a reconversion keeps that older result available.
+- If an earlier successful result exists, cancelling or failing a reconversion keeps that older result, settings snapshot, preview URL, and automatic filename available.
+- The automatic filename changes to match the newly converted speed only when a replacement result succeeds. A user-edited filename is preserved across attempts for the same source.
+- Replacing/resetting the source clears the prior result and conversion error/details, aborts and invalidates any old conversion, and immediately restores usable controls. Late progress, results, errors, cancellation notices, and finalizers from an old conversion must not affect the newer source.
 - Generation guards prevent stale inspection/conversion results from overwriting a newer source.
 - Blob URLs and Workers are released on source replacement, reconversion, cancellation, and page exit.
 
@@ -294,7 +296,9 @@ The profile runtime contract is frozen at Builder v1.8.1 for v1.0.0.
 - 0.25x, 0.5x, 1x, 1.33x, 1.67x, 2x, and 4x calculations remain correct.
 - Pitch-preserving, pitch-shifting, remove-audio, and audio-less cases remain valid.
 - Conversion cancellation returns to a usable state.
-- Cancelling a reconversion preserves a previous result.
+- Cancelling or failing a reconversion preserves the previous result and its matching automatic export filename; successful retry updates both together.
+- User-edited filenames survive successful, cancelled, and failed attempts for the same source.
+- New sources/reset clear old diagnostics and results; obsolete conversion completion cannot affect a newer source or its conversion controls.
 - Preview-unavailable / FFmpeg-inspection fallback remains usable.
 - Source replacement cannot receive stale inspection/conversion results.
 - Portrait / rotation-metadata sources retain correct visual orientation.

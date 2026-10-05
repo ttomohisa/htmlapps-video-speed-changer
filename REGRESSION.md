@@ -1,3 +1,18 @@
+# Result/source lifecycle regression (2026-10-05, unreleased)
+
+The current change was checked with Node tests executing the actual application script, using tiny fictitious media metadata, DOM elements, and FFmpeg runtime doubles. No real media is decoded or converted by this test suite.
+
+- Reproduced the retained 2× result receiving a failed/cancelled 0.5× attempt's automatic filename.
+- Reproduced a new source retaining the previous source's conversion error/details.
+- Cover pending/success/cancel/failure/retry, custom filenames, source/reset cleanup, stale runtime startup/result/error/progress/finalization, and late inspection success/error.
+- Retain checks for supported speeds, target-duration calculations and invalid inputs.
+- `scripts/check-repository.ps1` builds and checks the pinned release, runs the lifecycle suite on the source, readable HTML, root download and decompressed self-extract payload, and verifies release parity. Node.js is needed for this repository check, not for the normal PowerShell build.
+- The numeric-input observation where typing `1.3` becomes `1.30` is outside this change; browser caret behavior has not been verified.
+
+Not verified in this change: real FFmpeg/WASM video conversion, native metadata/playback, actual browser saving, direct `file://` loading or self-extract loader execution, browser console/network behavior, accessibility, responsive layout and physical devices. Prior browser/media results below are historical records, not reruns for this change.
+
+---
+
 # v0.7.0 Regression and boundary checklist
 
 This checklist records the robustness work for Video Speed Changer v0.7.0.
