@@ -179,3 +179,16 @@ The container's Chromium is blocked from local/loopback pages by administrator p
 - Removed the independent `.dialog-body` viewport max-height calculation that could exceed the dialog's own max-height once the header was added.
 - Added safe-area-aware bottom padding, `overflow-y: auto`, and `overscroll-behavior: contain` so the final help content remains reachable on short desktop and mobile viewports.
 - Added repository markers so future UI cleanup cannot silently remove the viewport-safe help-dialog structure.
+
+
+## Target-duration guidance and suggestion-only panel
+
+Automated checks use synthetic metadata and a runtime double, not browser decoding or real video conversion:
+
+- Open/close repeatedly at 1.33×, 4×, and exact whole-second speeds; selected speed, playback, filenames, result identity, and freshness stay unchanged. Opening does not run conversion or manufacture a target error.
+- Verify JA/EN whole-second ranges for 60s, 10s, 10.01s, 0.25s, large durations limited by 999:59:59, and durations with no feasible whole-second target.
+- Missing/non-finite/non-positive metadata withholds guidance. Replacing a source clears old guidance until the new metadata is available.
+- Deliberate target edits preserve zero/out-of-range validation and three-decimal speed rounding; direct-speed changes return the target display to a suggestion.
+- Language changes refresh range and validation text without applying a rounded target.
+
+Manual browser/device, real-media conversion, keyboard, responsive-layout, and offline-network checks remain separate and were not performed for this change.

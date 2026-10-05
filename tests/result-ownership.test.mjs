@@ -392,3 +392,128 @@ test('Japanese error and result ownership follow the same source boundary', asyn
   assert.deepEqual(errorState(h), noError);
   assert.equal(h.api.state().resultBlob, null);
 });
+
+for (const language of ['en', 'ja']) {
+  test(`${language}: target panel suggestions never apply a rounded speed or stale a fresh result`, async () => {
+    for (const [duration, speed] of [[10, 1.33], [60, 1.33], [10, 4], [1, 4], [2.04, 4], [.1, .25], [60, 2]]) {
+      const h = harness(language); await h.load('synthetic.mp4', duration); h.api.setSpeed(speed);
+      await h.api.convertCurrentVideo(); const before = h.api.state();
+      const name = h.get('outputNameInput').value;
+      for (let cycle = 0; cycle < 2; cycle++) {
+        await h.get('targetDurationButton').emit('click');
+        assert.equal(h.api.state().currentSpeed, speed, `duration=${duration}; speed=${speed}`);
+        assert.equal(h.get('videoPreview').playbackRate, speed);
+        assert.equal(h.get('videoPreview').defaultPlaybackRate, speed);
+        assert.equal(h.get('resultStaleNotice').hidden, true);
+        assert.equal(h.api.state().resultBlob, before.resultBlob);
+        assert.equal(h.api.state().resultSnapshot, before.resultSnapshot);
+        assert.equal(h.get('outputNameInput').value, name);
+        assert.equal(h.runtimeCalls.length, 1);
+        assert.doesNotMatch(h.get('targetResult').textContent, /longer than 0|outside|0秒より|範囲では/);
+        await h.get('targetDurationButton').emit('click');
+        assert.equal(h.api.state().currentSpeed, speed);
+      }
+    }
+  });
+  test(`${language}: target guidance gives feasible whole-second ranges including field limits`, async () => {
+    for (const [duration, minimum, maximum] of [[60, '0:15', '4:00'], [10, '0:03', '0:40'], [10.01, '0:03', '0:40'], [.25, '0:01', '0:01'], [900000, '62:30:00', '999:59:59']]) {
+      const h = harness(language); await h.load('range.mp4', duration); h.api.setTargetPanel(true);
+      const guidance = h.get('targetRangeHint'); assert.equal(guidance.hidden, false);
+      assert.ok(guidance.textContent.includes(minimum), guidance.textContent);
+      assert.ok(guidance.textContent.includes(maximum), guidance.textContent);
+      assert.match(guidance.textContent, language === 'en' ? /whole.second/ : /1秒単位/);
+      assert.equal(h.runtimeCalls.length, 0);
+    }
+  });
+  test(`${language}: infeasible whole-second targets explain direct speed without opening errors`, async () => {
+    for (const duration of [.1, 14400000]) {
+      const h = harness(language); await h.load('range.mp4', duration); h.api.setSpeed(4); h.api.setTargetPanel(true);
+      assert.equal(h.api.state().currentSpeed, 4);
+      assert.match(h.get('targetRangeHint').textContent, language === 'en' ? /directly/ : /直接/);
+      assert.doesNotMatch(h.get('targetResult').textContent, /longer than 0|outside|0秒より|範囲では/);
+    }
+  });
+  test(`${language}: deliberate target edits retain existing validation and speed rounding`, async () => {
+    const h = harness(language); await h.load('target.mp4', 60); h.api.setSpeed(1.33); await h.api.convertCurrentVideo();
+    h.api.setTargetPanel(true); h.get('targetMinutes').value = '0'; h.get('targetSeconds').value = '45';
+    await h.get('targetSeconds').emit('input'); assert.equal(h.api.state().currentSpeed, 1.333);
+    assert.equal(h.get('resultStaleNotice').hidden, false);
+    assert.match(h.get('targetResult').textContent, /1\.33/);
+    h.get('targetSeconds').value = '0'; await h.get('targetSeconds').emit('input');
+    assert.match(h.get('targetResult').textContent, language === 'en' ? /longer than 0/ : /0秒より/);
+    assert.equal(h.api.state().currentSpeed, 1.333);
+    h.get('targetSeconds').value = '1'; await h.get('targetSeconds').emit('input');
+    assert.match(h.get('targetResult').textContent, language === 'en' ? /outside/ : /範囲では/);
+    assert.equal(h.api.state().currentSpeed, 1.333);
+    h.get('targetSeconds').value = '30'; await h.get('targetSeconds').emit('input');
+    assert.equal(h.api.state().currentSpeed, 2);
+    h.api.setSpeed(4);
+    assert.doesNotMatch(h.get('targetResult').textContent, /Required speed|必要な速度/);
+  });
+}
+
+test('target guidance is hidden without finite positive metadata and source replacement clears it', async () => {
+  const h = harness(); h.api.setTargetPanel(true);
+  assert.equal(h.get('targetRangeHint').hidden, true);
+  assert.equal(h.get('targetResult').textContent, '—');
+  for (const duration of [0, NaN, Infinity]) {
+    h.get('videoPreview').dataset.duration = String(duration); h.api.setTargetPanel(true);
+    assert.equal(h.get('targetRangeHint').hidden, true);
+  }
+  await h.load('first.mp4', 60); h.api.setTargetPanel(true);
+  assert.equal(h.get('targetRangeHint').hidden, false);
+  h.api.loadVideo({name:'second.mp4', type:'video/mp4', size:8});
+  assert.equal(h.get('targetRangeHint').hidden, true);
+  assert.equal(h.get('targetRangeHint').textContent, '');
+  const probe = h.api.state().activeProbe;
+  Object.assign(probe, {duration:10, videoWidth:16, videoHeight:9}); await probe.emit('loadedmetadata');
+  h.api.setTargetPanel(true);
+  assert.match(h.get('targetRangeHint').textContent, /0:03.*0:40/);
+});
+
+test('language changes render target guidance and validation without applying suggested speed', async () => {
+  const h = harness(); await h.load('language.mp4', 10); h.api.setSpeed(1.33); h.api.setTargetPanel(true);
+  await h.get('languageButton').emit('click');
+  assert.match(h.get('targetRangeHint').textContent, /1秒単位/);
+  assert.equal(h.api.state().currentSpeed, 1.33);
+  h.get('targetSeconds').value = '0'; await h.get('targetSeconds').emit('input');
+  await h.get('languageButton').emit('click');
+  assert.match(h.get('targetResult').textContent, /longer than 0/);
+  assert.equal(h.api.state().currentSpeed, 1.33);
+});
+
+test('target panel preserves an edited filename and unapplied automatic filename', async () => {
+  const h = harness(); await h.load('names.mp4', 10); h.api.setSpeed(1.33);
+  const automatic = h.get('outputNameInput').value;
+  h.api.setTargetPanel(true); h.api.setTargetPanel(false);
+  assert.equal(h.get('outputNameInput').value, automatic);
+  h.get('outputNameInput').value = 'my final cut'; await h.get('outputNameInput').emit('input');
+  await h.api.convertCurrentVideo();
+  h.api.setTargetPanel(true); await h.get('languageButton').emit('click'); h.api.setTargetPanel(false);
+  assert.equal(h.api.resultFileName(), 'my final cut.mp4');
+  assert.equal(h.api.state().currentSpeed, 1.33);
+  assert.equal(h.get('resultStaleNotice').hidden, true);
+});
+
+test('fallback inspection supplies guidance and late inspection cannot replace a newer range', async () => {
+  const h = harness();
+  h.setRun(async () => ({report:{duration:10.01, video:{width:16, height:9}, audio:true}}));
+  h.api.loadVideo({name:'fallback.mkv', type:'video/x-matroska', size:8});
+  await h.api.state().activeProbe.emit('error'); await tick(); await tick();
+  assert.equal(h.api.state().phase, 'ready'); h.api.setTargetPanel(true);
+  assert.match(h.get('targetRangeHint').textContent, /0:03.*0:40/);
+  assert.equal(h.runtimeCalls.length, 1);
+  const d = deferred(); h.setRun(() => d.promise);
+  h.api.loadVideo({name:'obsolete.mkv', type:'video/x-matroska', size:8});
+  await h.api.state().activeProbe.emit('error'); await tick();
+  await h.load('new.mp4', 60); h.api.setTargetPanel(true);
+  d.resolve({report:{duration:10, video:{width:16, height:9}, audio:true}}); await tick();
+  assert.match(h.get('targetRangeHint').textContent, /0:15.*4:00/);
+});
+
+test('target helper descriptions are attached to all target fields', () => {
+  for (const id of ['targetHours', 'targetMinutes', 'targetSeconds']) {
+    const markup = html.match(new RegExp(`<input[^>]*id="${id}"[^>]*>`))?.[0];
+    assert.match(markup, /aria-describedby="targetRangeHint targetResult"/);
+  }
+});

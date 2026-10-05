@@ -2,6 +2,10 @@
 
 ## Unreleased
 
+- Show localized, read-only whole-second target-duration ranges derived from source duration, including input-limit and no-feasible-target guidance.
+- Keep canonical speed, preview playback, filenames, and completed-result freshness unchanged when target-duration settings are opened or closed; apply a target only after a deliberate field edit.
+- Cover target-panel roundtrips, fractional/boundary durations, missing metadata, and language changes with synthetic state regressions across all release forms.
+
 - Keep an existing converted video's automatic filename on pending, cancelled, or failed reconversions; change it only with a successful replacement. Preserve user-edited filenames.
 - Clear old conversion diagnostics on source replacement/reset and stop obsolete conversion callbacks from changing the newer source, result, or controls.
 - Add result/source lifecycle regressions across source and generated release forms, refresh the checked-in one-file download on normal builds, and enforce source/download parity.

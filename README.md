@@ -19,7 +19,7 @@ GitHub Pages delivers the initial HTML. After it loads, video inspection, speed 
 ## Features
 
 - **Change speed from 0.25× to 4.00×** — Use the slider or enter a precise multiplier and see the resulting duration immediately.
-- **Set speed from a target duration** — Enter the desired final length and let the app calculate the required speed when it falls within the supported range.
+- **Set speed from a target duration** — See the available whole-second range, then edit the desired final length to calculate a supported speed. Opening or closing the panel keeps your selected speed.
 - **Preview before and after conversion** — Check the selected playback speed first, then preview the converted MP4 before saving it.
 - **Choose how audio behaves** — Preserve pitch, let pitch change with speed, or remove audio from the output.
 - **Control basic output quality** — Choose High quality, Standard, or Smaller file and edit the output filename before conversion.
@@ -46,7 +46,7 @@ Python, Node.js, and a local web server are not required for the build. The buil
 
 1. Choose a video, or drag and drop one onto the page.
 2. Use the speed slider or enter a value from `0.25×` to `4.00×`.
-3. Optionally choose **Set by target duration** and enter the desired final length.
+3. Optionally choose **Set by target duration**, check the available whole-second range, and edit the desired final length. The auto-filled time is a rounded suggestion; opening the panel does not change speed. If no whole-second target fits, set speed directly.
 4. Choose the audio behavior: preserve pitch, shift pitch with speed, or remove audio.
 5. Open **Advanced settings** if you want to change output quality.
 6. Check the output filename and choose **Convert with these settings**.
@@ -109,7 +109,7 @@ build-with-local-ffmpeg.bat "C:\path\to\htmlapps-ffmpeg-wasm-builder"
 
 That path records `local-builder` provenance and is intentionally rejected by stable release-artifact verification.
 
-### Result/source regression checks
+### Result/source and target-duration regression checks
 
 Run `node --test tests/result-ownership.test.mjs` for focused state tests. `scripts/check-repository.ps1` also runs these tests on the source, readable HTML, root download, and decompressed self-extract payload, with release-parity checks. After source/help changes, run `build-standalone.bat` before the repository check to refresh the checked-in download; the pre-build parity guard rejects stale download code. This repository check needs Node.js; normal `build-standalone.bat` builds still need only PowerShell. Normal builds refresh `video-speed-changer.html`; custom output builds leave it unchanged.
 

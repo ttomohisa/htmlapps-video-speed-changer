@@ -40,6 +40,10 @@ Core user flow:
 - `result duration = source duration / speed`.
 - `speed = source duration / target duration`.
 - The selected speed is the canonical internal value.
+- Opening/closing target-duration settings never applies its rounded suggestion or changes selected speed, preview playback rate, automatic/edited filename, or result freshness. Only deliberately editing a target field invokes the existing calculation, range validation, and three-decimal speed rounding.
+- With finite positive source duration `D`, show a read-only Japanese/English whole-second input range: `max(1, ceil(D / 4))` through `min(3599999, floor(D / 0.25))`. The upper input limit is 999:59:59. Do not round endpoints outward.
+- If no whole-second target fits both the speed range and input limits, explain that users can set speed directly. Without valid metadata, hide the range rather than guessing. Refresh guidance after source replacement, native/fallback metadata, and language changes.
+- Auto-filled target fields are suggestions rounded to whole seconds and bounded by the existing input limits; opening them must not create zero/out-of-range validation errors. Deliberate zero/out-of-range edits keep the existing messages and do not apply a new speed.
 - Browser preview uses `playbackRate` without re-encoding.
 
 ### Audio

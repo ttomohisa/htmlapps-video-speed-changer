@@ -592,10 +592,11 @@
                 <span class="section-help" data-i18n="targetDurationHint">入力すると倍率を逆算します</span>
               </div>
               <div class="target-fields">
-                <label class="field-label"><span data-i18n="hoursLabel">時間</span><span class="number-wrap"><input class="number-input target-time" id="targetHours" type="number" min="0" max="999" step="1" inputmode="numeric" value="0"><span class="number-suffix">h</span></span></label>
-                <label class="field-label"><span data-i18n="minutesLabel">分</span><span class="number-wrap"><input class="number-input target-time" id="targetMinutes" type="number" min="0" max="59" step="1" inputmode="numeric" value="0"><span class="number-suffix">m</span></span></label>
-                <label class="field-label"><span data-i18n="secondsLabel">秒</span><span class="number-wrap"><input class="number-input target-time" id="targetSeconds" type="number" min="0" max="59" step="1" inputmode="numeric" value="0"><span class="number-suffix">s</span></span></label>
+                <label class="field-label"><span data-i18n="hoursLabel">時間</span><span class="number-wrap"><input class="number-input target-time" id="targetHours" aria-describedby="targetRangeHint targetResult" type="number" min="0" max="999" step="1" inputmode="numeric" value="0"><span class="number-suffix">h</span></span></label>
+                <label class="field-label"><span data-i18n="minutesLabel">分</span><span class="number-wrap"><input class="number-input target-time" id="targetMinutes" aria-describedby="targetRangeHint targetResult" type="number" min="0" max="59" step="1" inputmode="numeric" value="0"><span class="number-suffix">m</span></span></label>
+                <label class="field-label"><span data-i18n="secondsLabel">秒</span><span class="number-wrap"><input class="number-input target-time" id="targetSeconds" aria-describedby="targetRangeHint targetResult" type="number" min="0" max="59" step="1" inputmode="numeric" value="0"><span class="number-suffix">s</span></span></label>
               </div>
+              <p class="target-result" id="targetRangeHint" hidden></p>
               <p class="target-result" id="targetResult" aria-live="polite">—</p>
             </div>
           </div>
@@ -735,7 +736,7 @@
       <ol>
         <li data-i18n="helpStep1">「動画を選択」から動画を選ぶか、画面へ動画をドロップします。</li>
         <li data-i18n="helpStep2">スライダーまたは倍率入力で速度を決めます。左の動画ですぐに速度感を確認できます。</li>
-        <li data-i18n="helpStep3">必要なら「目標時間から決める」で仕上げたい長さを入力し、必要な倍率を逆算します。</li>
+        <li data-i18n="helpStep3">「目標時間から決める」には入力できる1秒単位の範囲を表示します。開くだけでは速度は変わりません。時間を編集すると必要な倍率を逆算します。</li>
         <li data-i18n="helpStep4">ファイル名や画質を確認して変換し、結果をプレビューしてMP4を保存します。</li>
       </ol>
       <h3 data-i18n="helpFormatsTitle">対応形式</h3>
@@ -1216,7 +1217,7 @@
       'use strict';
 
       const APP_CONFIG = {"$schema":"./schemas/app-config.schema.json","name":"Video Speed Changer","nameJa":"動画速度変更","slug":"video-speed-changer","version":"1.0.0","description":"Change video speed locally from 0.25× to 4.00×, preview the result, choose audio behavior and quality, and save an MP4 with an editable file name.","descriptionJa":"動画を0.25〜4.00倍で速度変更し、変換結果をプレビューしながら音声・画質・ファイル名を確認してMP4として保存できるブラウザーツールです。","defaultLanguage":"auto","repository":{"owner":"ttomohisa","name":"htmlapps-video-speed-changer"},"build":{"output":"dist/index.html","blockRuntimeNetwork":true,"selfExtract":{"enabled":true,"output":"dist/index.self-extract.html"},"sizeBudget":{"readableWarningMb":8,"selfExtractWarningMb":5}}};
-      const BUILD_MANIFEST = {"schemaVersion":2,"builder":"single-html-app-template/1.2","generatedAtUtc":"2026-10-05T11:39:19.2846580Z","app":{"name":"Video Speed Changer","slug":"video-speed-changer","version":"1.0.0"},"dependencies":[],"embeddedRuntime":{"ffmpeg":{"profile":"video-speed-changer","builderVersion":"1.8.1","fileProtocolSingleHtml":true,"requiresSharedArrayBuffer":false,"requiresCrossOriginIsolation":false,"source":{"type":"github-release","repository":"ttomohisa/htmlapps-ffmpeg-wasm-builder","tag":"v1.8.1","asset":"ffmpeg-wasm-video-speed-changer-v1.8.1.zip","releaseId":383478756,"assetId":546791853,"assetBytes":3207461,"assetSha256":"aef55e13bfb9f45cd042b3ec2582e449876a8e28bd612a01e4b7429dfbacac36"},"files":{"ffmpeg.js.gz":{"bytes":18969,"sha256":"7b088b4db20a80720c6c5b206d01abf0ed6b9cd7f140e3d53622795956b4f8b9"},"ffmpeg.wasm.gz":{"bytes":1566870,"sha256":"0790de7cd0440656d752a54c3dbddf2cb9585d79bebc4e69c05446e1887e7b94"},"browser-ffmpeg.js":{"bytes":21777,"sha256":"18c0851223f6106fafc31542fc3f101e7e9d39e89a3a00b07431348dd728d7df"}}}}};
+      const BUILD_MANIFEST = {"schemaVersion":2,"builder":"single-html-app-template/1.2","generatedAtUtc":"2026-10-05T23:37:49.5378814Z","app":{"name":"Video Speed Changer","slug":"video-speed-changer","version":"1.0.0"},"dependencies":[],"embeddedRuntime":{"ffmpeg":{"profile":"video-speed-changer","builderVersion":"1.8.1","fileProtocolSingleHtml":true,"requiresSharedArrayBuffer":false,"requiresCrossOriginIsolation":false,"source":{"type":"github-release","repository":"ttomohisa/htmlapps-ffmpeg-wasm-builder","tag":"v1.8.1","asset":"ffmpeg-wasm-video-speed-changer-v1.8.1.zip","releaseId":383478756,"assetId":546791853,"assetBytes":3207461,"assetSha256":"aef55e13bfb9f45cd042b3ec2582e449876a8e28bd612a01e4b7429dfbacac36"},"files":{"ffmpeg.js.gz":{"bytes":18969,"sha256":"7b088b4db20a80720c6c5b206d01abf0ed6b9cd7f140e3d53622795956b4f8b9"},"ffmpeg.wasm.gz":{"bytes":1566870,"sha256":"0790de7cd0440656d752a54c3dbddf2cb9585d79bebc4e69c05446e1887e7b94"},"browser-ffmpeg.js":{"bytes":21777,"sha256":"18c0851223f6106fafc31542fc3f101e7e9d39e89a3a00b07431348dd728d7df"}}}}};
       const assetBundle = {"schemaVersion":2,"dependencies":{}};
       const blobUrls = new Set();
       const assetByteCache = new Map();
@@ -1296,13 +1297,14 @@
           speedPresetTitle: '速度を選ぶ', speedRangeHint: '0.25〜4.00倍', selectedSpeedLabel: '現在の速度', speedStateSlow: 'ゆっくり', speedStateNormal: '標準', speedStateFast: '速く', customSpeedLabel: '細かく調整', previewSpeedLabel: 'プレビュー', speedRangeError: '0.25〜4.00倍の範囲で指定してください。',
           originalDurationLabel: '元の長さ', afterDurationLabel: '変換後', durationSame: '元の動画と同じ長さです。', durationShorter: '{time}短くなります。', durationLonger: '{time}長くなります。',
           targetDurationButton: '目標時間から決める', targetDurationClose: '目標時間を閉じる', targetDurationTitle: '変換後の長さ', targetDurationHint: '入力すると倍率を逆算します', hoursLabel: '時間', minutesLabel: '分', secondsLabel: '秒',
+          targetRange: '入力できる目標時間（1秒単位）: {min}〜{max}（0.25〜4.00倍）', targetRangeUnavailable: 'この動画には入力できる1秒単位の目標時間がありません。速度を直接指定してください。', targetSuggestion: '表示は1秒単位の目安です。時間を編集すると速度に反映します。',
           targetNeedSpeed: '必要な速度: {speed}×', targetInvalidZero: '0秒より長い目標時間を入力してください。', targetOutOfRange: 'この長さは0.25〜4.00倍の範囲では指定できません。',
           audioSettingsTitle: '音声', audioSettingsHint: '書き出しにも反映', preservePitchLabel: '音程を保つ', preservePitchBody: '速度を変えても声の高さをできるだけ保ちます。', preservePitchUnsupported: 'このブラウザーでは音程維持の切り替えを確認できない場合があります。', noAudioLabel: '音声を削除', noAudioBody: '出力動画から音声を削除します。プレビューも消音します。', sourceNoAudioNote: '元動画に音声がないため、音声設定は必要ありません。',
           outputSettingsTitle: '出力', outputSettingsHint: 'MP4で保存', outputNameLabel: 'ファイル名', advancedSettingsTitle: '詳細設定', qualityTitle: '画質', qualityHint: '再エンコード品質', qualityHigh: '高画質', qualityStandard: '標準', qualitySmall: 'ファイルを小さく', qualityBody: '画質を上げるとファイルが大きく、ファイルを小さくすると画質が下がる場合があります。',
           convertButton: 'この設定で動画を変換', reconvertButton: '変更した設定で再変換', repeatConvertButton: '同じ設定でもう一度変換', convertingLabel: '動画を変換しています', progressTimeLabel: '処理位置の目安', cancelConvertButton: '変換をキャンセル', cancellingLabel: 'キャンセルしています…', cancelledToast: '変換をキャンセルしました。設定はそのままです。', technicalDetails: '詳細情報', convertDoneTitle: '変換が完了しました', downloadResultButton: 'MP4を保存', editSettingsButton: '設定を変更', resultPreviewLabel: '変換後動画のプレビュー', resultDurationLabel: '動画の長さ', resultSizeLabel: 'ファイルサイズ', resultStaleNotice: '現在の設定は変換時から変更されています。保存されるのは下の変換結果です。', convertSummary: '{speed}× · {audio} · {quality}', audioSummaryPreserve: '音程を保つ', audioSummaryShift: '音程も変える', audioSummaryNone: '音声なし', convertErrorMessage: '動画を変換できませんでした。もう一度試してください。', convertErrorMemory: '端末のメモリが不足した可能性があります。他のタブを閉じるか、短い動画でお試しください。', convertErrorUnsupported: 'この動画の形式を変換できませんでした。別の動画でお試しください。', convertErrorRuntime: '動画変換の処理を開始できませんでした。ブラウザーを再読み込みしてお試しください。', wasmCspErrorMessage: '動画変換の実行がブラウザーのセキュリティ設定でブロックされました。配布用HTMLを再ビルドしてください。', saveStartedToast: 'MP4の保存を開始しました', unsavedResultTitle: '未保存の変換結果があります', unsavedResultMessage: '別の動画を選ぶと、まだ保存していない変換結果は破棄されます。', discardAndChoose: '破棄して選ぶ',
           sourceDetailsSummary: '元動画の情報', durationLabel: '長さ', resolutionLabel: '解像度', sizeLabel: '容量', formatLabel: '形式',
           developmentNote: 'v1.0.0 正式版です。動画の読み込みから速度変更、変換、保存までブラウザー内で完結します。', footer: '完全ローカル処理',
-          helpBasicsTitle: '使い方', helpStep1: '「動画を選択」から動画を選ぶか、画面へ動画をドロップします。', helpStep2: 'スライダーまたは倍率入力で速度を決めます。左の動画ですぐに速度感を確認できます。', helpStep3: '必要なら「目標時間から決める」で仕上げたい長さを入力し、必要な倍率を逆算します。', helpStep4: 'ファイル名や画質を確認して変換し、結果をプレビューしてMP4を保存します。',
+          helpBasicsTitle: '使い方', helpStep1: '「動画を選択」から動画を選ぶか、画面へ動画をドロップします。', helpStep2: 'スライダーまたは倍率入力で速度を決めます。左の動画ですぐに速度感を確認できます。', helpStep3: '「目標時間から決める」には入力できる1秒単位の範囲を表示します。開くだけでは速度は変わりません。時間を編集すると必要な倍率を逆算します。', helpStep4: 'ファイル名や画質を確認して変換し、結果をプレビューしてMP4を保存します。',
           helpFormatsTitle: '対応形式', helpFormatsBody: 'プレビューはブラウザー標準の動画再生機能を使います。再生できない動画でも、動画情報を読み取れた場合は変換を試せます。',
           helpPrivacyTitle: 'プライバシー', helpPrivacyBody: '選択した動画はブラウザー内だけで扱います。このアプリからBrowser Kittyや外部サーバーへアップロードしません。',
           helpNotesTitle: '注意事項', helpNotePreview: 'プレビューで確認した速度でMP4へ変換できます。', helpNotePitch: '「音程を保つ」をOFFにすると、速度に合わせて声の高さも変わります。ブラウザーのプレビューと書き出し結果にはわずかな差が出る場合があります。', helpNoteMemory: '大きな動画では、端末性能やブラウザーのメモリ制限の影響を受ける場合があります。', helpNoteCancel: '変換中はキャンセルできます。再変換をキャンセルした場合や失敗した場合、前の結果とその自動ファイル名は残ります。編集したファイル名も維持します。', helpNoteReplacement: '別の動画を選ぶと、前の変換結果とエラーは消去されます。', helpNoteFallback: 'ブラウザーでプレビューできない動画でも、動画情報を読み取れた場合は変換を試せます。', helpNoteDevelopment: '変換に必要な処理は配布HTMLに含まれており、動画を外部サーバーへ送信せずブラウザー内で実行します。', helpOffline: '配布用HTMLは実行時通信を必要とせず、ローカルで直接開ける構成です。',
@@ -1318,13 +1320,14 @@
           speedPresetTitle: 'Choose a speed', speedRangeHint: '0.25× to 4.00×', selectedSpeedLabel: 'Current speed', speedStateSlow: 'Slower', speedStateNormal: 'Normal', speedStateFast: 'Faster', customSpeedLabel: 'Fine tune', previewSpeedLabel: 'Preview', speedRangeError: 'Enter a speed from 0.25× to 4.00×.',
           originalDurationLabel: 'Original', afterDurationLabel: 'After', durationSame: 'Same duration as the original.', durationShorter: '{time} shorter.', durationLonger: '{time} longer.',
           targetDurationButton: 'Set by target duration', targetDurationClose: 'Close target duration', targetDurationTitle: 'Final duration', targetDurationHint: 'Calculates the speed as you type', hoursLabel: 'Hours', minutesLabel: 'Minutes', secondsLabel: 'Seconds',
+          targetRange: 'Available whole-second targets: {min}–{max} (0.25×–4.00×)', targetRangeUnavailable: 'No whole-second target fits this video and the input limits. Set the speed directly.', targetSuggestion: 'This is a rounded whole-second suggestion. Edit the time to apply a new speed.',
           targetNeedSpeed: 'Required speed: {speed}×', targetInvalidZero: 'Enter a target duration longer than 0 seconds.', targetOutOfRange: 'This duration requires a speed outside the 0.25× to 4.00× range.',
           audioSettingsTitle: 'Audio', audioSettingsHint: 'Applied to export', preservePitchLabel: 'Preserve pitch', preservePitchBody: 'Keeps voices closer to their original pitch when speed changes.', preservePitchUnsupported: 'Pitch preservation may not be switchable in this browser.', noAudioLabel: 'Remove audio', noAudioBody: 'Removes audio from the exported video and mutes the preview.', sourceNoAudioNote: 'The source video has no audio, so audio settings are not needed.',
           outputSettingsTitle: 'Output', outputSettingsHint: 'Save as MP4', outputNameLabel: 'File name', advancedSettingsTitle: 'Advanced settings', qualityTitle: 'Quality', qualityHint: 'Re-encode quality', qualityHigh: 'High quality', qualityStandard: 'Standard', qualitySmall: 'Smaller file', qualityBody: 'Higher quality can create a larger file. Smaller file can reduce image quality.',
           convertButton: 'Convert with these settings', reconvertButton: 'Reconvert with changed settings', repeatConvertButton: 'Convert again with same settings', convertingLabel: 'Converting video', progressTimeLabel: 'Approx. media position', cancelConvertButton: 'Cancel conversion', cancellingLabel: 'Cancelling…', cancelledToast: 'Conversion cancelled. Your settings are unchanged.', technicalDetails: 'Technical details', convertDoneTitle: 'Conversion complete', downloadResultButton: 'Save MP4', editSettingsButton: 'Change settings', resultPreviewLabel: 'Preview of the converted video', resultDurationLabel: 'Video duration', resultSizeLabel: 'File size', resultStaleNotice: 'The current settings have changed since this result was created. Save downloads the result shown below.', convertSummary: '{speed}× · {audio} · {quality}', audioSummaryPreserve: 'Preserve pitch', audioSummaryShift: 'Shift pitch', audioSummaryNone: 'No audio', convertErrorMessage: 'Could not convert the video. Try again.', convertErrorMemory: 'The device may be low on memory. Close other tabs or try a shorter video.', convertErrorUnsupported: 'This video format could not be converted. Try another video.', convertErrorRuntime: 'Video conversion could not start. Reload the browser and try again.', wasmCspErrorMessage: 'Video conversion was blocked by the page security policy. Rebuild the distributable HTML.', saveStartedToast: 'Started saving the MP4', unsavedResultTitle: 'You have an unsaved converted video', unsavedResultMessage: 'Choosing another video will discard the converted result that has not been saved yet.', discardAndChoose: 'Discard and choose',
           sourceDetailsSummary: 'Source video information', durationLabel: 'Duration', resolutionLabel: 'Resolution', sizeLabel: 'File size', formatLabel: 'Format',
           developmentNote: 'v1.0.0 is the stable release. Loading, speed adjustment, conversion, and saving run in the browser.', footer: 'Fully local processing',
-          helpBasicsTitle: 'How to use', helpStep1: 'Choose a video with Choose video, or drop a video onto the page.', helpStep2: 'Use the slider or enter a speed directly. The video on the left previews the speed immediately.', helpStep3: 'If needed, use Set by target duration to enter the desired final length and calculate the required speed.', helpStep4: 'Check the file name and quality, convert the video, preview the result, and save the MP4.',
+          helpBasicsTitle: 'How to use', helpStep1: 'Choose a video with Choose video, or drop a video onto the page.', helpStep2: 'Use the slider or enter a speed directly. The video on the left previews the speed immediately.', helpStep3: 'Set by target duration shows the available whole-second range. Opening it keeps your selected speed; editing the time calculates and applies a new speed.', helpStep4: 'Check the file name and quality, convert the video, preview the result, and save the MP4.',
           helpFormatsTitle: 'Formats', helpFormatsBody: 'Preview uses the browser’s native video playback support. If preview is unavailable but media information can be read, conversion can still be attempted.',
           helpPrivacyTitle: 'Privacy', helpPrivacyBody: 'The selected video is handled only inside your browser. This app does not upload it to Browser Kitty or another server.',
           helpNotesTitle: 'Notes', helpNotePreview: 'The selected preview speed can be converted and saved as MP4.', helpNotePitch: 'Turning Preserve pitch off changes voice pitch together with speed. Browser preview and export may differ slightly.', helpNoteMemory: 'Large videos can be affected by device performance and browser memory limits.', helpNoteCancel: 'You can cancel while converting. Cancelling or failing a reconversion keeps the previous result and its automatic filename. Your edited filename is preserved.', helpNoteReplacement: 'Selecting another video clears the previous result and errors.', helpNoteFallback: 'If media information can be read, you can still try converting a video that the browser cannot preview.', helpNoteDevelopment: 'The conversion runtime is included in the distributable HTML, so selected videos are processed in the browser without being uploaded to an external server.', helpOffline: 'The distributable HTML needs no runtime network access and can be opened directly as a local file.',
@@ -1342,6 +1345,7 @@
       let currentSpeed = 1;
       let lastValidSpeed = 1;
       let targetPanelOpen = false;
+      let targetInputsEdited = false;
       let ffmpegRunnerPromise = null;
       let sourceInspectController = null;
       let sourceInspection = null;
@@ -1525,7 +1529,8 @@
       }
       function writeTargetFromSeconds(seconds) {
         if (!Number.isFinite(seconds) || seconds < 0) return;
-        const rounded = Math.max(0, Math.round(seconds));
+        const rounded = Math.min(3599999, Math.max(0, Math.round(seconds)));
+        targetInputsEdited = false;
         $('#targetHours').value = String(Math.floor(rounded / 3600));
         $('#targetMinutes').value = String(Math.floor((rounded % 3600) / 60));
         $('#targetSeconds').value = String(rounded % 60);
@@ -1565,7 +1570,7 @@
         updateAudioUi();
         $('#originalDurationValue').textContent = formatDuration(duration);
         if (!valid || !Number.isFinite(duration)) {
-          $('#afterDurationValue').textContent = '—'; $('#durationDiff').textContent = '—'; return;
+          $('#afterDurationValue').textContent = '—'; $('#durationDiff').textContent = '—'; updateTargetFeedback(); return;
         }
         const after = duration / currentSpeed;
         $('#afterDurationValue').textContent = formatDuration(after);
@@ -1574,6 +1579,7 @@
         else if (diff < 0) $('#durationDiff').textContent = interpolate('durationShorter', { time: formatDuration(Math.abs(diff)) });
         else $('#durationDiff').textContent = interpolate('durationLonger', { time: formatDuration(diff) });
         if (syncTarget && targetPanelOpen) writeTargetFromSeconds(after);
+        updateTargetFeedback();
       }
       function setSpeed(value, { syncTarget = true } = {}) {
         const number = Number(value);
@@ -1596,8 +1602,32 @@
         if (targetPanelOpen) {
           const duration = sourceDurationSeconds();
           if (Number.isFinite(duration) && Number.isFinite(currentSpeed) && currentSpeed > 0) writeTargetFromSeconds(duration / currentSpeed);
-          updateTargetFromInputs();
+          targetInputsEdited = false;
+          updateTargetFeedback();
         }
+      }
+      function updateTargetFeedback() {
+        const duration = sourceDurationSeconds();
+        const available = Number.isFinite(duration) && duration > 0;
+        const hint = $('#targetRangeHint');
+        hint.hidden = !available;
+        hint.textContent = '';
+        if (!available) { $('#targetResult').textContent = '—'; return; }
+        // Target inputs accept whole seconds only; never round outward to an unsupported target.
+        const minimum = Math.max(1, Math.ceil(duration / 4));
+        const maximum = Math.min(3599999, Math.floor(duration / 0.25));
+        hint.textContent = minimum <= maximum
+          ? interpolate('targetRange', { min: formatDuration(minimum), max: formatDuration(maximum) })
+          : translate('targetRangeUnavailable');
+        if (!targetInputsEdited) {
+          $('#targetResult').textContent = translate('targetSuggestion');
+          return;
+        }
+        const target = readTargetSeconds();
+        const required = duration / target;
+        $('#targetResult').textContent = target <= 0 ? translate('targetInvalidZero')
+          : required < 0.25 || required > 4 ? translate('targetOutOfRange')
+          : interpolate('targetNeedSpeed', { speed: formatSpeed(Math.round(required * 1000) / 1000) });
       }
       function updateTargetFromInputs() {
         if (!targetPanelOpen) return;
@@ -1605,13 +1635,13 @@
           const input = $(selector);
           const max = Number(input.max); const value = clampInteger(input.value, 0, max); input.value = String(value);
         });
+        targetInputsEdited = true;
         const duration = sourceDurationSeconds(); const target = readTargetSeconds();
-        if (!Number.isFinite(duration) || duration <= 0) { $('#targetResult').textContent = '—'; return; }
-        if (target <= 0) { $('#targetResult').textContent = translate('targetInvalidZero'); return; }
         const required = duration / target;
-        if (required < 0.25 || required > 4) { $('#targetResult').textContent = translate('targetOutOfRange'); return; }
-        setSpeed(required, { syncTarget: false });
-        $('#targetResult').textContent = interpolate('targetNeedSpeed', { speed: formatSpeed(currentSpeed) });
+        if (Number.isFinite(duration) && duration > 0 && target > 0 && required >= 0.25 && required <= 4) {
+          setSpeed(required, { syncTarget: false });
+        }
+        updateTargetFeedback();
       }
       function base64ToBlob(text, type = 'application/gzip') {
         const clean = String(text || '').replace(/\s+/g, '');
@@ -1857,7 +1887,7 @@
         setConversionControlsDisabled(false); $('#convertButton').disabled = false; $('#convertProgress').hidden = true; $('#cancelConvertButton').disabled = false; $('#cancelConvertButton').textContent = translate('cancelConvertButton');
         $('#videoInput').value = ''; $('#fileName').textContent = '—'; $('#durationValue').textContent = '—'; $('#resolutionValue').textContent = '—'; $('#sizeValue').textContent = '—'; $('#formatValue').textContent = '—';
         const preview = $('#videoPreview'); delete preview.dataset.duration; delete preview.dataset.width; delete preview.dataset.height; setPreviewAvailability(true);
-        currentSpeed = 1; lastValidSpeed = 1; targetPanelOpen = false; outputNameDirty = false; $('#targetDurationPanel').hidden = true; updateTargetPanelLabel(); updateSpeedUi({ syncInput: true, syncTarget: false }); syncDefaultOutputName({ force: true });
+        currentSpeed = 1; lastValidSpeed = 1; targetPanelOpen = false; targetInputsEdited = false; outputNameDirty = false; $('#targetDurationPanel').hidden = true; updateTargetPanelLabel(); updateSpeedUi({ syncInput: true, syncTarget: false }); syncDefaultOutputName({ force: true });
       }
       function updateFileInfo(file, duration, width, height) {
         $('#fileName').textContent = file.name || 'video';
