@@ -577,3 +577,9 @@ if ($selfExtractEnabled -and -not $OutputPathWasSpecified) {
     & $ReleaseArtifactCheckPath -DistRoot $DistRoot
   }
 }
+
+# Keep the checked-in one-file download current for normal release builds.
+# A custom output path must not replace the repository download.
+if (-not $OutputPathWasSpecified) {
+  [System.IO.File]::Copy($OutputPath, (Join-Path $Root "video-speed-changer.html"), $true)
+}

@@ -294,11 +294,15 @@ foreach ($token in @('#helpDialog[open]', 'flex-direction: column', 'min-height:
   if (-not $sourceText.Contains($token)) { throw "v1.0.0 help dialog viewport safety is missing required marker: $token" }
 }
 
+# Check the committed download before a build could hide stale application code.
+$node = Get-Command node -ErrorAction Stop
+& $node.Source (Join-Path $Root "tests/check-release-parity.mjs") --source-only
+if ($LASTEXITCODE -ne 0) { throw "Video Speed Changer source/download parity failed." }
+
 $buildArguments = @{}
 if ($ForceDownload) { $buildArguments.ForceDownload = $true }
 & (Join-Path $Root "build-standalone.ps1") @buildArguments
 
-Write-Host "[OK] Repository check passed." -ForegroundColor Green
 
 # WebRTC readiness DataChannel regression
 $webrtcReadyText = Get-Content -Raw -Encoding UTF8 (Join-Path $Root "components\webrtc-qr-pairing.html")
@@ -315,3 +319,19 @@ if (-not $webrtcReadyText.Contains("options.requireReadyChannelOpen!==false&&(!r
   throw "WebRTC application-ready must wait for the designated DataChannel to open."
 }
 
+
+# Node executes the real app script with synthetic DOM/media/runtime boundaries.
+$previousTarget = $env:VIDEO_SPEED_TEST_HTML
+try {
+  foreach ($target in @("src/index.template.html", "dist/index.html", "video-speed-changer.html", "dist/index.self-extract.html")) {
+    $env:VIDEO_SPEED_TEST_HTML = $target
+    & $node.Source --test (Join-Path $Root "tests/result-ownership.test.mjs")
+    if ($LASTEXITCODE -ne 0) { throw "Video Speed Changer result/source regression failed: $target" }
+  }
+  & $node.Source (Join-Path $Root "tests/check-release-parity.mjs")
+  if ($LASTEXITCODE -ne 0) { throw "Video Speed Changer release parity failed." }
+} finally {
+  $env:VIDEO_SPEED_TEST_HTML = $previousTarget
+}
+
+Write-Host "[OK] Repository check passed." -ForegroundColor Green

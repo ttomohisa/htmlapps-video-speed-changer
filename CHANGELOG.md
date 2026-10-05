@@ -1,5 +1,11 @@
 # Changelog
 
+## Unreleased
+
+- Keep an existing converted video's automatic filename on pending, cancelled, or failed reconversions; change it only with a successful replacement. Preserve user-edited filenames.
+- Clear old conversion diagnostics on source replacement/reset and stop obsolete conversion callbacks from changing the newer source, result, or controls.
+- Add result/source lifecycle regressions across source and generated release forms, refresh the checked-in one-file download on normal builds, and enforce source/download parity.
+
 ## 1.0.0 - 2026-09-06
 
 - Promote the validated v0.9.0 Release Candidate to the first stable release without adding new product features.

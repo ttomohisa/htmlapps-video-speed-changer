@@ -747,7 +747,8 @@
         <li data-i18n="helpNotePreview">プレビューで確認した速度でMP4へ変換できます。</li>
         <li data-i18n="helpNotePitch">音程維持のプレビュー結果はブラウザーの対応状況によって差が出る場合があります。</li>
         <li data-i18n="helpNoteMemory">大きな動画では、端末性能やブラウザーのメモリ制限の影響を受ける場合があります。</li>
-        <li data-i18n="helpNoteCancel">変換中はキャンセルできます。キャンセルしても選択した動画と設定は残ります。</li>
+        <li data-i18n="helpNoteCancel">変換中はキャンセルできます。再変換をキャンセルした場合や失敗した場合、前の結果とその自動ファイル名は残ります。編集したファイル名も維持します。</li>
+        <li data-i18n="helpNoteReplacement">別の動画を選ぶと、前の変換結果とエラーは消去されます。</li>
         <li data-i18n="helpNoteFallback">ブラウザーでプレビューできない動画でも、動画情報を読み取れた場合は変換を試せます。</li>
         <li data-i18n="helpNoteDevelopment">変換に必要な処理は配布HTMLに含まれており、動画を外部サーバーへ送信せずブラウザー内で実行します。</li>
       </ul>
@@ -854,7 +855,7 @@
           helpBasicsTitle: '使い方', helpStep1: '「動画を選択」から動画を選ぶか、画面へ動画をドロップします。', helpStep2: 'スライダーまたは倍率入力で速度を決めます。左の動画ですぐに速度感を確認できます。', helpStep3: '必要なら「目標時間から決める」で仕上げたい長さを入力し、必要な倍率を逆算します。', helpStep4: 'ファイル名や画質を確認して変換し、結果をプレビューしてMP4を保存します。',
           helpFormatsTitle: '対応形式', helpFormatsBody: 'プレビューはブラウザー標準の動画再生機能を使います。再生できない動画でも、動画情報を読み取れた場合は変換を試せます。',
           helpPrivacyTitle: 'プライバシー', helpPrivacyBody: '選択した動画はブラウザー内だけで扱います。このアプリからBrowser Kittyや外部サーバーへアップロードしません。',
-          helpNotesTitle: '注意事項', helpNotePreview: 'プレビューで確認した速度でMP4へ変換できます。', helpNotePitch: '「音程を保つ」をOFFにすると、速度に合わせて声の高さも変わります。ブラウザーのプレビューと書き出し結果にはわずかな差が出る場合があります。', helpNoteMemory: '大きな動画では、端末性能やブラウザーのメモリ制限の影響を受ける場合があります。', helpNoteCancel: '変換中はキャンセルできます。キャンセルしても選択した動画と設定は残ります。', helpNoteFallback: 'ブラウザーでプレビューできない動画でも、動画情報を読み取れた場合は変換を試せます。', helpNoteDevelopment: '変換に必要な処理は配布HTMLに含まれており、動画を外部サーバーへ送信せずブラウザー内で実行します。', helpOffline: '配布用HTMLは実行時通信を必要とせず、ローカルで直接開ける構成です。',
+          helpNotesTitle: '注意事項', helpNotePreview: 'プレビューで確認した速度でMP4へ変換できます。', helpNotePitch: '「音程を保つ」をOFFにすると、速度に合わせて声の高さも変わります。ブラウザーのプレビューと書き出し結果にはわずかな差が出る場合があります。', helpNoteMemory: '大きな動画では、端末性能やブラウザーのメモリ制限の影響を受ける場合があります。', helpNoteCancel: '変換中はキャンセルできます。再変換をキャンセルした場合や失敗した場合、前の結果とその自動ファイル名は残ります。編集したファイル名も維持します。', helpNoteReplacement: '別の動画を選ぶと、前の変換結果とエラーは消去されます。', helpNoteFallback: 'ブラウザーでプレビューできない動画でも、動画情報を読み取れた場合は変換を試せます。', helpNoteDevelopment: '変換に必要な処理は配布HTMLに含まれており、動画を外部サーバーへ送信せずブラウザー内で実行します。', helpOffline: '配布用HTMLは実行時通信を必要とせず、ローカルで直接開ける構成です。',
           confirmTitle: '確認', confirmAction: '実行する', cancel: 'キャンセル', loadedToast: '動画を読み込みました'
         },
         en: {
@@ -876,7 +877,7 @@
           helpBasicsTitle: 'How to use', helpStep1: 'Choose a video with Choose video, or drop a video onto the page.', helpStep2: 'Use the slider or enter a speed directly. The video on the left previews the speed immediately.', helpStep3: 'If needed, use Set by target duration to enter the desired final length and calculate the required speed.', helpStep4: 'Check the file name and quality, convert the video, preview the result, and save the MP4.',
           helpFormatsTitle: 'Formats', helpFormatsBody: 'Preview uses the browser’s native video playback support. If preview is unavailable but media information can be read, conversion can still be attempted.',
           helpPrivacyTitle: 'Privacy', helpPrivacyBody: 'The selected video is handled only inside your browser. This app does not upload it to Browser Kitty or another server.',
-          helpNotesTitle: 'Notes', helpNotePreview: 'The selected preview speed can be converted and saved as MP4.', helpNotePitch: 'Turning Preserve pitch off changes voice pitch together with speed. Browser preview and export may differ slightly.', helpNoteMemory: 'Large videos can be affected by device performance and browser memory limits.', helpNoteCancel: 'You can cancel while converting. The selected video and settings remain after cancellation.', helpNoteFallback: 'If media information can be read, you can still try converting a video that the browser cannot preview.', helpNoteDevelopment: 'The conversion runtime is included in the distributable HTML, so selected videos are processed in the browser without being uploaded to an external server.', helpOffline: 'The distributable HTML needs no runtime network access and can be opened directly as a local file.',
+          helpNotesTitle: 'Notes', helpNotePreview: 'The selected preview speed can be converted and saved as MP4.', helpNotePitch: 'Turning Preserve pitch off changes voice pitch together with speed. Browser preview and export may differ slightly.', helpNoteMemory: 'Large videos can be affected by device performance and browser memory limits.', helpNoteCancel: 'You can cancel while converting. Cancelling or failing a reconversion keeps the previous result and its automatic filename. Your edited filename is preserved.', helpNoteReplacement: 'Selecting another video clears the previous result and errors.', helpNoteFallback: 'If media information can be read, you can still try converting a video that the browser cannot preview.', helpNoteDevelopment: 'The conversion runtime is included in the distributable HTML, so selected videos are processed in the browser without being uploaded to an external server.', helpOffline: 'The distributable HTML needs no runtime network access and can be opened directly as a local file.',
           confirmTitle: 'Confirm', confirmAction: 'Continue', cancel: 'Cancel', loadedToast: 'Video loaded'
         }
       };
@@ -1330,7 +1331,8 @@
       }
       async function convertCurrentVideo() {
         if (converting || !currentFile || !Number.isFinite(currentSpeed) || currentSpeed < .25 || currentSpeed > 4) return;
-        if (!outputNameDirty) syncDefaultOutputName({ force: true });
+        // The visible name belongs to the downloadable result until its replacement succeeds.
+        syncDefaultOutputName();
         const runId = ++conversionGeneration;
         const controller = new AbortController(); conversionController = controller;
         converting = true; clearConversionError(); $('#convertProgress').hidden = false;
@@ -1358,11 +1360,13 @@
           clearConvertedResult();
           resultBlob = nextBlob; resultUrl = URL.createObjectURL(resultBlob); blobUrls.add(resultUrl);
           settingsSnapshot.audioMode = audioSummaryMode(file.data); resultSnapshot = Object.freeze(settingsSnapshot); resultSaved = false;
+          if (!outputNameDirty) $('#outputNameInput').value = defaultOutputBaseName(resultSnapshot.speed);
           const preview = $('#resultPreview'); preview.src = resultUrl; preview.load();
           $('#convertResult').hidden = false; updateProgress(1); refreshResultUi();
           requestAnimationFrame(() => $('#convertResult').scrollIntoView({ behavior: 'smooth', block: 'nearest' }));
         } catch (error) {
-          if (isAbortError(error)) AppToast.show({ message: translate('cancelledToast') });
+          if (runId !== conversionGeneration) return;
+          if (controller.signal.aborted || isAbortError(error)) AppToast.show({ message: translate('cancelledToast') });
           else { console.error(error); setConversionError(error); }
         } finally {
           if (runId === conversionGeneration) {
@@ -1396,8 +1400,11 @@
         URL.revokeObjectURL(url); blobUrls.delete(url);
       }
       function resetSourceBoundary() {
+        // Invalidate first so a terminated runtime cannot publish into the next source.
+        conversionGeneration += 1; conversionController?.abort(); conversionController = null; converting = false;
         sourceInspectController?.abort(); sourceInspectController = null; sourceInspection = null;
-        clearConvertedResult(); asyncState.invalidateSource(); cleanupProbe(); revokeCurrentUrl(); currentFile = null;
+        clearConversionError(); clearConvertedResult(); asyncState.invalidateSource(); cleanupProbe(); revokeCurrentUrl(); currentFile = null;
+        setConversionControlsDisabled(false); $('#convertButton').disabled = false; $('#convertProgress').hidden = true; $('#cancelConvertButton').disabled = false; $('#cancelConvertButton').textContent = translate('cancelConvertButton');
         $('#videoInput').value = ''; $('#fileName').textContent = '—'; $('#durationValue').textContent = '—'; $('#resolutionValue').textContent = '—'; $('#sizeValue').textContent = '—'; $('#formatValue').textContent = '—';
         const preview = $('#videoPreview'); delete preview.dataset.duration; delete preview.dataset.width; delete preview.dataset.height; setPreviewAvailability(true);
         currentSpeed = 1; lastValidSpeed = 1; targetPanelOpen = false; outputNameDirty = false; $('#targetDurationPanel').hidden = true; updateTargetPanelLabel(); updateSpeedUi({ syncInput: true, syncTarget: false }); syncDefaultOutputName({ force: true });

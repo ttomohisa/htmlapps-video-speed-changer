@@ -23,7 +23,7 @@ GitHub Pages delivers the initial HTML. After it loads, video inspection, speed 
 - **Preview before and after conversion** — Check the selected playback speed first, then preview the converted MP4 before saving it.
 - **Choose how audio behaves** — Preserve pitch, let pitch change with speed, or remove audio from the output.
 - **Control basic output quality** — Choose High quality, Standard, or Smaller file and edit the output filename before conversion.
-- **Cancel and recover safely** — Cancel an active conversion without losing the selected video or settings; cancelling a reconversion keeps the previous result available.
+- **Cancel and recover safely** — Cancel an active conversion without losing the selected video or settings; cancelling or failing a reconversion keeps the previous result and its matching automatic filename available. Edited filenames are preserved.
 - **Fully local single-HTML runtime** — FFmpeg JS/WASM and its Worker runtime are embedded in the generated HTML, with Japanese/English UI and no runtime upload of selected videos.
 
 ## Quick start
@@ -108,6 +108,12 @@ build-with-local-ffmpeg.bat "C:\path\to\htmlapps-ffmpeg-wasm-builder"
 ```
 
 That path records `local-builder` provenance and is intentionally rejected by stable release-artifact verification.
+
+### Result/source regression checks
+
+Run `node --test tests/result-ownership.test.mjs` for focused state tests. `scripts/check-repository.ps1` also runs these tests on the source, readable HTML, root download, and decompressed self-extract payload, with release-parity checks. After source/help changes, run `build-standalone.bat` before the repository check to refresh the checked-in download; the pre-build parity guard rejects stale download code. This repository check needs Node.js; normal `build-standalone.bat` builds still need only PowerShell. Normal builds refresh `video-speed-changer.html`; custom output builds leave it unchanged.
+
+An automatic output filename stays attached to the current downloadable result until a new conversion succeeds. Selecting another video clears the old result, error message, and technical details. These automated state checks use synthetic media metadata and a runtime double; real-video conversion and browser/device checks remain separate.
 
 ## Privacy and runtime network protection
 
