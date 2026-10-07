@@ -235,7 +235,7 @@ if ([string]::IsNullOrWhiteSpace([string]$app.name)) { throw "app.config.json: n
 if ([string]::IsNullOrWhiteSpace([string]$app.slug)) { throw "app.config.json: slug is required" }
 if ([string]::IsNullOrWhiteSpace([string]$app.version)) { throw "app.config.json: version is required" }
 if ([string]$app.slug -ne "video-speed-changer") { throw "app.config.json: slug must be video-speed-changer" }
-if ([string]$app.version -ne "1.0.0") { throw "app.config.json: v1.0.0 source package must identify version 1.0.0" }
+if ([string]$app.version -ne "1.0.1") { throw "app.config.json: v1.0.1 source package must identify version 1.0.1" }
 if ([double]$app.build.sizeBudget.readableWarningMb -gt 8) { throw "Readable single-HTML warning budget must stay at or below 8 MB for v1.0.0." }
 if ([double]$app.build.sizeBudget.selfExtractWarningMb -gt 5) { throw "Self-extract single-HTML warning budget must stay at or below 5 MB for v1.0.0." }
 if (-not $sourceText.Contains("connect-src 'none'")) { throw "Video Speed Changer must keep connect-src 'none'." }
@@ -334,4 +334,7 @@ try {
   $env:VIDEO_SPEED_TEST_HTML = $previousTarget
 }
 
+
+& node (Join-Path $Root "tests\header-normalization.test.mjs")
+if ($LASTEXITCODE -ne 0) { throw "Header normalization regression failed." }
 Write-Host "[OK] Repository check passed." -ForegroundColor Green

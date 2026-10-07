@@ -1,5 +1,10 @@
 # Changelog
 
+## 1.0.1 - 2026-10-07
+
+- Normalize the header language switch to EN / JA with localized destination tooltips and accessible names.
+- Keep Help labels localized and synchronize the three-part app version without changing local-processing behavior.
+
 ## Unreleased
 
 - Show localized, read-only whole-second target-duration ranges derived from source duration, including input-limit and no-feasible-target guidance.
