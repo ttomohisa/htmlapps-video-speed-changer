@@ -6,7 +6,7 @@
 - **Japanese name:** 動画速度変更
 - **Slug:** `video-speed-changer`
 - **Repository:** `ttomohisa/htmlapps-video-speed-changer`
-- **Current stable version:** `1.0.0`
+- **Current stable version:** `1.0.1`
 - **Target first stable release:** `1.0.0`
 - **Release artifacts:** `dist/index.html` and `dist/index.self-extract.html`
 - **Builder dependency:** `ttomohisa/htmlapps-ffmpeg-wasm-builder` v1.8.1 / `video-speed-changer`
@@ -330,3 +330,8 @@ The profile runtime contract is frozen at Builder v1.8.1 for v1.0.0.
 v1.0.0 promotes the validated v0.9.0 Release Candidate without adding new product features. The stable release keeps the pinned FFmpeg WASM Builder v1.8.1 runtime, full 0.25×–4.00× conversion range, audio modes, cancellation, fallback media inspection, single-HTML distribution, and fully local runtime behavior.
 
 Stable-release acceptance requires the full functional regression, desktop/mobile Japanese/English checks, pinned-release provenance, standalone/self-extract verification, embedded favicon consistency, and no unexpected runtime network access.
+
+## Header normalization (1.0.1)
+
+- The language button shows EN in Japanese and JA in English. Its title and accessible name describe the destination in the current UI language.
+- Help retains its localized title and accessible name; the header version is v1.0.1.
