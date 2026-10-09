@@ -7,7 +7,7 @@ import { test } from 'node:test';
 import { gunzipSync } from 'node:zlib';
 
 const root = path.resolve(path.dirname(fileURLToPath(import.meta.url)), '..');
-const expectedHash = '3dbd5b694cb879fd386405c2347e702362ebbf9ece984dd6f2ff79a99c1afedb';
+const expectedHash = '23e3c01e3200313e365dbe38e9e7329eb5e6121822a04355b37a2716c6f25843';
 const icon = fs.readFileSync(path.join(root, 'assets/favicon.svg'));
 const expectedSvg = icon.toString('utf8').trim();
 const sources = ['src/index.template.html', 'video-speed-changer.html', 'dist/index.html'];

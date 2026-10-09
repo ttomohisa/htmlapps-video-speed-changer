@@ -3,7 +3,7 @@
   "name": "Video Speed Changer",
   "nameJa": "動画速度変更",
   "slug": "video-speed-changer",
-  "version": "1.0.2",
+  "version": "1.0.3",
   "description": "Change video speed locally from 0.25× to 4.00×, preview the result, choose audio behavior and quality, and save an MP4 with an editable file name.",
   "descriptionJa": "動画を0.25〜4.00倍で速度変更し、変換結果をプレビューしながら音声・画質・ファイル名を確認してMP4として保存できるブラウザーツールです。",
   "defaultLanguage": "auto",
