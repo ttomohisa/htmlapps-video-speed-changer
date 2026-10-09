@@ -1,5 +1,9 @@
 # Changelog
 
+## 1.0.2 - 2026-10-09
+
+- Refresh the app header and embedded favicon with the supplied artwork; keep the SVG asset and generated standalone releases synchronized.
+
 ## 1.0.1 - 2026-10-07
 
 - Normalize the header language switch to EN / JA with localized destination tooltips and accessible names.
