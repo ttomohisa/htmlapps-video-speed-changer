@@ -6,7 +6,7 @@
 - **Japanese name:** 動画速度変更
 - **Slug:** `video-speed-changer`
 - **Repository:** `ttomohisa/htmlapps-video-speed-changer`
-- **Current stable version:** `1.0.1`
+- **Current stable version:** `1.0.2`
 - **Target first stable release:** `1.0.0`
 - **Release artifacts:** `dist/index.html` and `dist/index.self-extract.html`
 - **Builder dependency:** `ttomohisa/htmlapps-ffmpeg-wasm-builder` v1.8.1 / `video-speed-changer`
@@ -210,7 +210,7 @@ Cancellation returns from `processing` to `ready` while preserving source/settin
 - Light-only UI matching htmlapps-template tokens.
 - Browser Kitty accent `#16624F`.
 - SVG icons, no emoji UI icons.
-- Header icon and embedded favicon use the same video-file + speed-meter motif.
+- Header icon and embedded favicon use the same video-player + speed-meter artwork.
 - No horizontal scrolling at 320px and above.
 - Long filenames wrap safely.
 - Dialogs remain inside the viewport and scroll internally when needed.
@@ -335,3 +335,8 @@ Stable-release acceptance requires the full functional regression, desktop/mobil
 
 - The language button shows EN in Japanese and JA in English. Its title and accessible name describe the destination in the current UI language.
 - Help retains its localized title and accessible name; the header version is v1.0.1.
+
+## Icon refresh (1.0.2)
+
+- The header and embedded favicon use the supplied artwork from `assets/favicon.svg`, preserving its original `0 0 1095 1095` viewBox.
+- The header keeps its existing responsive icon slot; readable and self-extract releases inherit the same embedded favicon.

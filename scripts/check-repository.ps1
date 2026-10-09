@@ -235,12 +235,12 @@ if ([string]::IsNullOrWhiteSpace([string]$app.name)) { throw "app.config.json: n
 if ([string]::IsNullOrWhiteSpace([string]$app.slug)) { throw "app.config.json: slug is required" }
 if ([string]::IsNullOrWhiteSpace([string]$app.version)) { throw "app.config.json: version is required" }
 if ([string]$app.slug -ne "video-speed-changer") { throw "app.config.json: slug must be video-speed-changer" }
-if ([string]$app.version -ne "1.0.1") { throw "app.config.json: v1.0.1 source package must identify version 1.0.1" }
+if ([string]$app.version -ne "1.0.2") { throw "app.config.json: v1.0.2 source package must identify version 1.0.2" }
 if ([double]$app.build.sizeBudget.readableWarningMb -gt 8) { throw "Readable single-HTML warning budget must stay at or below 8 MB for v1.0.0." }
 if ([double]$app.build.sizeBudget.selfExtractWarningMb -gt 5) { throw "Self-extract single-HTML warning budget must stay at or below 5 MB for v1.0.0." }
 if (-not $sourceText.Contains("connect-src 'none'")) { throw "Video Speed Changer must keep connect-src 'none'." }
 if (-not $sourceText.Contains("'wasm-unsafe-eval'")) { throw "Video Speed Changer must allow wasm-unsafe-eval for the embedded FFmpeg WASM core." }
-if (-not $sourceText.Contains('M5.6 3.8h8.1l4.3 4.3v9.7a2.2 2.2 0 0 1-2.2 2.2H5.6a2.2 2.2 0 0 1-2.2-2.2V6a2.2 2.2 0 0 1 2.2-2.2Z')) { throw "v1.0.0 speed-change brand icon is missing." }
+# The app-icon regression below verifies the supplied header and favicon artwork.
 $ffmpegReleaseConfig = Get-Content -Raw -Encoding UTF8 (Join-Path $Root "ffmpeg.release.json") | ConvertFrom-Json
 $ffmpegReleaseLock = Get-Content -Raw -Encoding UTF8 (Join-Path $Root "ffmpeg.release.lock.json") | ConvertFrom-Json
 foreach ($obj in @($ffmpegReleaseConfig, $ffmpegReleaseLock)) {
@@ -337,4 +337,6 @@ try {
 
 & node (Join-Path $Root "tests\header-normalization.test.mjs")
 if ($LASTEXITCODE -ne 0) { throw "Header normalization regression failed." }
+& node (Join-Path $Root "tests\app-icon.test.mjs")
+if ($LASTEXITCODE -ne 0) { throw "App icon regression failed." }
 Write-Host "[OK] Repository check passed." -ForegroundColor Green
