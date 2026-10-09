@@ -6,7 +6,7 @@
 - **Japanese name:** 動画速度変更
 - **Slug:** `video-speed-changer`
 - **Repository:** `ttomohisa/htmlapps-video-speed-changer`
-- **Current stable version:** `1.0.2`
+- **Current stable version:** `1.0.3`
 - **Target first stable release:** `1.0.0`
 - **Release artifacts:** `dist/index.html` and `dist/index.self-extract.html`
 - **Builder dependency:** `ttomohisa/htmlapps-ffmpeg-wasm-builder` v1.8.1 / `video-speed-changer`
