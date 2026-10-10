@@ -2,6 +2,8 @@
 
 ## 1.0.4 - 2026-10-10
 
+- Make Change settings reveal the speed input it focuses, including short/narrow windows and reduced-motion preferences.
+
 - Keep the background page stationary while native modal dialogs are open, without changing the existing Help scroll shell or media processing.
 - Keep the full title and version visible in narrow English headers by wrapping them without shrinking the header actions.
 - Preserve the decorative local-processing shield and add modal-scroll/header regression coverage.

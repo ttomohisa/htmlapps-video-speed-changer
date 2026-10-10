@@ -1,5 +1,6 @@
 // CSS contracts complement native resize/keyboard/wheel checks; they do not perform layout.
 import fs from 'node:fs';
+import vm from 'node:vm';
 import { gunzipSync } from 'node:zlib';
 import assert from 'node:assert/strict';
 import test from 'node:test';
@@ -24,4 +25,13 @@ test('Narrow English header keeps its title and version visible without shrinkin
   const actions=narrow.match(/\.header-actions\s*\{([^}]+)\}/)?.[1]||'';
   assert.match(brand,/display\s*:\s*flex/);assert.match(brand,/flex-wrap\s*:\s*wrap/);assert.match(brand,/white-space\s*:\s*normal/);assert.match(brand,/overflow\s*:\s*visible/);
   assert.match(version,/flex\s*:\s*0 0 auto/);assert.match(version,/margin-left\s*:\s*0/);assert.match(actions,/flex-shrink\s*:\s*0/);
+});
+for(const reducedMotion of [false,true])test(`Change settings reveals its focused input without changing values; reduced motion ${reducedMotion}`,()=>{
+  const callbacks=new Map(),calls=[],frames=[];const input={value:'2.00',focus:options=>calls.push(['focus','input',options]),scrollIntoView:options=>calls.push(['scroll','input',options])};
+  const title={scrollIntoView:options=>calls.push(['scroll','heading',options])};const button={addEventListener:(type,fn)=>callbacks.set(type,fn)};
+  const bindings=html.split('\n').find(line=>line.includes("$('#editSettingsButton').addEventListener('click'"));assert.ok(bindings);
+  const context={$:selector=>({'#editSettingsButton':button,'#speedInput':input,'#speedSettingsTitle':title})[selector],requestAnimationFrame:fn=>frames.push(fn),matchMedia:()=>({matches:reducedMotion})};
+  vm.runInNewContext(bindings,context);callbacks.get('click')();frames.forEach(fn=>fn());
+  assert.equal(input.value,'2.00');assert.deepEqual(calls.map(c=>c.slice(0,2)),[['focus','input'],['scroll','input']]);
+  assert.equal(calls[0][2].preventScroll,true);assert.equal(calls[1][2].block,'center');assert.equal(calls[1][2].behavior,reducedMotion?'auto':'smooth');
 });

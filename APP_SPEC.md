@@ -346,3 +346,5 @@ Stable-release acceptance requires the full functional regression, desktop/mobil
 - Lock root/body background scrolling only while a native modal dialog is open; restore ordinary scrolling on close.
 - Preserve the existing fixed Help header, inner scrolling body and decorative local-processing shield.
 - At widths up to 420 px, allow the title and version to wrap without clipping the version or shrinking the language/Help actions; preserve desktop header layout.
+
+- Change settings focuses and scrolls the existing speed input into view together, without changing its value; reduced-motion preferences disable smooth scrolling.
