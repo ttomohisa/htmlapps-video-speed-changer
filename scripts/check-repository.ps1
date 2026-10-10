@@ -327,6 +327,8 @@ try {
     $env:VIDEO_SPEED_TEST_HTML = $target
     & $node.Source --test (Join-Path $Root "tests/result-ownership.test.mjs")
     if ($LASTEXITCODE -ne 0) { throw "Video Speed Changer result/source regression failed: $target" }
+    & $node.Source --test (Join-Path $Root "tests/dialog-layout.test.mjs")
+    if ($LASTEXITCODE -ne 0) { throw "Video Speed Changer dialog layout regression failed: $target" }
   }
   & $node.Source (Join-Path $Root "tests/check-release-parity.mjs")
   if ($LASTEXITCODE -ne 0) { throw "Video Speed Changer release parity failed." }

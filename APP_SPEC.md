@@ -6,7 +6,7 @@
 - **Japanese name:** 動画速度変更
 - **Slug:** `video-speed-changer`
 - **Repository:** `ttomohisa/htmlapps-video-speed-changer`
-- **Current stable version:** `1.0.3`
+- **Current stable version:** `1.0.4`
 - **Target first stable release:** `1.0.0`
 - **Release artifacts:** `dist/index.html` and `dist/index.self-extract.html`
 - **Builder dependency:** `ttomohisa/htmlapps-ffmpeg-wasm-builder` v1.8.1 / `video-speed-changer`
@@ -340,3 +340,9 @@ Stable-release acceptance requires the full functional regression, desktop/mobil
 
 - The header and embedded favicon use the supplied artwork from `assets/favicon.svg`, preserving its original `0 0 1095 1095` viewBox.
 - The header keeps its existing responsive icon slot; readable and self-extract releases inherit the same embedded favicon.
+
+## Responsive dialog audit (1.0.4)
+
+- Lock root/body background scrolling only while a native modal dialog is open; restore ordinary scrolling on close.
+- Preserve the existing fixed Help header, inner scrolling body and decorative local-processing shield.
+- At widths up to 420 px, allow the title and version to wrap without clipping the version or shrinking the language/Help actions; preserve desktop header layout.
