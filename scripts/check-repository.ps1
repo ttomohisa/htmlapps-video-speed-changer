@@ -235,7 +235,7 @@ if ([string]::IsNullOrWhiteSpace([string]$app.name)) { throw "app.config.json: n
 if ([string]::IsNullOrWhiteSpace([string]$app.slug)) { throw "app.config.json: slug is required" }
 if ([string]::IsNullOrWhiteSpace([string]$app.version)) { throw "app.config.json: version is required" }
 if ([string]$app.slug -ne "video-speed-changer") { throw "app.config.json: slug must be video-speed-changer" }
-if ([string]$app.version -ne "1.0.3") { throw "app.config.json: v1.0.3 source package must identify version 1.0.3" }
+if ([string]$app.version -ne "1.0.4") { throw "app.config.json: v1.0.4 source package must identify version 1.0.4" }
 if ([double]$app.build.sizeBudget.readableWarningMb -gt 8) { throw "Readable single-HTML warning budget must stay at or below 8 MB for v1.0.0." }
 if ([double]$app.build.sizeBudget.selfExtractWarningMb -gt 5) { throw "Self-extract single-HTML warning budget must stay at or below 5 MB for v1.0.0." }
 if (-not $sourceText.Contains("connect-src 'none'")) { throw "Video Speed Changer must keep connect-src 'none'." }
@@ -296,6 +296,8 @@ foreach ($token in @('#helpDialog[open]', 'flex-direction: column', 'min-height:
 
 # Check the committed download before a build could hide stale application code.
 $node = Get-Command node -ErrorAction Stop
+& $node.Source --test (Join-Path $Root "tests/build-contract.test.mjs")
+if ($LASTEXITCODE -ne 0) { throw "Video Speed Changer build contract regression failed." }
 & $node.Source (Join-Path $Root "tests/check-release-parity.mjs") --source-only
 if ($LASTEXITCODE -ne 0) { throw "Video Speed Changer source/download parity failed." }
 
