@@ -734,7 +734,7 @@
         <li data-i18n="helpStep3">「目標時間から決める」には入力できる1秒単位の範囲を表示します。開くだけでは速度は変わりません。時間を編集すると必要な倍率を逆算します。</li>
         <li data-i18n="helpStep4">ファイル名や画質を確認して変換し、結果をプレビューしてMP4を保存します。</li>
       </ol>
-      <p data-i18n="helpDialogScroll">長い説明はダイアログ内をスクロールできます。背面のページは、ダイアログを閉じてからスクロールできます。</p>
+
       <h3 data-i18n="helpFormatsTitle">対応形式</h3>
       <p data-i18n="helpFormatsBody">プレビューはブラウザー標準の動画再生機能を使います。再生できない動画でも、動画情報を読み取れた場合は変換を試せます。</p>
       <h3 data-i18n="helpPrivacyTitle">プライバシー</h3>
@@ -851,7 +851,7 @@
           sourceDetailsSummary: '元動画の情報', durationLabel: '長さ', resolutionLabel: '解像度', sizeLabel: '容量', formatLabel: '形式',
           developmentNote: 'v1.0.0 正式版です。動画の読み込みから速度変更、変換、保存までブラウザー内で完結します。', footer: '完全ローカル処理',
           helpBasicsTitle: '使い方', helpStep1: '「動画を選択」から動画を選ぶか、画面へ動画をドロップします。', helpStep2: 'スライダーまたは倍率入力で速度を決めます。左の動画ですぐに速度感を確認できます。', helpStep3: '「目標時間から決める」には入力できる1秒単位の範囲を表示します。開くだけでは速度は変わりません。時間を編集すると必要な倍率を逆算します。', helpStep4: 'ファイル名や画質を確認して変換し、結果をプレビューしてMP4を保存します。',
-          helpDialogScroll: '長い説明はダイアログ内をスクロールできます。背面のページは、ダイアログを閉じてからスクロールできます。', helpFormatsTitle: '対応形式', helpFormatsBody: 'プレビューはブラウザー標準の動画再生機能を使います。再生できない動画でも、動画情報を読み取れた場合は変換を試せます。',
+           helpFormatsTitle: '対応形式', helpFormatsBody: 'プレビューはブラウザー標準の動画再生機能を使います。再生できない動画でも、動画情報を読み取れた場合は変換を試せます。',
           helpPrivacyTitle: 'プライバシー', helpPrivacyBody: '選択した動画はブラウザー内だけで扱います。このアプリからBrowser Kittyや外部サーバーへアップロードしません。',
           helpNotesTitle: '注意事項', helpNotePreview: 'プレビューで確認した速度でMP4へ変換できます。', helpNotePitch: '「音程を保つ」をOFFにすると、速度に合わせて声の高さも変わります。ブラウザーのプレビューと書き出し結果にはわずかな差が出る場合があります。', helpNoteMemory: '大きな動画では、端末性能やブラウザーのメモリ制限の影響を受ける場合があります。', helpNoteCancel: '変換中はキャンセルできます。再変換をキャンセルした場合や失敗した場合、前の結果とその自動ファイル名は残ります。編集したファイル名も維持します。', helpNoteReplacement: '別の動画を選ぶと、前の変換結果とエラーは消去されます。', helpNoteFallback: 'ブラウザーでプレビューできない動画でも、動画情報を読み取れた場合は変換を試せます。', helpNoteDevelopment: '変換に必要な処理は配布HTMLに含まれており、動画を外部サーバーへ送信せずブラウザー内で実行します。', helpOffline: '配布用HTMLは実行時通信を必要とせず、ローカルで直接開ける構成です。',
           confirmTitle: '確認', confirmAction: '実行する', cancel: 'キャンセル', loadedToast: '動画を読み込みました'
@@ -874,7 +874,7 @@
           sourceDetailsSummary: 'Source video information', durationLabel: 'Duration', resolutionLabel: 'Resolution', sizeLabel: 'File size', formatLabel: 'Format',
           developmentNote: 'v1.0.0 is the stable release. Loading, speed adjustment, conversion, and saving run in the browser.', footer: 'Fully local processing',
           helpBasicsTitle: 'How to use', helpStep1: 'Choose a video with Choose video, or drop a video onto the page.', helpStep2: 'Use the slider or enter a speed directly. The video on the left previews the speed immediately.', helpStep3: 'Set by target duration shows the available whole-second range. Opening it keeps your selected speed; editing the time calculates and applies a new speed.', helpStep4: 'Check the file name and quality, convert the video, preview the result, and save the MP4.',
-          helpDialogScroll: 'Scroll long explanations inside the dialog. Close the dialog to scroll the underlying page again.', helpFormatsTitle: 'Formats', helpFormatsBody: 'Preview uses the browser’s native video playback support. If preview is unavailable but media information can be read, conversion can still be attempted.',
+           helpFormatsTitle: 'Formats', helpFormatsBody: 'Preview uses the browser’s native video playback support. If preview is unavailable but media information can be read, conversion can still be attempted.',
           helpPrivacyTitle: 'Privacy', helpPrivacyBody: 'The selected video is handled only inside your browser. This app does not upload it to Browser Kitty or another server.',
           helpNotesTitle: 'Notes', helpNotePreview: 'The selected preview speed can be converted and saved as MP4.', helpNotePitch: 'Turning Preserve pitch off changes voice pitch together with speed. Browser preview and export may differ slightly.', helpNoteMemory: 'Large videos can be affected by device performance and browser memory limits.', helpNoteCancel: 'You can cancel while converting. Cancelling or failing a reconversion keeps the previous result and its automatic filename. Your edited filename is preserved.', helpNoteReplacement: 'Selecting another video clears the previous result and errors.', helpNoteFallback: 'If media information can be read, you can still try converting a video that the browser cannot preview.', helpNoteDevelopment: 'The conversion runtime is included in the distributable HTML, so selected videos are processed in the browser without being uploaded to an external server.', helpOffline: 'The distributable HTML needs no runtime network access and can be opened directly as a local file.',
           confirmTitle: 'Confirm', confirmAction: 'Continue', cancel: 'Cancel', loadedToast: 'Video loaded'
