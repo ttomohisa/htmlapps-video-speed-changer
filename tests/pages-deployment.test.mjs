@@ -149,20 +149,19 @@ test('preview browser selection treats one executable as an array, never its fir
   const programFiles = path.join(directory, 'Program Files');
   const programFilesX86 = path.join(directory, 'Program Files (x86)');
   const executable = path.join(programFilesX86, 'Microsoft', 'Edge', 'Application', 'msedge.exe');
-  fs.mkdirSync(path.dirname(executable), { recursive: true });
-  fs.writeFileSync(executable, 'synthetic executable path; never launched');
-  const command = `$browserCandidates = ${selection}; ConvertTo-Json -Compress @{ count = @($browserCandidates).Count; first = [string]$browserCandidates[0] }`;
-  // Windows environment keys are case-insensitive, while this JS object is not.
-  // Remove every inherited spelling before adding fixture paths so installed
-  // runner browsers cannot leak into the one-executable test case.
-  const environment = Object.fromEntries(Object.entries(process.env).filter(([key]) => !/^programfiles(?:\(x86\))?$/i.test(key)));
-  environment.ProgramFiles = programFiles;
-  environment['ProgramFiles(x86)'] = programFilesX86;
-  assert.equal(Object.keys(environment).filter(key => /^programfiles(?:\(x86\))?$/i.test(key)).length, 2);
-  const result = spawnSync(process.env.PWSH || 'pwsh', ['-NoLogo', '-NoProfile', '-Command', command], {
-    encoding: 'utf8', env: environment
-  });
-  assert.ifError(result.error);
-  assert.equal(result.status, 0, result.stdout + result.stderr);
-  assert.deepEqual(JSON.parse(result.stdout.trim()), { count: 1, first: executable });
+  const secondExecutable = path.join(programFiles, 'Google', 'Chrome', 'Application', 'chrome.exe');
+  const quote = value => "'" + value.replaceAll("'", "''") + "'";
+  // Assign inside the child process so Windows/PowerShell startup handling of
+  // ProgramFiles cannot substitute a runner's installed browser into the fixture.
+  const command = `$env:ProgramFiles = ${quote(programFiles)}; ${'${env:ProgramFiles(x86)}'} = ${quote(programFilesX86)}; $browserCandidates = ${selection}; ConvertTo-Json -Compress @{ count = @($browserCandidates).Count; first = [string]$browserCandidates[0]; paths = @($browserCandidates) }`;
+  for (const expected of [[], [executable], [executable, secondExecutable]]) {
+    for (const file of expected) {
+      fs.mkdirSync(path.dirname(file), { recursive: true });
+      fs.writeFileSync(file, 'synthetic executable path; never launched');
+    }
+    const result = spawnSync(process.env.PWSH || 'pwsh', ['-NoLogo', '-NoProfile', '-Command', command], { encoding: 'utf8', timeout: 30000 });
+    assert.ifError(result.error);
+    assert.equal(result.status, 0, result.stdout + result.stderr);
+    assert.deepEqual(JSON.parse(result.stdout.trim()), { count: expected.length, first: expected[0] || '', paths: expected });
+  }
 });
