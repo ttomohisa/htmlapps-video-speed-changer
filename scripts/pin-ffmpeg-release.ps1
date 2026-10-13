@@ -1,124 +1,44 @@
-param(
-  [switch]$ForceDownload
-)
-
-$ErrorActionPreference = "Stop"
-$ProgressPreference = "SilentlyContinue"
+param([switch]$ForceDownload)
+$ErrorActionPreference = 'Stop'
+$ProgressPreference = 'SilentlyContinue'
 Set-StrictMode -Version Latest
 [Net.ServicePointManager]::SecurityProtocol = [Net.SecurityProtocolType]::Tls12
-
-$Root = Split-Path -Parent (Split-Path -Parent $MyInvocation.MyCommand.Path)
-$ConfigPath = Join-Path $Root "ffmpeg.release.json"
-$LockPath = Join-Path $Root "ffmpeg.release.lock.json"
-$CacheRoot = Join-Path $Root ".cache\ffmpeg-release-pin"
-
-function Get-Sha256FileHex([string]$Path) {
-  $stream = [System.IO.File]::OpenRead($Path)
-  $algorithm = [System.Security.Cryptography.SHA256]::Create()
-  try {
-    $hashBytes = $algorithm.ComputeHash($stream)
-    return (($hashBytes | ForEach-Object { $_.ToString("x2") }) -join "")
-  } finally {
-    $algorithm.Dispose()
-    $stream.Dispose()
-  }
-}
-
-function Expand-GzipFileBytes([string]$Path) {
-  $input = [System.IO.File]::OpenRead($Path)
-  $output = New-Object System.IO.MemoryStream
-  try {
-    $gzip = New-Object System.IO.Compression.GZipStream -ArgumentList $input, ([System.IO.Compression.CompressionMode]::Decompress)
-    try { $gzip.CopyTo($output) } finally { $gzip.Dispose() }
-    return ,$output.ToArray()
-  } finally {
-    $output.Dispose()
-    $input.Dispose()
-  }
-}
-
-function Assert-ReleasePayload([string]$ExtractRoot, $Config) {
-  foreach ($name in @("ffmpeg.js.gz", "ffmpeg.wasm.gz", "browser-ffmpeg.js", "manifest.json")) {
-    $path = Join-Path $ExtractRoot $name
-    if (-not (Test-Path -LiteralPath $path -PathType Leaf)) { throw "Release asset is missing $name." }
-  }
-
-  $manifest = Get-Content -Raw -Encoding UTF8 (Join-Path $ExtractRoot "manifest.json") | ConvertFrom-Json
-  if ([string]$manifest.profile -ne [string]$Config.profile) { throw "Release manifest profile mismatch." }
-  if ([string]$manifest.builderVersion -ne [string]$Config.builderVersion) { throw "Release manifest Builder version mismatch." }
-  if (-not $manifest.runtime.fileProtocolSingleHtml) { throw "Release runtime must support file:// single HTML." }
-  if ($manifest.runtime.requiresSharedArrayBuffer) { throw "Release runtime must not require SharedArrayBuffer." }
-  if ($manifest.runtime.requiresCrossOriginIsolation) { throw "Release runtime must not require cross-origin isolation." }
-
-  $runtimeText = Get-Content -Raw -Encoding UTF8 (Join-Path $ExtractRoot "browser-ffmpeg.js")
-  foreach ($marker in @("options.preservePitch === false", "options.signal", "videoSpeedChangerInspectArgs")) {
-    if (-not $runtimeText.Contains($marker)) { throw "Release runtime is missing required marker: $marker" }
-  }
-
-  $jsBytes = Expand-GzipFileBytes (Join-Path $ExtractRoot "ffmpeg.js.gz")
-  $jsText = [System.Text.Encoding]::UTF8.GetString($jsBytes)
-  if (-not $jsText.Contains("createFFmpegCore")) { throw "Release ffmpeg.js.gz payload is invalid." }
-
-  $wasmBytes = Expand-GzipFileBytes (Join-Path $ExtractRoot "ffmpeg.wasm.gz")
-  if ($wasmBytes.Length -lt 8 -or $wasmBytes[0] -ne 0x00 -or $wasmBytes[1] -ne 0x61 -or $wasmBytes[2] -ne 0x73 -or $wasmBytes[3] -ne 0x6d) {
-    throw "Release ffmpeg.wasm.gz does not expand to a valid WebAssembly module."
-  }
-}
-
+$Root = Split-Path -Parent $PSScriptRoot
+. (Join-Path $PSScriptRoot 'ffmpeg-release-tools.ps1')
+$ConfigPath = Join-Path $Root 'ffmpeg.release.json'
+$LockPath = Join-Path $Root 'ffmpeg.release.lock.json'
+$CacheRoot = Join-Path $Root '.cache/ffmpeg-release-pin'
 $config = Get-Content -Raw -Encoding UTF8 $ConfigPath | ConvertFrom-Json
-if ([int]$config.schemaVersion -ne 1) { throw "ffmpeg.release.json must use schemaVersion 1." }
-foreach ($property in @("repository", "tag", "asset", "profile", "builderVersion")) {
-  if ([string]::IsNullOrWhiteSpace([string]$config.$property)) { throw "ffmpeg.release.json is missing $property." }
-}
-if ([string]$config.profile -ne "video-speed-changer") { throw "Pinned profile must be video-speed-changer." }
-
-$apiUrl = "https://api.github.com/repos/$($config.repository)/releases/tags/$($config.tag)"
-Write-Host "[FFmpeg Release Pin] Reading $apiUrl" -ForegroundColor Cyan
-$release = Invoke-RestMethod -Uri $apiUrl -UseBasicParsing -Headers @{ "User-Agent" = "htmlapps-video-speed-changer-release-pin"; "Accept" = "application/vnd.github+json" }
-if ([string]$release.tag_name -ne [string]$config.tag) { throw "GitHub release tag mismatch." }
-$assets = @($release.assets)
-$asset = @($assets | Where-Object { [string]$_.name -eq [string]$config.asset } | Select-Object -First 1)
-if ($asset.Count -ne 1) { throw "Release asset '$($config.asset)' was not found in $($config.tag)." }
-if ([string]::IsNullOrWhiteSpace([string]$asset.digest) -or [string]$asset.digest -notmatch '^sha256:[a-f0-9]{64}$') {
-  throw "GitHub release asset does not expose a SHA-256 digest."
-}
-$expectedSha = ([string]$asset.digest).Substring(7).ToLowerInvariant()
-
+Assert-ReleaseConfig $config
+$release = Invoke-RestMethod -Uri "https://api.github.com/repos/$($config.repository)/releases/tags/$($config.tag)" -UseBasicParsing -Headers @{ 'User-Agent'='htmlapps-video-speed-changer-release-pin'; 'Accept'='application/vnd.github+json' }
+if ($release.draft -ne $false -or $release.prerelease -ne $false) { throw 'Only published stable official releases can be pinned.' }
+if ([string]$release.tag_name -ne [string]$config.tag -or [long]$release.id -le 0) { throw 'Official release tag/ID mismatch.' }
+$lock = [ordered]@{ schemaVersion=2; repository=[string]$config.repository; tag=[string]$config.tag; profile=[string]$config.profile; builderVersion=[string]$config.builderVersion; releaseId=[long]$release.id; variants=[ordered]@{}; pinnedAtUtc=[DateTime]::UtcNow.ToString('o') }
 New-Item -ItemType Directory -Force -Path $CacheRoot | Out-Null
-$archivePath = Join-Path $CacheRoot ([string]$config.asset)
-if ($ForceDownload -or -not (Test-Path -LiteralPath $archivePath -PathType Leaf)) {
-  $partPath = "$archivePath.part"
-  Remove-Item -Force -ErrorAction SilentlyContinue $partPath
-  Write-Host "[FFmpeg Release Pin] Downloading $($asset.browser_download_url)" -ForegroundColor Cyan
-  Invoke-WebRequest -Uri ([string]$asset.browser_download_url) -OutFile $partPath -UseBasicParsing -Headers @{ "User-Agent" = "htmlapps-video-speed-changer-release-pin" }
-  Move-Item -Force $partPath $archivePath
+foreach ($variant in @('single-thread','multi-thread')) {
+  $name = [string]$config.variants.$variant.asset
+  $matches = @($release.assets | Where-Object { [string]$_.name -ceq $name })
+  if ($matches.Count -ne 1) { throw "Expected exactly one official $name asset." }
+  $asset = $matches[0]
+  if ([string]$asset.digest -notmatch '^sha256:[a-f0-9]{64}$' -or [long]$asset.id -le 0 -or [long]$asset.size -le 0) { throw "Official $variant asset has incomplete digest/ID/size metadata." }
+  $expectedUrl = "https://github.com/$($config.repository)/releases/download/$($config.tag)/$name"
+  if ([string]$asset.browser_download_url -cne $expectedUrl) { throw 'Official download URL mismatch.' }
+  $sha = ([string]$asset.digest).Substring(7)
+  $archive = Join-Path $CacheRoot $name
+  if ($ForceDownload -or -not (Test-Path -LiteralPath $archive)) {
+    Invoke-WebRequest -Uri $expectedUrl -OutFile "$archive.part" -UseBasicParsing
+    Move-Item -Force "$archive.part" $archive
+  }
+  if ((Get-Sha256FileHex $archive) -ne $sha -or (Get-Item -LiteralPath $archive).Length -ne [long]$asset.size) { throw "Official $variant download SHA-256/size mismatch." }
+  $extract = Join-Path $CacheRoot $variant
+  Expand-VerifiedRelease $archive $extract
+  $null = Assert-ReleasePayload $extract $config $variant
+  $lock.variants[$variant] = [ordered]@{asset=$name;assetId=[long]$asset.id;assetBytes=[long]$asset.size;sha256=$sha;browserDownloadUrl=$expectedUrl}
 }
-$actualSha = Get-Sha256FileHex $archivePath
-if ($actualSha -ne $expectedSha) { throw "Downloaded release SHA-256 mismatch. Expected $expectedSha, got $actualSha." }
-if ([long](Get-Item $archivePath).Length -ne [long]$asset.size) { throw "Downloaded release size does not match GitHub metadata." }
-
-$extractRoot = Join-Path $CacheRoot "verify"
-Remove-Item -Recurse -Force -ErrorAction SilentlyContinue $extractRoot
-New-Item -ItemType Directory -Force -Path $extractRoot | Out-Null
-Add-Type -AssemblyName System.IO.Compression.FileSystem
-[System.IO.Compression.ZipFile]::ExtractToDirectory($archivePath, $extractRoot)
-Assert-ReleasePayload $extractRoot $config
-
-$lock = [ordered]@{
-  schemaVersion = 1
-  repository = [string]$config.repository
-  tag = [string]$config.tag
-  asset = [string]$config.asset
-  profile = [string]$config.profile
-  builderVersion = [string]$config.builderVersion
-  releaseId = [long]$release.id
-  assetId = [long]$asset.id
-  assetBytes = [long]$asset.size
-  sha256 = $expectedSha
-  browserDownloadUrl = [string]$asset.browser_download_url
-  pinnedAtUtc = [DateTime]::UtcNow.ToString("o")
-}
-[System.IO.File]::WriteAllText($LockPath, ($lock | ConvertTo-Json -Depth 10), (New-Object System.Text.UTF8Encoding($false)))
-Write-Host "[OK] Pinned $($config.tag) / $($config.asset)" -ForegroundColor Green
-Write-Host "[OK] SHA-256: $expectedSha" -ForegroundColor Green
-Write-Host "[OK] Lock: $LockPath" -ForegroundColor Green
+# No lock is modified until BOTH independently verified official assets pass.
+$lockJson = $lock | ConvertTo-Json -Depth 20
+Assert-ReleaseLock $config ($lockJson | ConvertFrom-Json)
+$tempLock = "$LockPath.part"
+[System.IO.File]::WriteAllText($tempLock, $lockJson, (New-Object System.Text.UTF8Encoding($false)))
+Move-Item -LiteralPath $tempLock -Destination $LockPath -Force
+Write-Host "[OK] Atomically pinned both official $($config.tag) threading variants."

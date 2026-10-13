@@ -3,7 +3,7 @@
   "compatibility_date": "2026-09-29",
   "preview_urls": true,
   "assets": {
-    "directory": "./dist"
+    "directory": "./pages-dist"
   },
   "previews": {}
 }

@@ -1,3 +1,23 @@
+# v1.1.0 ST/MT deployment regression (2026-10-13, unreleased)
+
+Current deterministic deployment checks were run with Node.js 24.19.0 and PowerShell 7.5.2 on Linux. The tests execute the real Pages staging script in temporary synthetic fixture directories and the real CDP verifier with deterministic transport/time boundaries. They do not launch a browser or decode media.
+
+- `node --test tests/pages-deployment.test.mjs tests/preview-isolation.test.mjs`: 25 tests passed after observed failing tests for missing deployment behavior, the preview-only bootstrap fixture and workflow telemetry opt-out.
+- `scripts/check-repository.ps1`: complete pinned ST/MT build, raw/self-extract verification, release parity and final 105-test repository suite passed. A separate `node --test tests/*.test.mjs` run passed 98 tests (the canonical gate also includes `.cjs` suites).
+- Raw ST root and raw `/mt/index.mt.html` remain byte-identical; only `/mt/index.html` receives the conditional helper bootstrap.
+- Helper version/commit/SHA-256 and MIT notice are checked; tampered helper, missing/malformed MT, and already-wrapped MT fail before overwriting a previous stage.
+- Executing the wrapper bootstrap proves already-isolated/unsupported contexts do not request the helper; only explicit false isolation triggers the same-origin relative script.
+- `_headers` contains only `/mt/*` with COOP/COEP/CORP. Normal Pages excludes the QA copy; preview-only `/pages-bootstrap/mt/` copies exact wrapper/helper bytes and remains outside that header rule with a relative directory-scoped helper.
+- The actual workflow browser-selection expression was executed with a fixture containing exactly one executable path; the full path is preserved, including spaces.
+- CDP regressions cover exact target and execution-context URL matching, delayed navigation, initial `about:blank`, wrong origin/path/query, unavailable isolation/SAB, stalled fetch/socket/evaluation, errors, timer cleanup and socket cleanup.
+- Build/Pages/preview workflow contracts require Node 24 and the canonical repository gate. Preview cleanup remains deletion-only; unrelated dependency maintenance is unchanged.
+
+Real-browser checks still required for this deployment change: Windows runner execution, actual ST/MT video conversion, ST `file://` and both browser self-extract loaders, server-isolated MT, first-load Pages helper request/reload/registration scope (or preview bootstrap-QA route), actual saving, console/network, layout, keyboard and devices. Successful server-isolated `/mt/` checks cannot substitute for first-load helper QA. Add completed browser evidence separately; prior records below are historical and are not reruns for v1.1.0.
+
+See `VERIFY_OFFLINE.md` and `docs/MULTI_THREAD_DEPLOYMENT.md` for the complete release matrix. This section records executed automated checks; add browser/media evidence separately from its actual runs.
+
+---
+
 # Result/source lifecycle regression (2026-10-05, unreleased)
 
 The current change was checked with Node tests executing the actual application script, using tiny fictitious media metadata, DOM elements, and FFmpeg runtime doubles. No real media is decoded or converted by this test suite.

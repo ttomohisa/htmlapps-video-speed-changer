@@ -6,10 +6,9 @@
 - **Japanese name:** 動画速度変更
 - **Slug:** `video-speed-changer`
 - **Repository:** `ttomohisa/htmlapps-video-speed-changer`
-- **Current stable version:** `1.0.4`
-- **Target first stable release:** `1.0.0`
-- **Release artifacts:** `dist/index.html` and `dist/index.self-extract.html`
-- **Builder dependency:** `ttomohisa/htmlapps-ffmpeg-wasm-builder` v1.8.1 / `video-speed-changer`
+- **Current package version:** `1.1.0`
+- **Release artifacts:** ST `dist/index.html` / `dist/index.self-extract.html`; MT `dist/index.mt.html` / `dist/index.mt.self-extract.html`; root aliases `video-speed-changer.html` / `video-speed-changer.mt.html`
+- **Builder dependency:** `ttomohisa/htmlapps-ffmpeg-wasm-builder` v1.10.6 / `video-speed-changer`
 
 ### One-sentence purpose
 
@@ -31,7 +30,7 @@ Core user flow:
 8. Preview the result.
 9. Edit the output filename and save an MP4.
 
-## 3. Implemented v1.0.0 behavior
+## 3. Shared ST / MT behavior
 
 ### Speed and duration
 
@@ -86,109 +85,63 @@ If browser-native metadata/preview loading fails, FFmpeg media inspection may re
 
 When inspection succeeds, the UI explicitly says preview is unavailable but conversion can be attempted. Preview failure must not be presented as proof that conversion will fail.
 
-## 4. v1.0.0 stable dependency contract
+## 4. v1.1.0 pinned ST / MT dependency contract
 
-v1.0.0 keeps the pinned-release dependency contract introduced in v0.9.0 and does not treat a developer's local Builder output as the normal release source.
-
-### Pinned release source
-
-`ffmpeg.release.json` selects exactly:
+`ffmpeg.release.json` and `ffmpeg.release.lock.json` use schemaVersion 2 and select exactly:
 
 - repository: `ttomohisa/htmlapps-ffmpeg-wasm-builder`
-- tag: `v1.8.1`
-- asset: `ffmpeg-wasm-video-speed-changer-v1.8.1.zip`
+- tag / Builder version: `v1.10.6` / `1.10.6`
 - profile: `video-speed-changer`
-- Builder version: `1.8.1`
+- ST asset: `ffmpeg-wasm-video-speed-changer-single-thread-v1.10.6.zip`
+- MT asset: `ffmpeg-wasm-video-speed-changer-multi-thread-v1.10.6.zip`
 
-After that Builder release exists, `pin-ffmpeg-release.bat` must:
+Pinning verifies each GitHub Release asset digest, actual SHA-256 and byte count, matching profile/version/threading capabilities, inflated JS/WASM bytes, browser runtime cancellation/inspection APIs, and MT pthread Worker payload. The lock records exact release/asset identities, sizes and hashes. It must be reviewed and committed; never invent a hash or resolve `latest` during a normal build.
 
-1. fetch the GitHub Release metadata for v1.8.1,
-2. find the exact profile ZIP,
-3. require GitHub's `sha256:` asset digest,
-4. download the ZIP,
-5. compare the downloaded SHA-256 and byte count with GitHub metadata,
-6. validate the archive's profile / Builder version / runtime capability flags,
-7. decompress `ffmpeg.js.gz` and verify `createFFmpegCore`,
-8. decompress `ffmpeg.wasm.gz` and verify the WebAssembly magic,
-9. validate cancellation / inspection runtime API markers,
-10. write exact release / asset IDs, byte count, URL, SHA-256, and pin timestamp into `ffmpeg.release.lock.json`.
+`build-standalone.bat` imports both locked assets via SHA-keyed caches, validates their contents and `github-release` provenance, embeds all required processing bytes, writes separate manifests and size reports, and refreshes both root readable downloads. Custom output builds must not change those checked-in root downloads. CI, Pages and Cloudflare preview builds use the same canonical `scripts/check-repository.ps1` gate with Node.js 24.
 
-The updated lock must be committed.
+`build-with-local-ffmpeg.bat <builder-root>` is a Builder-development path. Its `local-builder` provenance is not accepted as a stable release. Local output must satisfy the same applicable variant/runtime capability checks.
 
-### Normal release build
+## 5. Single-HTML, isolation and privacy contract
 
-`build-standalone.bat` must:
+### Raw artifacts
 
-1. read `ffmpeg.release.json` and the committed lock,
-2. reject an unpinned or mismatched lock,
-3. download the exact locked release asset when the SHA-keyed cache is absent,
-4. verify the ZIP SHA-256 and byte count before extracting it,
-5. validate the archive contents again,
-6. import only the required FFmpeg files into `vendor/ffmpeg`,
-7. write `github-release` provenance,
-8. embed the JS/WASM/runtime into the final HTML.
+Each ST or MT readable HTML embeds UI/CSS/JavaScript, browser runtime, gzip-compressed FFmpeg JS/WASM and favicon. MT also embeds its pthread Worker payload. No runtime FFmpeg download is permitted. Each self-extract artifact restores its corresponding readable HTML byte-for-byte from an embedded gzip payload.
 
-CI and GitHub Pages use this same path.
+ST supports direct `file://` opening and offline processing after the file is obtained. MT is a one-file processing artifact, but requires isolated hosting: a secure HTTP(S) context, `crossOriginIsolated === true`, and a `SharedArrayBuffer` function. MT must refuse direct-file, unisolated or missing-SharedArrayBuffer execution before cached/fresh loader use, conversion or FFmpeg fallback inspection. It must not silently switch to ST.
 
-### Local Builder development path
+The runtime variant is derived from build metadata and shown in the local-processing badge. The bilingual blocked-state explanation distinguishes direct-file opening from browser/host capability and links to the standard ST app. The selected video and result do not automatically transfer to another page.
 
-`build-with-local-ffmpeg.bat <builder-root>` remains available only for Builder development.
+MT budgets are pthread pool 8, video decoder 2, H.264 encoder 4, x264 lookahead 1. Audio codecs and filtergraphs remain single-threaded. No universal speedup is promised.
 
-It writes `local-builder` provenance and may generate functional standalone HTML, but release-artifact verification must not accept that provenance as a stable release artifact.
+### Hosted staging
 
-## 5. Single-HTML and privacy contract
+`prepare-pages.ps1` creates a separate `pages-dist/`:
 
-### Readable standalone
+- `/index.html`: unmodified raw ST.
+- `/mt/index.mt.html`: unmodified raw MT.
+- `/mt/index.html`: MT wrapper, conditionally loading same-origin `./coi-serviceworker.js` only when `window.crossOriginIsolated === false`.
+- `/mt/coi-serviceworker.js`: pinned coi-serviceworker 0.1.7, registered with its default script-directory scope `/mt/` (under the repository base path on project Pages).
+- `/_headers`: COOP `same-origin`, COEP `require-corp`, CORP `same-origin`, only for `/mt/*` on Cloudflare.
 
-`dist/index.html` contains:
-
-- UI/CSS/JavaScript,
-- FFmpeg browser runtime,
-- gzip-compressed FFmpeg JS core,
-- gzip-compressed FFmpeg WASM,
-- embedded favicon.
-
-No runtime FFmpeg download is permitted.
-
-### Self-extract variant
-
-`dist/index.self-extract.html` stores the readable HTML in an embedded gzip payload and restores it locally. Verification must confirm byte-for-byte equality with `dist/index.html`.
+The helper is not embedded in raw release artifacts. Its reviewed commit/hash and MIT notice are committed. It may register a service worker and reload the MT page to establish isolation on GitHub Pages; it is not an offline app cache. Already-isolated hosts skip this script. No root-scope worker or global isolation headers may be introduced. Browser Kitty integration is a deployment instruction, not a claim that integration is already live.
 
 ### Runtime network policy
 
-User video data must never be uploaded.
+Selected video data must never be uploaded. Raw artifacts must not make runtime HTTP(S), XHR, fetch, WebSocket, EventSource, CDN, telemetry or external-font requests. Hosted MT has only the documented same-origin isolation-helper request/reload exception; this is not permission to send video data or load external processing assets.
 
-Runtime CSP keeps at least:
+CSP retains `connect-src 'none'`, `object-src 'none'`, `frame-src 'none'`, `base-uri 'none'`, and `form-action 'none'`. Local Blob Worker/media permissions and `'wasm-unsafe-eval'` are allowed as needed; generic `'unsafe-eval'` is not required. The existing same-origin script/worker policy permits the scoped hosted helper without relaxing `connect-src`.
 
-- `connect-src 'none'`
-- `object-src 'none'`
-- `frame-src 'none'`
-- `base-uri 'none'`
-- `form-action 'none'`
-
-Blob Worker / media / WASM permissions may be enabled only as required. `wasm-unsafe-eval` is permitted for embedded WebAssembly compilation; generic `unsafe-eval` is not required.
-
-Build-time access to the pinned GitHub Release is allowed and is separate from runtime privacy behavior.
+Build-time GitHub Release requests are separate from the runtime privacy boundary.
 
 ## 6. Build provenance
 
-`dist/dependency-manifest.json` records:
+Separate ST/MT files are required:
 
-- app name / slug / version,
-- FFmpeg profile,
-- Builder version,
-- file-protocol single-HTML support,
-- SharedArrayBuffer / cross-origin-isolation requirements,
-- source type (`github-release` for stable release),
-- Builder repository,
-- release tag,
-- release asset name,
-- release ID / asset ID,
-- release asset byte count,
-- release asset SHA-256,
-- byte count and SHA-256 of each embedded FFmpeg file.
+- `dist/dependency-manifest.json` / `dist/dependency-manifest.mt.json`
+- `dist/self-extract-manifest.json` / `dist/self-extract-manifest.mt.json`
+- `dist/build-size-report.json` / `dist/build-size-report.mt.json`
 
-Release verification rejects local-builder provenance.
+Each dependency manifest records app/version, Builder/profile/threading variant, direct-file support and SharedArrayBuffer/isolation requirements, `github-release` provenance, repository/tag/asset, release/asset IDs, asset byte count/SHA-256, and embedded payload byte counts/hashes. MT must prove its pthread Worker is embedded. Release verification rejects mismatched variants or local-builder provenance.
 
 ## 7. State model
 
@@ -245,9 +198,9 @@ Best effort:
 
 - current Firefox.
 
-Direct `file://` opening is a release requirement.
+Direct `file://` opening is a release requirement for ST only. MT must show its blocking explanation there and must convert only in an isolated hosted context.
 
-## 11. Non-goals for v1.0.0
+## 11. Non-goals
 
 - per-section speed changes,
 - speed-ramp timeline editing,
@@ -278,18 +231,18 @@ Dedicated `video-speed-changer` Builder profile:
 - WORKERFS input,
 - Worker execution,
 - AbortSignal cancellation,
-- no SharedArrayBuffer requirement,
+- ST without SharedArrayBuffer; MT with required SharedArrayBuffer and cross-origin isolation,
 - no arbitrary command-string interface.
 
-The profile runtime contract is frozen at Builder v1.8.1 for v1.0.0.
+Both runtime variants are pinned to Builder v1.10.6 for v1.1.0.
 
-## 13. v1.0.0 acceptance criteria
+## 13. v1.1.0 acceptance criteria
 
 ### Dependency pin / build
 
-- `app.config.json` version is `1.0.0`.
-- `ffmpeg.release.json` selects Builder v1.8.1 and the video-speed-changer asset.
-- `ffmpeg.release.lock.json` contains a real 64-hex SHA-256, positive release/asset IDs and byte count, and matching config fields.
+- `app.config.json` version is `1.1.0`.
+- `ffmpeg.release.json` selects Builder v1.10.6 and both explicit video-speed-changer ST/MT assets.
+- Each variant in `ffmpeg.release.lock.json` contains a real 64-hex SHA-256, positive release/asset IDs and byte count, and matching config fields.
 - Normal `build-standalone.bat` obtains FFmpeg only through the committed release lock.
 - Downloaded release ZIP must match the committed SHA-256 before extraction.
 - Release artifact provenance must be `github-release`; `local-builder` is rejected by release-artifact checks.
@@ -309,9 +262,9 @@ The profile runtime contract is frozen at Builder v1.8.1 for v1.0.0.
 
 ### Standalone / privacy
 
-- `dist/index.html` and `dist/index.self-extract.html` both open via `file://`.
-- Self-extract restores the readable HTML byte-for-byte.
-- No runtime HTTP/HTTPS/XHR/fetch/WebSocket/EventSource request occurs.
+- ST readable/self-extract files both work via `file://`; raw MT readable/self-extract files block there and work with required hosting headers.
+- Both self-extract artifacts restore their matching readable HTML byte-for-byte.
+- Raw artifacts make no runtime HTTP/HTTPS/XHR/fetch/WebSocket/EventSource requests; hosted MT permits only the documented scoped same-origin isolation helper/reload.
 - CSP retains `connect-src 'none'` and required local Blob/WASM permissions only.
 - Embedded FFmpeg gzip payloads are validated before build completion.
 - Embedded favicon is present and matches the header icon motif.
@@ -323,18 +276,18 @@ The profile runtime contract is frozen at Builder v1.8.1 for v1.0.0.
 - Empty/loading/ready/processing/cancel/result/error states are checked.
 - Help/dialogs fit smartphone viewport.
 - README, APP_SPEC, CHANGELOG, REGRESSION, screenshots, favicon, and version are internally consistent.
-- GitHub Pages builds from the same pinned-release path as local release builds.
+- Build/Pages/preview workflows run the canonical repository gate with Node 24. Pages publishes the staged site, not raw dist.
+- Cloudflare /mt/* responses carry COOP/COEP/CORP; Chromium verifies the exact requested MT URL and both isolation capabilities.
+- Pages/preview regressions cover helper integrity, raw-file preservation, scoped staging, invalid-input rejection, delayed navigation, wrong URLs, bounded CDP timeouts and singleton browser-path selection.
 
-## 14. v1.0.0 stable release
+## 14. Release verification
 
-v1.0.0 promotes the validated v0.9.0 Release Candidate without adding new product features. The stable release keeps the pinned FFmpeg WASM Builder v1.8.1 runtime, full 0.25×–4.00× conversion range, audio modes, cancellation, fallback media inspection, single-HTML distribution, and fully local runtime behavior.
-
-Stable-release acceptance requires the full functional regression, desktop/mobile Japanese/English checks, pinned-release provenance, standalone/self-extract verification, embedded favicon consistency, and no unexpected runtime network access.
+ST and MT retain the same speed/audio, source/result ownership, cancellation, fallback inspection and export-name behavior. Synthetic lifecycle and deployment tests are distinct from real browser/media verification. Record actual commands, tested URLs/artifacts and limitations in `REGRESSION.md`; do not treat historical v1.0 results as fresh v1.1.0 browser evidence.
 
 ## Header normalization (1.0.1)
 
 - The language button shows EN in Japanese and JA in English. Its title and accessible name describe the destination in the current UI language.
-- Help retains its localized title and accessible name; the header version is v1.0.1.
+- Help retains its localized title and accessible name; the header version matches the current app package.
 
 ## Icon refresh (1.0.2)
 

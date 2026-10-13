@@ -1,22 +1,15 @@
 # FFmpeg core import
 
-Generated FFmpeg WASM binaries are intentionally not committed to the repository.
+Generated binaries are not committed separately. Both distributable HTML editions embed their matching runtime; no runtime CDN or video upload is used.
 
-## Release / CI path
+## Official release / CI
 
-1. `ffmpeg.release.json` selects the Builder release/tag/asset.
-2. `ffmpeg.release.lock.json` pins the exact GitHub Release asset SHA-256 and release metadata.
-3. `build-standalone.bat` downloads that exact asset at build time, verifies the SHA-256, verifies the Builder manifest/runtime/WASM payload, and copies only the required files here.
-4. The final single HTML embeds those files and needs no runtime network access.
+`ffmpeg.release.json` schema 2 selects Builder v1.10.6 and the dedicated `video-speed-changer-single-thread` and `video-speed-changer-multi-thread` assets. `ffmpeg.release.lock.json` records the shared release ID and the exact asset ID, byte count, SHA-256 and official URL for each edition.
 
-The committed lock must be produced with `pin-ffmpeg-release.bat` after the selected Builder release exists.
+`pin-ffmpeg-release.bat` rejects drafts and prereleases, verifies both archives and schema-8 raw/gzip payloads, and updates the lock only after both pass. `build-standalone.bat` validates the committed lock and imports the archive contents under `vendor/ffmpeg/single-thread/` and `vendor/ffmpeg/multi-thread/`.
 
-## Local Builder development path
+## Local Builder development
 
-Use:
+`build-with-local-ffmpeg.bat "C:\path\to\htmlapps-ffmpeg-wasm-builder"` imports both `dist/video-speed-changer/{single-thread,multi-thread}` outputs and the shared `runtime/browser-ffmpeg.js`. The Builder version must match the selected release contract. This writes `local-builder` provenance and builds functional development editions, but release-artifact verification rejects them. Run the normal official build before preparing a release.
 
-```bat
-build-with-local-ffmpeg.bat "C:\path\to\htmlapps-ffmpeg-wasm-builder"
-```
-
-This writes local provenance and intentionally does not qualify as a release-candidate build.
+The ST edition supports `file://`; MT requires an isolated HTTP(S) host. The same threading restrictions apply to local development artifacts.

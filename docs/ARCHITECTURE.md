@@ -1,110 +1,80 @@
 # Architecture
 
-## Overview
+## Source and release boundaries
 
-The repository separates editable source from the release artifact:
+One editable app template produces independent ST and MT distributions. Both share the speed-changing UI, local media handling, source/result lifecycle and output formats.
 
 ```text
-app.config.json              Product metadata
-APP_SPEC.md                  Product behavior and acceptance contract
-dependencies.json            Exact npm packages, assets, and update policy
-dependencies.lock.json       Committed tarball SHA-256 lock
-components/                   Reusable source snippets copied/adapted into apps
-src/index.template.html      Editable application source
-build-standalone.ps1         Dependency lock verification, embed, and build
-scripts/check-dependency-updates.ps1  Update discovery/reporting
-scripts/update-dependency.ps1          Reviewed upgrade helper
-scripts/verify-standalone.ps1 Static release checks
-dist/index.html              Generated readable release artifact
-dist/index.self-extract.html Generated gzip self-extracting artifact
-dist/build-size-report.json    Generated size and embedded-asset storage report
+app.config.json                     Product version (1.1.0)
+APP_SPEC.md                         Product and acceptance contract
+src/index.template.html             Shared editable application
+ffmpeg.release.json                 Builder v1.10.6 profile/variant selection
+ffmpeg.release.lock.json            Verified exact ST/MT release identities/hashes
+build-standalone.ps1                 Pinned import, variant generation and verification
+scripts/check-repository.ps1         Canonical complete build/regression gate
+scripts/prepare-pages.ps1            Separate hosted staging
 ```
 
-`dist/index.html` and `dist/index.self-extract.html` are generated and must not be edited manually.
+Generated raw outputs must never be manually edited:
 
+- ST: `dist/index.html`, `dist/index.self-extract.html`, root `video-speed-changer.html`.
+- MT: `dist/index.mt.html`, `dist/index.mt.self-extract.html`, root `video-speed-changer.mt.html`.
+- Separate `dependency-manifest[.mt].json`, `self-extract-manifest[.mt].json`, and `build-size-report[.mt].json` in `dist/`.
 
-## Reusable component layer
+Normal builds refresh both root downloads; custom output builds leave them unchanged. `pages-dist/` is disposable hosting output, not a raw release.
 
-`components/` contains reusable source snippets for common UI and connection patterns. These files are not loaded at runtime and are not a separate bundle layer. An app copies or adapts the needed CSS, HTML, and JavaScript into `src/index.template.html`, preserving the one-file runtime model. Most components are dependency-free; dependency-aware components use the same pinned embedded-asset pipeline as the rest of the app.
+## Pinned variant build
 
-The starter includes the canonical confirmation and toast APIs in the default source, while `components/` also carries the mobile bottom bar/page-tabs pattern, compact popover, preset/custom setting field, async source-state guard, and a fully serverless WebRTC QR-pairing component. Reversible operations should normally use Toast + Undo; irreversible/high-risk operations use `AppConfirm`. The WebRTC component is dependency-aware and uses the normal pinned embedded-asset pipeline rather than a runtime CDN. See `docs/COMPONENTS.md` and `docs/WEBRTC_QR_PAIRING.md`.
+1. Read app configuration, dependency configuration/lock and the schemaVersion 2 FFmpeg release config/lock.
+2. Resolve only the two locked Builder v1.10.6 `video-speed-changer` assets; verify each downloaded/cached ZIP size and SHA-256 before extraction.
+3. Validate profile, version, ST/MT capabilities, browser runtime APIs, inflated JS/WASM and MT pthread Worker. Do not allow one variant to substitute for the other.
+4. Import reviewed payloads with `github-release` provenance. Development-only `local-builder` provenance is rejected by the stable artifact check.
+5. Embed UI, favicon, runtime and all processing bytes into each raw readable HTML. Preserve direct embedded JSON rather than wrapping the complete asset bundle in another Base64 layer.
+6. Produce an ASCII-only gzip self-extract loader for each variant, inheriting its readable favicon. Validate byte counts, SHA-256 metadata and exact restored bytes.
+7. Write separate dependency/restoration/size manifests, verify release/source/root parity, and run lifecycle tests across variant/release forms.
+8. Stage hosted pages only after raw release validation and run staging/isolation-helper regressions.
 
-## Build pipeline
+Configured npm dependencies remain pinned to exact versions and verified tarball SHA-256. Scheduled update discovery may maintain a review Issue but does not automatically upgrade packages, commit changes or open dependency PRs.
 
-1. Read `app.config.json`, `dependencies.json`, and `dependencies.lock.json`.
-2. Require one matching lock entry for every configured dependency.
-3. Resolve each exact npm version through the npm registry when it is not already cached.
-4. Verify the tarball SHA-256 against the committed lock before embedding anything.
-5. Cache and extract each tarball.
-6. Validate the package's own version.
-7. Read only the explicitly listed asset files.
-8. Calculate SHA-256 hashes for every original embedded asset.
-9. Optionally gzip each declared asset (`gzip` / `auto`), then Base64-encode the stored bytes exactly once.
-10. Embed the asset bundle JSON directly, avoiding a second Base64 wrapper around the whole bundle.
-11. Replace the three source placeholders exactly once.
-12. Write and verify `dist/index.html`.
-13. Gzip that HTML, embed it into a small ASCII-only native `DecompressionStream` loader, inherit the readable HTML favicon, and write `dist/index.self-extract.html`.
-14. Verify that the loader stays ASCII-only and embedded-only, the favicon matches the readable HTML, and the gzip payload restores byte-for-byte.
-15. Write manifests, `build-size-report.json`, and `dist/.nojekyll`; emit warning-only size-budget messages when configured thresholds are exceeded.
-16. Reject the declared unresolved build placeholders and common external runtime resource references.
+## Runtime and state ownership
 
-## Dependency maintenance lifecycle
+The build manifest determines ST versus MT; runtime selection is not inferred from a URL. ST uses the compatible single-thread runtime and works directly via `file://`. MT embeds pthread support and requires non-file loading, cross-origin isolation and SharedArrayBuffer before cached/fresh loader use, conversion or fallback inspection. Unsupported MT remains readable with localized guidance and a standard-app link; it does not silently fetch or substitute a different runtime.
 
-The runtime build stays deterministic while release discovery remains separate from source changes:
+MT budgets: pool 8, video decoder 2, H.264 encoder 4, x264 lookahead 1; audio and filtergraphs stay single-threaded. Device/browser memory and actual media determine performance.
 
-1. `scripts/check-dependency-updates.ps1` reads update policies and queries npm for newer versions.
-2. `.github/workflows/dependency-updates.yml` runs weekly and creates/refreshes one open maintenance Issue when updates exist.
-3. No dependency source file is changed by the scheduled workflow.
-4. A human reviews release notes and chooses whether to run `scripts/update-dependency.ps1`.
-5. The update helper refreshes the selected lock entry, verifies declared asset paths, runs the standalone build, and rolls config/lock files back if the process fails.
+Changing source is a generation boundary. Abort old work, clear prior derived metadata/errors/results, revoke obsolete Blob URLs, and reject late progress/result/error/finalization callbacks. Cancelling/failing a reconversion retains any valid previous result with its own settings and automatic filename. Only a successful replacement updates that pair. User-edited filenames survive attempts on the same source.
 
-The update checker is a repository-maintenance network operation. It does not run inside the distributed browser app and does not weaken the app's runtime `connect-src 'none'` boundary.
+The selected speed is canonical. Opening target-duration controls shows a bounded whole-second suggestion without changing speed, playback rate, filename or result freshness. Deliberate target edits invoke range validation and speed calculation.
 
-## Build placeholders
+## Hosted staging and isolation
 
-The source template contains exactly one of each:
+Raw ST is staged at `/`; raw MT is also available as `/mt/index.mt.html`. The `/mt/index.html` wrapper is a separate copy that conditionally loads the pinned, same-origin `./coi-serviceworker.js` only when `window.crossOriginIsolated === false`. The worker registers at its default script-directory scope; project Pages prefixes remain inside that scope. Staging verifies its committed hash and ships its MIT notice. No raw artifact is modified to reference the helper.
 
-- `__APP_CONFIG_JSON__`
-- `__BUILD_MANIFEST_JSON__`
-- `__EMBEDDED_ASSET_BUNDLE_JSON__`
+Cloudflare `_headers` contains only `/mt/*` with COOP `same-origin`, COEP `require-corp`, CORP `same-origin`. GitHub Pages ignores that file and relies on the helper to inject COOP/COEP and reload. The unmodified helper's CORP value is upstream `cross-origin`, distinct from the server-header configuration. Already-isolated hosts skip the fallback.
 
-Do not rename or duplicate them without changing the builder and verifier. Other runtime identifiers that happen to use a `__NAME__` convention are allowed and must not be rejected as build placeholders.
+Preview-only `-PreviewBootstrapCheck` adds an identical MT directory at `/pages-bootstrap/mt/` outside the header rule so real browser QA can exercise first-load service-worker bootstrap/reload. Normal Pages output does not include it. The relative helper URL automatically keeps the fixture scope narrow.
 
-## Embedded asset API
+[Multi-thread deployment](MULTI_THREAD_DEPLOYMENT.md) documents host configuration and Browser Kitty integration instructions. Do not infer live integration from those instructions.
 
-The generated page exposes `window.StandaloneAssets`:
+## Privacy and security
 
-```js
-StandaloneAssets.list();
-StandaloneAssets.has('library-id', 'asset-key');
-StandaloneAssets.bytes('library-id', 'asset-key'); // uncompressed only
-await StandaloneAssets.bytesAsync('library-id', 'asset-key'); // compressed or uncompressed
-StandaloneAssets.text('library-id', 'asset-key'); // uncompressed only
-await StandaloneAssets.textAsync('library-id', 'asset-key');
-StandaloneAssets.blobUrl('library-id', 'asset-key'); // uncompressed only
-await StandaloneAssets.blobUrlAsync('library-id', 'asset-key');
-await StandaloneAssets.loadClassicScript('library-id', 'main', 'ExpectedGlobal');
-const module = await StandaloneAssets.importModule('library-id', 'main');
-```
+Selected videos never leave the app for a server. Runtime FFmpeg downloads, CDN/API calls, fonts, analytics and telemetry are forbidden. CSP retains `connect-src 'none'` plus blocked objects/frames/forms/base URLs; required Blob and `'wasm-unsafe-eval'` permissions support embedded processing.
 
-Blob URLs are revoked after script/module loading and on page exit. Gzip assets are expanded with native `DecompressionStream` and cached in memory after first use.
+Raw ST and MT have no runtime HTTP requests. Hosted MT allows its documented same-origin helper request and reload only; it is neither a media-upload path nor an offline cache. Build-time dependency/release access is separate. See [SECURITY.md](../SECURITY.md).
 
-### Important limitation
+## Verification layers
 
-`importModule` does not rewrite relative imports inside a module. Choose a self-contained browser bundle, list every required file and implement a package-specific loader, or bundle the library before embedding.
+- Artifact validation: exact pins/provenance, embedded payloads, capabilities, CSP, favicon, restoration and separate manifests.
+- Lifecycle tests: actual app script with synthetic DOM/media/runtime boundaries, applied to source and release variants.
+- Deployment tests: actual PowerShell staging in temporary synthetic fixture roots; helper hash, raw preservation, failure-before-replacement, scope/header separation and workflow/browser-path wiring.
+- CDP regressions: exact target/location matching, delayed/blank/wrong URLs, absent capabilities, bounded transport waits and cleanup.
+- Preview browser check: real Chromium at the exact server-isolated MT URL.
+- Manual/authorized browser QA: real conversion, direct ST files, isolated MT, Pages-helper first load/reload, saving, console/network, responsive and accessible UI. Deterministic tests do not replace this layer.
 
-## Runtime security boundary
+Build/Pages/preview use the same `scripts/check-repository.ps1` gate with Node 24. Preview cleanup and unrelated dependency discovery retain their separate bounded purposes.
 
-The default Content Security Policy blocks ordinary fetch/XHR/WebSocket-style runtime connections with `connect-src 'none'`. It also blocks frames, objects, forms, and external base URLs. Inline CSS and JavaScript are allowed because the release is intentionally one HTML document. Embedded scripts and workers may be loaded through `blob:` URLs. Apps that embed WebAssembly may add the narrowly scoped CSP source `'wasm-unsafe-eval'` to `script-src`; this permits WebAssembly compilation without enabling general JavaScript string evaluation via `'unsafe-eval'`. An application that intentionally uses peer-to-peer WebRTC DataChannels may still keep this CSP and the fully serverless `iceServers: []` design; its privacy copy must distinguish “no server/cloud transfer” from “no data leaves this device.”
+## Reusable source components and assets
 
-Static scanning is a guardrail, not a proof. Browser developer tools should still be used to verify that the generated app makes no unexpected request.
+`components/` contains source snippets copied/adapted into the one-file app, not runtime downloads. Preserve accessibility, state ownership, cleanup and relevant component contracts. See `COMPONENTS.md` and `LLM_WORKFLOW.md`.
 
-## Large applications
-
-Keep source in one HTML while it remains understandable. When an app grows substantially, development files may be split under `src/` and assembled by the build script. Preserve these properties:
-
-- Two generated one-file release variants.
-- Pinned and auditable dependencies.
-- No runtime external resource.
-- Clear state ownership.
-- A build that fails on missing input.
+`window.StandaloneAssets` is the documented embedded-asset API. Compressed assets use asynchronous bytes/text/Blob loaders and native `DecompressionStream`; revoke Blob URLs when no longer needed. Module loading does not rewrite relative imports, so third-party modules must be self-contained or bundled before embedding. Never replace the complete embedded asset JSON with a second Base64 wrapper.
