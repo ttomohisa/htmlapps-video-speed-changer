@@ -1,6 +1,6 @@
 import fs from 'node:fs';
 import vm from 'node:vm';
-import { gunzipSync } from 'node:zlib';
+import { gunzipSync, gzipSync } from 'node:zlib';
 import test from 'node:test';
 import assert from 'node:assert/strict';
 
@@ -26,7 +26,7 @@ class Element {
   pause(){} load(){} focus(){} scrollIntoView(){} click(){this.clicked=true;} remove(){} append(){}
   showModal(){this.open=true;} close(){this.open=false;} contains(node){return node===this;}
 }
-function harness(language = 'en'){
+function harness(language = 'en', options = {}){
   const elements=new Map([...html.matchAll(/<[^>]*\bid="([^"]+)"[^>]*>/g)].map(m=>{
     const element = new Element(m[1]);
     element.hidden = /\shidden(?:\s|>)/.test(m[0]);
@@ -37,6 +37,8 @@ function harness(language = 'en'){
   const qualities=['high','standard','small'].map(value=>Object.assign(new Element(),{value,checked:value==='standard'}));
   get('preservePitchInput').checked=true;
   for(const id of ['targetHours','targetMinutes','targetSeconds']){get(id).value='0';get(id).max=id==='targetHours'?'999':'59';}
+  get('ffmpeg-js-gzip').textContent = gzipSync('synthetic core').toString('base64');
+  get('ffmpeg-wasm-gzip').textContent = gzipSync(new Uint8Array([0,97,115,109])).toString('base64');
   const created = [];
   const document={documentElement:{},body:new Element(),head:new Element(),activeElement:null,
     querySelector(s){if(s==='input[name="quality"]:checked')return qualities.find(x=>x.checked);if(s.startsWith('#'))return get(s.slice(1));throw Error(`query ${s}`);},
@@ -45,22 +47,28 @@ function harness(language = 'en'){
   };
   let nextUrl=0;const revoked=[];const runtimeCalls=[];let run=async()=>({files:[{name:'/output.mp4',data:new Uint8Array([109,112,52,97])}]});
   const runner={run:async args=>{runtimeCalls.push(args);return run(args);},dispose(){}};
-  const BrowserFFmpeg={videoSpeedChangerArgs:options=>options,videoSpeedChangerInspectArgs:options=>options,decodeJsonOutput:result=>result.report};
+  const loaderCalls=[];
+  const BrowserFFmpeg={loadEmbedded:async args=>{loaderCalls.push(args);return runner;},videoSpeedChangerArgs:options=>options,videoSpeedChangerInspectArgs:options=>options,decodeJsonOutput:result=>result.report};
   const sandbox={document,console:{error(){}},navigator:{language:'en'},localStorage:{getItem(key){return key.endsWith(':language') ? language : null;},setItem(){}},
     URL:{createObjectURL(){return `blob:synthetic-${++nextUrl}`;},revokeObjectURL(url){revoked.push(url);}},
     BrowserFFmpeg,Blob,Uint8Array,AbortController,DOMException,WebAssembly,TextDecoder,Intl,HTMLElement:Element,
+    location:{protocol:options.protocol || 'https:'},crossOriginIsolated:options.isolated ?? true,SharedArrayBuffer:options.sharedMemory === false ? undefined : SharedArrayBuffer,
+    DecompressionStream,Response,atob,
     clearTimeout(){},setTimeout(){return 1;},requestAnimationFrame:fn=>fn(),addEventListener(){}};
   sandbox.window=sandbox;
-  const source=originalScript.replace('__APP_CONFIG_JSON__',JSON.stringify({name:'test',slug:'test',version:'1.0.0',defaultLanguage:'en'}))
+  const manifest = options.threading ? {embeddedRuntime:{ffmpeg:{threading:options.threading}}} : null;
+  const script = manifest ? originalScript.replace(/const BUILD_MANIFEST = [^\n]+/, `const BUILD_MANIFEST = ${JSON.stringify(manifest)};`) : originalScript;
+  const source=script.replace('__APP_CONFIG_JSON__',JSON.stringify({name:'test',slug:'test',version:'1.0.0',defaultLanguage:'en'}))
     .replace('__BUILD_MANIFEST_JSON__','{}').replace('__EMBEDDED_ASSET_BUNDLE_JSON__','{}')
     .replace(/\}\)\(\);\s*$/,`globalThis.assessment = {loadVideo, resetSourceBoundary, setSpeed, setTargetPanel, updateTargetFromInputs, convertCurrentVideo, cancelCurrentConversion, resultFileName,
-      setRunner(value){ffmpegRunnerPromise=Promise.resolve(value);},
+      getFfmpegRunner,
+      setRunner(value){ffmpegRunnerPromise=Promise.resolve(value);}, clearRunner(){ffmpegRunnerPromise=null;},
       state(){return {currentFile,currentSpeed,converting,resultBlob,resultUrl,resultSnapshot,resultSaved,phase:asyncState.state.phase,activeProbe};}
     };})();`);
   vm.runInNewContext(source,sandbox,{filename:'upstream-index-script.js'});
   const api=sandbox.assessment;api.setRunner(runner);
   async function load(name='sample.mp4',duration=60){api.loadVideo({name,type:'video/mp4',size:8});const probe=api.state().activeProbe;Object.assign(probe,{duration,videoWidth:16,videoHeight:9});await probe.emit('loadedmetadata');}
-  return {api,get,load,revoked,runtimeCalls,created,setRun:fn=>{run=fn;}};
+  return {api,get,load,revoked,runtimeCalls,loaderCalls,created,setRun:fn=>{run=fn;}};
 }
 const deferred=()=>{let resolve,reject;const promise=new Promise((a,b)=>{resolve=a;reject=b;});return {promise,resolve,reject};};
 const tick=()=>new Promise(resolve=>setImmediate(resolve));
@@ -516,4 +524,45 @@ test('target helper descriptions are attached to all target fields', () => {
     const markup = html.match(new RegExp(`<input[^>]*id="${id}"[^>]*>`))?.[0];
     assert.match(markup, /aria-describedby="targetRangeHint targetResult"/);
   }
+});
+
+
+for (const threading of ['single-thread', 'multi-thread']) {
+ test(`embedded loader receives exact ${threading} manifest selection`, async () => {
+  const h=harness('en',{threading}); h.api.clearRunner(); await h.api.getFfmpegRunner();
+  assert.equal(h.loaderCalls.length,1); assert.equal(h.loaderCalls[0].threading,threading);
+  assert.equal(h.loaderCalls[0].coreJsText,'synthetic core');
+  assert.deepEqual([...new Uint8Array(h.loaderCalls[0].wasmBytes)],[0,97,115,109]);
+ });
+}
+for (const options of [{isolated:false},{sharedMemory:false},{protocol:'file:'}]) {
+ test(`MT is blocked before loading/conversion with ${JSON.stringify(options)}`, async () => {
+  const h=harness('en',{threading:'multi-thread',...options}); await h.load();
+  assert.equal(h.get('runtimeNotice').hidden,false); assert.equal(h.get('convertButton').disabled,true);
+  assert.match(h.get('runtimeNoticeMessage').textContent,/multi-thread|MT/);
+  assert.equal(h.get('singleThreadLink').attributes.href,'https://ttomohisa.github.io/htmlapps-video-speed-changer/');
+  await assert.rejects(h.api.getFfmpegRunner(),/multi-thread|MT/);
+  h.api.clearRunner(); await assert.rejects(h.api.getFfmpegRunner(),/multi-thread|MT/);
+  await h.api.convertCurrentVideo(); assert.equal(h.runtimeCalls.length,0); assert.equal(h.loaderCalls.length,0);
+  await h.get('languageButton').emit('click'); assert.equal(h.get('convertButton').disabled,true);
+  assert.match(h.get('runtimeNoticeMessage').textContent,/MT/);
+  h.api.resetSourceBoundary(); assert.equal(h.get('convertButton').disabled,true);
+ });
+}
+test('ST works as a local file without isolation or shared memory', async () => {
+ const h=harness('en',{threading:'single-thread',protocol:'file:',isolated:false,sharedMemory:false});
+ await h.load(); await h.api.convertCurrentVideo(); assert.equal(h.runtimeCalls.length,1); assert.ok(h.api.state().resultBlob);
+ assert.equal(h.get('runtimeNotice').hidden,true); assert.match(h.get('runtimeBadge').textContent,/ST/);
+ assert.match(h.get('helpOfflineNote').textContent,/local file/);
+});
+test('MT inspection fallback explains requirements rather than damaged media', async () => {
+ const h=harness('en',{threading:'multi-thread',isolated:false});
+ h.api.loadVideo({name:'sample.mkv',type:'video/x-matroska',size:8}); await h.api.state().activeProbe.emit('error'); await tick();
+ assert.equal(h.runtimeCalls.length,0); assert.equal(h.api.state().phase,'error');
+ assert.match(h.get('errorMessage').textContent,/multi-thread|MT/);
+});
+test('isolated MT exposes hosted offline limits and selected edition', async () => {
+ const h=harness('en',{threading:'multi-thread'}); await h.load(); await h.api.convertCurrentVideo();
+ assert.equal(h.get('runtimeNotice').hidden,true); assert.match(h.get('runtimeBadge').textContent,/MT/);
+ assert.match(h.get('helpOfflineNote').textContent,/host|isolation/); assert.equal(h.runtimeCalls.length,1);
 });
