@@ -40,9 +40,22 @@ $loader = @'
   <!-- GitHub Pages MT bootstrap. Hosts with server-side COOP/COEP do not load the fallback worker. -->
   <script>
     if (window.crossOriginIsolated === false) {
+      let reloadRequested = false;
+      const reloadWhenControlled = () => {
+        const serviceWorker = navigator.serviceWorker;
+        if (!serviceWorker || reloadRequested) return;
+        // updatefound can precede activation/clients.claim. Reload only once
+        // the navigation will actually pass through the isolation helper.
+        serviceWorker.addEventListener("controllerchange", reloadWhenControlled);
+        if (!serviceWorker.controller) return;
+        reloadRequested = true;
+        serviceWorker.removeEventListener("controllerchange", reloadWhenControlled);
+        window.location.reload();
+      };
       window.coi = {
         coepCredentialless: () => false,
         coepDegrade: () => false,
+        doReload: reloadWhenControlled,
         quiet: true
       };
       const coiScript = document.createElement("script");
@@ -80,10 +93,10 @@ Write-Host "  /mt/    -> multi-thread + same-origin COI service worker fallback"
 Write-Host "  /mt/index.mt.html -> unmodified MT standalone for isolated hosts"
 
 # Preview-only copy without /mt/* server headers, for real Pages bootstrap QA.
-# The relative script URL preserves the narrower /pages-bootstrap/mt/ scope.
+# The relative script URL preserves the narrower /pages-bootstrap-control-ready/mt/ scope.
 if ($PreviewBootstrapCheck) {
-  $bootstrapPages = Join-Path $Pages "pages-bootstrap"
+  $bootstrapPages = Join-Path $Pages "pages-bootstrap-control-ready"
   New-Item -ItemType Directory -Path $bootstrapPages -Force | Out-Null
   Copy-Item -LiteralPath $MtPages -Destination (Join-Path $bootstrapPages "mt") -Recurse
-  Write-Host "  /pages-bootstrap/mt/ -> preview-only Pages bootstrap verification"
+  Write-Host "  /pages-bootstrap-control-ready/mt/ -> preview-only Pages bootstrap verification"
 }

@@ -63,7 +63,7 @@ Project Pages does not use the Cloudflare `_headers` file. Its MT wrapper condit
 
 The helper is unmodified coi-serviceworker 0.1.7, pinned to commit `7b1d2a092d0d2dd2b7270b6f12f13605de26f214` and SHA-256 in `coi-serviceworker.lock.json`. Its [MIT notice](../licenses/coi-serviceworker-MIT.txt) is shipped beside it. Bootstrap forces `coepCredentialless` and `coepDegrade` false. The pinned worker supplies COOP `same-origin`, COEP `require-corp` and its upstream CORP `cross-origin`; do not confuse that last value with Cloudflare's server-provided CORP `same-origin`.
 
-A first load may reload before file selection. The helper does not upload video and is not an offline application cache. Unsupported service workers/private modes can leave MT unavailable; use ST. The same-origin helper request and reload are the only hosted exception to the raw build's no-runtime-network behavior. CSP keeps `connect-src 'none'`.
+A first load may reload before file selection. The wrapper's supported `doReload` hook waits for service-worker control before reloading once: upstream `updatefound` can occur before activation and `clients.claim`, and an earlier reload can leave the page unisolated. The helper does not upload video and is not an offline application cache. Unsupported service workers/private modes can leave MT unavailable; use ST. The same-origin helper request and reload are the only hosted exception to the raw build's no-runtime-network behavior. CSP keeps `connect-src 'none'`.
 
 ## Cloudflare PR previews
 
@@ -88,7 +88,7 @@ Only Cloudflare preview adds this optional directory:
 ./scripts/prepare-pages.ps1 -PreviewBootstrapCheck
 ```
 
-`/pages-bootstrap/mt/` contains byte-identical copies of the normal MT wrapper, raw MT, helper and MIT notice. The `/mt/*` header rule does not match this path. Its relative helper URL confines the service worker to `/pages-bootstrap/mt/`. This allows a fresh browser to exercise the actual Pages-style helper request, reload, resulting isolation and real conversion independently of server-header isolation.
+`/pages-bootstrap-control-ready/mt/` contains byte-identical copies of the normal MT wrapper, raw MT, helper and MIT notice. The `/mt/*` header rule does not match this path. Its relative helper URL confines the service worker to `/pages-bootstrap-control-ready/mt/`. This allows a fresh browser to exercise the actual Pages-style helper request, reload, resulting isolation and real conversion independently of server-header isolation.
 
 Normal Pages staging excludes the fixture. Automated staging/CDP tests do not themselves prove service-worker behavior; record the first-load/reload browser check separately. Do not label the QA route verified solely because `/mt/` passed.
 

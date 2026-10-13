@@ -2,6 +2,8 @@
 
 ## 1.1.0 - Unreleased
 
+- Wait for Pages service-worker control before the first isolation reload, avoiding an install/activation race.
+
 - Add separate ST and MT readable/self-extract releases using pinned FFmpeg WASM Builder v1.10.6 `video-speed-changer` assets, with variant-specific provenance, restoration manifests and size reports.
 - Embed the MT pthread Worker and gate runtime loading, conversion and fallback inspection on hosted cross-origin isolation and SharedArrayBuffer support. Keep ST direct-file/offline use and existing source/result ownership behavior.
 - Show the build variant and localized MT hosting guidance; moving to ST does not automatically transfer a selected video.

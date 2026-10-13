@@ -52,7 +52,7 @@ Raw ST is staged at `/`; raw MT is also available as `/mt/index.mt.html`. The `/
 
 Cloudflare `_headers` contains only `/mt/*` with COOP `same-origin`, COEP `require-corp`, CORP `same-origin`. GitHub Pages ignores that file and relies on the helper to inject COOP/COEP and reload. The unmodified helper's CORP value is upstream `cross-origin`, distinct from the server-header configuration. Already-isolated hosts skip the fallback.
 
-Preview-only `-PreviewBootstrapCheck` adds an identical MT directory at `/pages-bootstrap/mt/` outside the header rule so real browser QA can exercise first-load service-worker bootstrap/reload. Normal Pages output does not include it. The relative helper URL automatically keeps the fixture scope narrow.
+Preview-only `-PreviewBootstrapCheck` adds an identical MT directory at `/pages-bootstrap-control-ready/mt/` outside the header rule so real browser QA can exercise first-load service-worker bootstrap/reload. Normal Pages output does not include it. The relative helper URL automatically keeps the fixture scope narrow.
 
 [Multi-thread deployment](MULTI_THREAD_DEPLOYMENT.md) documents host configuration and Browser Kitty integration instructions. Do not infer live integration from those instructions.
 

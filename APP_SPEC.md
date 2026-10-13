@@ -123,7 +123,7 @@ MT budgets are pthread pool 8, video decoder 2, H.264 encoder 4, x264 lookahead 
 - `/mt/coi-serviceworker.js`: pinned coi-serviceworker 0.1.7, registered with its default script-directory scope `/mt/` (under the repository base path on project Pages).
 - `/_headers`: COOP `same-origin`, COEP `require-corp`, CORP `same-origin`, only for `/mt/*` on Cloudflare.
 
-The helper is not embedded in raw release artifacts. Its reviewed commit/hash and MIT notice are committed. It may register a service worker and reload the MT page to establish isolation on GitHub Pages; it is not an offline app cache. Already-isolated hosts skip this script. No root-scope worker or global isolation headers may be introduced. Browser Kitty integration is a deployment instruction, not a claim that integration is already live.
+The helper is not embedded in raw release artifacts. Its reviewed commit/hash and MIT notice are committed. It may register a service worker and reload the MT page once, after service-worker control is established, to establish isolation on GitHub Pages; it is not an offline app cache. Already-isolated hosts skip this script. No root-scope worker or global isolation headers may be introduced. Browser Kitty integration is a deployment instruction, not a claim that integration is already live.
 
 ### Runtime network policy
 

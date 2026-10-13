@@ -251,7 +251,7 @@ jobs:
           **[ST Previewを開く]($baseUrl/)**
           **[MT Previewを開く]($baseUrl/mt/)**
 
-          **[Pages bootstrap QAを開く]($baseUrl/pages-bootstrap/mt/)**
+          **[Pages bootstrap QAを開く]($baseUrl/pages-bootstrap-control-ready/mt/)**
 
           - Preview: ``$env:PREVIEW_NAME``
           - Commit: ``${{ github.event.pull_request.head.sha }}``
