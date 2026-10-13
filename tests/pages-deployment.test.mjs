@@ -152,8 +152,15 @@ test('preview browser selection treats one executable as an array, never its fir
   fs.mkdirSync(path.dirname(executable), { recursive: true });
   fs.writeFileSync(executable, 'synthetic executable path; never launched');
   const command = `$browserCandidates = ${selection}; ConvertTo-Json -Compress @{ count = @($browserCandidates).Count; first = [string]$browserCandidates[0] }`;
+  // Windows environment keys are case-insensitive, while this JS object is not.
+  // Remove every inherited spelling before adding fixture paths so installed
+  // runner browsers cannot leak into the one-executable test case.
+  const environment = Object.fromEntries(Object.entries(process.env).filter(([key]) => !/^programfiles(?:\(x86\))?$/i.test(key)));
+  environment.ProgramFiles = programFiles;
+  environment['ProgramFiles(x86)'] = programFilesX86;
+  assert.equal(Object.keys(environment).filter(key => /^programfiles(?:\(x86\))?$/i.test(key)).length, 2);
   const result = spawnSync(process.env.PWSH || 'pwsh', ['-NoLogo', '-NoProfile', '-Command', command], {
-    encoding: 'utf8', env: { ...process.env, ProgramFiles: programFiles, 'ProgramFiles(x86)': programFilesX86 }
+    encoding: 'utf8', env: environment
   });
   assert.ifError(result.error);
   assert.equal(result.status, 0, result.stdout + result.stderr);
