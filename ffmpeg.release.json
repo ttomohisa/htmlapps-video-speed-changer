@@ -1,8 +1,15 @@
 {
-  "schemaVersion": 1,
+  "schemaVersion": 2,
   "repository": "ttomohisa/htmlapps-ffmpeg-wasm-builder",
-  "tag": "v1.8.1",
-  "asset": "ffmpeg-wasm-video-speed-changer-v1.8.1.zip",
+  "tag": "v1.10.6",
   "profile": "video-speed-changer",
-  "builderVersion": "1.8.1"
+  "builderVersion": "1.10.6",
+  "variants": {
+    "single-thread": {
+      "asset": "ffmpeg-wasm-video-speed-changer-single-thread-v1.10.6.zip"
+    },
+    "multi-thread": {
+      "asset": "ffmpeg-wasm-video-speed-changer-multi-thread-v1.10.6.zip"
+    }
+  }
 }

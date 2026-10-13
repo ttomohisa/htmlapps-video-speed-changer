@@ -2,159 +2,104 @@
 
 [![GitHub Pages](https://github.com/ttomohisa/htmlapps-video-speed-changer/actions/workflows/deploy-pages.yml/badge.svg)](https://github.com/ttomohisa/htmlapps-video-speed-changer/actions/workflows/deploy-pages.yml)
 [![License: MIT](https://img.shields.io/badge/License-MIT-yellow.svg)](LICENSE)
-[![Single HTML](https://img.shields.io/badge/distribution-single%20HTML-0ea5e9)](https://ttomohisa.github.io/htmlapps-video-speed-changer/)
 
 [日本語版 README](README.ja.md)
 
-A browser-only, single-HTML app for changing video speed from 0.25× to 4.00×, checking the resulting duration before conversion, and saving the result as MP4 without uploading the selected video to a server.
+Change a video's speed from 0.25× to 4.00×, check its resulting duration, and save an MP4 entirely in your browser. Version 1.1.0 provides separate single-thread (ST) and multi-thread (MT) builds.
 
-## 🚀 Live demo
-
-### [Open Video Speed Changer on GitHub Pages](https://ttomohisa.github.io/htmlapps-video-speed-changer/)
-
-GitHub Pages delivers the initial HTML. After it loads, video inspection, speed preview, conversion, result preview, and saving are processed locally in the browser. The video you select is not uploaded by the app.
+[Open the standard ST app](https://ttomohisa.github.io/htmlapps-video-speed-changer/) · [Open the hosted MT app](https://ttomohisa.github.io/htmlapps-video-speed-changer/mt/)
 
 [![Video Speed Changer screenshot](assets/screenshot-en.png)](https://ttomohisa.github.io/htmlapps-video-speed-changer/)
 
 ## Features
 
-- **Change speed from 0.25× to 4.00×** — Use the slider or enter a precise multiplier and see the resulting duration immediately.
-- **Set speed from a target duration** — See the available whole-second range, then edit the desired final length to calculate a supported speed. Opening or closing the panel keeps your selected speed.
-- **Preview before and after conversion** — Check the selected playback speed first, then preview the converted MP4 before saving it.
-- **Choose how audio behaves** — Preserve pitch, let pitch change with speed, or remove audio from the output.
-- **Control basic output quality** — Choose High quality, Standard, or Smaller file and edit the output filename before conversion.
-- **Cancel and recover safely** — Cancel an active conversion without losing the selected video or settings; cancelling or failing a reconversion keeps the previous result and its matching automatic filename available. Edited filenames are preserved.
-- **Fully local single-HTML runtime** — FFmpeg JS/WASM and its Worker runtime are embedded in the generated HTML, with Japanese/English UI and no runtime upload of selected videos.
+- Set a speed with the slider or a precise number, and see the resulting duration immediately.
+- Calculate speed from a target duration. The whole-second range is shown; opening the panel does not change your speed.
+- Preview the original at the selected speed, then preview the converted result before saving.
+- Preserve pitch, shift pitch with speed, or remove audio.
+- Choose High quality, Standard, or Smaller file, and edit the output filename.
+- Cancel an active conversion. Cancelling or failing a reconversion keeps the previous result and its matching automatic filename; your edited filename is preserved.
+- Japanese and English UI, local processing, and embedded FFmpeg JS/WASM and Worker assets.
 
-## Quick start
+## How to use
 
-### Use the web demo
+1. Open the ST app, or use MT on a compatible isolated host.
+2. Choose or drop one video.
+3. Set speed from 0.25× to 4.00×. Alternatively, open **Set by target duration**, check the available range, and deliberately edit the desired time. The initial value is only a rounded suggestion.
+4. Choose audio behavior and, if needed, output quality in **Advanced settings**.
+5. Check the filename and choose **Convert with these settings**.
+6. Preview the result, compare duration/file size, and choose **Save MP4**.
 
-Just [open the demo](https://ttomohisa.github.io/htmlapps-video-speed-changer/). No installation or account is required.
+If native video preview fails, embedded FFmpeg can inspect some files and allow conversion without a native preview. Support for every codec or damaged file is not guaranteed.
 
-### Build a standalone file
+**Cancel conversion** stops the active Worker and retains the current source/settings. An older result remains saveable until a replacement conversion succeeds or you select another source. Switching to another app URL does not automatically transfer your selected video or result.
 
-1. Download or clone this repository on Windows.
-2. Double-click `build-standalone.bat`.
-3. The first build downloads the exact FFmpeg WASM Builder v1.8.1 Release Asset pinned in `ffmpeg.release.lock.json`.
-4. The asset SHA-256 and embedded FFmpeg files are verified before the app is generated.
-5. Copy `dist/index.html` wherever you need it and open that single file later.
+## Privacy and local processing
 
-Python, Node.js, and a local web server are not required for the build. The build uses Windows PowerShell and downloads the pinned release asset only when it is not already cached.
+Selected videos are never uploaded. FFmpeg, WASM and pthread Worker code are embedded in each build. There is no runtime CDN, analytics, telemetry, remote font, API or automatic update request; CSP keeps `connect-src 'none'`.
 
-## Usage
+Hosted pages require the initial HTML request. The GitHub Pages MT wrapper can additionally load the pinned same-origin `./coi-serviceworker.js`, register it within `/mt/`, and reload to establish isolation. This helper supplies response headers, does not upload video, and is not an offline application cache. Hosts already providing isolation headers do not load the fallback script. Raw standalone files contain no helper reference.
 
-1. Choose a video, or drag and drop one onto the page.
-2. Use the speed slider or enter a value from `0.25×` to `4.00×`.
-3. Optionally choose **Set by target duration**, check the available whole-second range, and edit the desired final length. The auto-filled time is a rounded suggestion; opening the panel does not change speed. If no whole-second target fits, set speed directly.
-4. Choose the audio behavior: preserve pitch, shift pitch with speed, or remove audio.
-5. Open **Advanced settings** if you want to change output quality.
-6. Check the output filename and choose **Convert with these settings**.
-7. Preview the converted result, compare its duration and file size, then choose **Save MP4**.
+Build-time downloads from the pinned Builder release are separate from application runtime traffic.
 
-### When browser preview is unavailable
+## Browsers and devices
 
-The app first uses the browser's native video support for preview and metadata. If that fails but the embedded FFmpeg runtime can read the file, the app shows the media information and still lets you try converting it. This does not guarantee support for every codec or malformed file.
+Current Chrome and Edge are the primary targets. Conversion uses WebAssembly, Workers, Blob URLs and `DecompressionStream`; native preview depends on browser codec support. Safari and Firefox capabilities and memory limits may differ.
 
-### Cancelling conversion
+MT additionally requires a secure hosted context with `crossOriginIsolated === true` and `SharedArrayBuffer` available. If unavailable, the app explains the limitation and blocks conversion and FFmpeg inspection. The standard ST app remains available; there is no hidden runtime download or silent ST fallback.
 
-Choose **Cancel conversion** while processing to stop the active FFmpeg Worker. The selected video and current settings remain available. If you cancel a reconversion after already creating a result, the previous result stays available until a new conversion succeeds or you replace the source video.
-
-## Publish with GitHub Pages
-
-The repository includes a workflow that rebuilds the standalone HTML from the pinned FFmpeg release and deploys `dist/` to GitHub Pages.
-
-1. Push the repository to GitHub as `htmlapps-video-speed-changer`.
-2. Open **Settings → Pages → Build and deployment → Source** and select **GitHub Actions**.
-3. Push to `main`, or manually run **Deploy standalone app to GitHub Pages** from the Actions tab.
-4. After a successful deployment, the demo is available at `https://ttomohisa.github.io/htmlapps-video-speed-changer/`.
-
-Each `main` build verifies the pinned release asset, standalone HTML, self-extract variant, CSP, embedded favicon, dependency manifests, and release provenance before deployment.
-
-## Development and build layout
-
-```text
-.
-├─ src/index.template.html          # Application template
-├─ ffmpeg.release.json              # Intended Builder release/profile
-├─ ffmpeg.release.lock.json         # Release/asset IDs, size, and SHA-256 lock
-├─ build-standalone.bat             # Normal pinned-release build entry point
-├─ build-with-local-ffmpeg.bat      # Builder-development-only import path
-├─ scripts/import-release-ffmpeg.ps1
-├─ scripts/check-release-artifacts.ps1
-├─ dist/index.html                  # Generated readable single HTML
-├─ dist/index.self-extract.html     # Generated compact self-extract variant
-└─ .github/workflows/
-   ├─ build-standalone.yml          # Pull request build validation
-   └─ deploy-pages.yml              # Automatic Pages deployment from main
-```
-
-### Update the FFmpeg runtime
-
-Do not point normal builds at `latest`. Release builds use the exact tag, asset name, byte count, and SHA-256 committed in `ffmpeg.release.lock.json`.
-
-When intentionally moving to a future Builder release:
-
-1. Update `ffmpeg.release.json`.
-2. Run `pin-ffmpeg-release.bat` once.
-3. Review the resolved release/asset metadata and generated SHA-256 lock.
-4. Commit the updated lock only after the Builder profile smoke tests have passed.
-5. Run `build-standalone.bat` again and complete the release regression.
-
-For active Builder development only, you can use:
-
-```bat
-build-with-local-ffmpeg.bat "C:\path\to\htmlapps-ffmpeg-wasm-builder"
-```
-
-That path records `local-builder` provenance and is intentionally rejected by stable release-artifact verification.
-
-### Result/source and target-duration regression checks
-
-Run `node --test tests/result-ownership.test.mjs` for focused state tests. `scripts/check-repository.ps1` also runs these tests on the source, readable HTML, root download, and decompressed self-extract payload, with release-parity checks. After source/help changes, run `build-standalone.bat` before the repository check to refresh the checked-in download; the pre-build parity guard rejects stale download code. This repository check needs Node.js; normal `build-standalone.bat` builds still need only PowerShell. Normal builds refresh `video-speed-changer.html`; custom output builds leave it unchanged.
-
-An automatic output filename stays attached to the current downloadable result until a new conversion succeeds. Selecting another video clears the old result, error message, and technical details. These automated state checks use synthetic media metadata and a runtime double; real-video conversion and browser/device checks remain separate.
-
-## Privacy and runtime network protection
-
-The generated application is designed for fully local processing after the HTML itself has loaded.
-
-- The selected video is not uploaded by the app.
-- The final HTML contains the FFmpeg JS/WASM core and Worker runtime.
-- Runtime CSP includes `connect-src 'none'`.
-- There is no runtime CDN, analytics, telemetry, external font, or update check.
-- The Builder GitHub Release is contacted only at build time.
-- Release builds verify `ffmpeg-wasm-video-speed-changer-v1.8.1.zip` against the committed SHA-256 before embedding it.
-
-The GitHub Pages version still needs the initial HTML request. To use the tool with the network fully disconnected, build the repository first and open `dist/index.html` locally with `file://`.
-
-## Browser support
-
-Chrome and Edge are the primary targets. The app depends on browser video-decoder support for native preview and on modern Web APIs such as WebAssembly, Web Workers, Blob URLs, and `DecompressionStream` for the embedded conversion runtime. Other current browsers may work, but codec support and available memory can differ.
+MT uses a pool of 8 pthread Workers, 2 video decoder threads, 4 H.264 encoder threads and 1 x264 lookahead thread. Audio codecs and filtergraphs remain single-threaded. Performance depends on the video, device and browser; MT is not always faster and can use more memory.
 
 ## Limitations
 
-- The supported speed range is `0.25×` to `4.00×`.
-- Output is MP4 using the dedicated FFmpeg/x264 conversion profile; this is not a general-purpose video editor.
-- Trimming, cropping, subtitles, transitions, and speed ramps are not included in v1.0.0.
-- Very large or high-resolution videos can exceed browser/device memory limits.
-- A video that cannot be previewed natively may still be convertible through FFmpeg inspection, but every codec is not guaranteed to work.
-- Browser preview and final export can differ slightly, especially when pitch preservation is involved.
+- Output is H.264/AAC MP4 from the dedicated speed-changing profile.
+- Trimming, cropping, subtitles, transitions and speed ramps are not included.
+- Very large, long or high-resolution videos can exceed device/browser memory.
+- Native speed preview and encoded output can differ slightly, especially with pitch preservation.
+- MT does not run directly from `file://`, and needs isolation headers or the hosted Pages fallback.
 
-## Dependencies
+## Single-HTML and offline use
 
-| Component | Version | License | Purpose |
-| --- | ---: | --- | --- |
-| FFmpeg / x264 WASM core | FFmpeg WASM Builder v1.8.1 `video-speed-changer` profile | GPL-2.0-or-later | Video/audio conversion and media inspection |
+- ST: `video-speed-changer.html` / `dist/index.html`, and `dist/index.self-extract.html`. Open directly with `file://`, including when disconnected after obtaining the files.
+- MT: `video-speed-changer.mt.html` / `dist/index.mt.html`, and `dist/index.mt.self-extract.html`. Each embeds its processing assets, but must be served from an isolated HTTP(S) context. A raw MT file cannot supply its own response headers.
+- The self-extract variants use an embedded gzip payload and restore the corresponding readable HTML byte-for-byte.
 
-The application source is MIT licensed. The generated FFmpeg/x264 binary keeps its own GPL-2.0-or-later licensing requirements. See [THIRD_PARTY_NOTICES.md](THIRD_PARTY_NOTICES.md) for details and the pinned corresponding-source relationship.
+For isolated hosting, GitHub Pages, Cloudflare previews and Browser Kitty integration instructions, see [Multi-thread deployment](docs/MULTI_THREAD_DEPLOYMENT.md). Follow [offline verification](VERIFY_OFFLINE.md) before publishing a release.
 
-## Contributing
+## Development and build
 
-Bug reports and feature proposals are welcome through GitHub Issues. See [CONTRIBUTING.md](CONTRIBUTING.md) for development guidance.
+On Windows, run `build-standalone.bat`. Normal builds need PowerShell; Node.js 24 is required for the complete repository regression gate:
 
-## License
+```powershell
+./scripts/check-repository.ps1
+```
 
-Copyright © 2026 ttomohisa
+Both variants use FFmpeg WASM Builder **v1.10.6**, profile `video-speed-changer`, pinned by `ffmpeg.release.json` and `ffmpeg.release.lock.json`. Normal builds verify the exact release asset byte count/SHA-256 and both runtime variants before embedding them. They refresh both root download files. Custom output builds leave those checked-in downloads unchanged.
 
-Licensed under the [MIT License](LICENSE).
+```text
+src/index.template.html               Editable app source
+ffmpeg.release.json / .lock.json       Exact Builder release and verified pin
+build-standalone.ps1 / .bat            Build both ST and MT
+scripts/check-repository.ps1          Canonical build, artifact and regression gate
+scripts/prepare-pages.ps1             Stage pages-dist without modifying raw releases
+dist/index[.mt].html                  Raw readable ST / MT
+dist/index[.mt].self-extract.html      Raw self-extract ST / MT
+dist/dependency-manifest[.mt].json     Separate runtime/provenance manifests
+dist/self-extract-manifest[.mt].json   Separate restoration manifests
+dist/build-size-report[.mt].json       Separate size reports
+pages-dist/index.html                 Raw ST hosted entry
+pages-dist/mt/index.html               Hosted MT wrapper
+pages-dist/mt/index.mt.html            Unmodified raw MT
+```
+
+To intentionally upgrade Builder, update `ffmpeg.release.json`, run `pin-ffmpeg-release.bat`, review release metadata/digests and profile smoke tests, then commit the validated lock and rebuild. Never use `latest` or hand-edit a hash to bypass verification. `build-with-local-ffmpeg.bat <builder-root>` is a Builder-development path only; its `local-builder` provenance is rejected for stable release artifacts.
+
+Build validation, GitHub Pages and Cloudflare PR previews all run the canonical repository check on Node 24. Pages deploys `pages-dist/`; Cloudflare adds isolation only to `/mt/*` and checks the exact MT URL in Chromium. Preview deployment requires the existing Cloudflare secrets. Cleanup remains a separate PR-close workflow. To enable Pages, select **Settings → Pages → Source → GitHub Actions**.
+
+The Node lifecycle tests execute the actual app script with synthetic DOM/media/runtime boundaries. They cover cancellation, source/result ownership, stale results and target-duration rules across release variants. Deployment tests execute the real staging script and CDP verifier with controlled fixtures. These do not replace real-video, browser/device or network checks; see [REGRESSION.md](REGRESSION.md).
+
+## License and dependencies
+
+Application source: [MIT](LICENSE). Embedded FFmpeg/x264 ST and MT binaries: GPL-2.0-or-later, with corresponding Builder v1.10.6 source obligations. Hosted Pages helper: coi-serviceworker 0.1.7, MIT, pinned by commit and SHA-256. See [THIRD_PARTY_NOTICES.md](THIRD_PARTY_NOTICES.md).
+
+Copyright © 2026 ttomohisa. Contributions and bug reports are welcome; see [CONTRIBUTING.md](CONTRIBUTING.md).

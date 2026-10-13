@@ -7,3 +7,5 @@ dist/*
 Thumbs.db
 vendor/ffmpeg/*
 !vendor/ffmpeg/README.md
+
+pages-dist/

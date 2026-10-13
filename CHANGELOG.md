@@ -1,5 +1,16 @@
 # Changelog
 
+## 1.1.0 - Unreleased
+
+- Wait for Pages service-worker control before the first isolation reload, avoiding an install/activation race.
+
+- Add separate ST and MT readable/self-extract releases using pinned FFmpeg WASM Builder v1.10.6 `video-speed-changer` assets, with variant-specific provenance, restoration manifests and size reports.
+- Embed the MT pthread Worker and gate runtime loading, conversion and fallback inspection on hosted cross-origin isolation and SharedArrayBuffer support. Keep ST direct-file/offline use and existing source/result ownership behavior.
+- Show the build variant and localized MT hosting guidance; moving to ST does not automatically transfer a selected video.
+- Stage raw ST at `/`, raw MT at `/mt/index.mt.html`, and a hosted MT wrapper at `/mt/`. Pin and license the same-origin, `/mt/`-scoped coi-serviceworker fallback without adding it to raw release HTML.
+- Add `/mt/*`-only Cloudflare isolation headers and exact-URL Chromium capability checks. Use the full Node 24 repository gate for build, Pages and preview workflows.
+- Add executable Pages staging, helper-integrity, delayed-navigation, timeout, incorrect-URL and singleton browser-path regressions. Document ST offline versus MT hosted behavior and the helper's limited network exception.
+
 ## 1.0.4 - 2026-10-10
 
 - Make Change settings reveal the speed input it focuses, including short/narrow windows and reduced-motion preferences.

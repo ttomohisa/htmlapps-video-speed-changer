@@ -18,13 +18,14 @@ concurrency:
   cancel-in-progress: true
 
 env:
+  POWERSHELL_TELEMETRY_OPTOUT: "1"
   WRANGLER_VERSION: "4.135.0"
 
 jobs:
   preview:
     if: github.event.pull_request.head.repo.full_name == github.repository
     runs-on: windows-latest
-    timeout-minutes: 20
+    timeout-minutes: 30
 
     steps:
       - name: Checkout repository
@@ -35,18 +36,13 @@ jobs:
         with:
           node-version: 24
 
-      - name: Validate PowerShell syntax and encoding
-        shell: pwsh
-        run: |
-          if (Test-Path -LiteralPath ".\scripts\check-powershell-syntax.ps1") {
-            .\scripts\check-powershell-syntax.ps1
-          } else {
-            Write-Host "PowerShell syntax preflight is not present in this repository; continuing with the repository check."
-          }
-
       - name: Build and verify standalone HTML
         shell: pwsh
         run: ./scripts/check-repository.ps1
+
+      - name: Stage preview-only Pages bootstrap check
+        shell: pwsh
+        run: ./scripts/prepare-pages.ps1 -PreviewBootstrapCheck
 
       - name: Check Cloudflare preview credentials
         id: cloudflare
@@ -149,24 +145,39 @@ jobs:
 
           Write-Host "Preview URL: $previewUrl"
 
-      - name: Probe Preview
+      - name: Probe ST and MT Preview
         if: steps.cloudflare.outputs.configured == 'true'
         shell: pwsh
         env:
           PREVIEW_URL: ${{ steps.preview.outputs.preview_url }}
         run: |
+          $baseUrl = $env:PREVIEW_URL.TrimEnd('/')
+          $stUrl = "$baseUrl/"
+          $mtUrl = "$baseUrl/mt/"
           $lastError = $null
 
           for ($attempt = 1; $attempt -le 12; $attempt++) {
             try {
-              $response = Invoke-WebRequest -Uri $env:PREVIEW_URL -MaximumRedirection 5 -TimeoutSec 30
+              $st = Invoke-WebRequest -Uri $stUrl -MaximumRedirection 5 -TimeoutSec 30
+              $mt = Invoke-WebRequest -Uri $mtUrl -MaximumRedirection 5 -TimeoutSec 30
 
-              if ($response.StatusCode -eq 200) {
-                Write-Host "Preview returned HTTP 200."
+              $coop = [string]$mt.Headers["Cross-Origin-Opener-Policy"]
+              $coep = [string]$mt.Headers["Cross-Origin-Embedder-Policy"]
+              $corp = [string]$mt.Headers["Cross-Origin-Resource-Policy"]
+
+              if (
+                $st.StatusCode -eq 200 -and
+                $mt.StatusCode -eq 200 -and
+                $coop -eq "same-origin" -and
+                $coep -eq "require-corp" -and
+                $corp -eq "same-origin"
+              ) {
+                Write-Host "ST Preview returned HTTP 200."
+                Write-Host "MT Preview returned HTTP 200 with COOP/COEP/CORP."
                 exit 0
               }
 
-              $lastError = "HTTP $($response.StatusCode)"
+              $lastError = "ST=$($st.StatusCode), MT=$($mt.StatusCode), COOP='$coop', COEP='$coep', CORP='$corp'"
             } catch {
               $lastError = $_.Exception.Message
             }
@@ -175,9 +186,57 @@ jobs:
             Start-Sleep -Seconds 5
           }
 
-          throw "Preview did not become ready: $lastError"
+          throw "ST/MT Preview did not become ready with required headers: $lastError"
 
-      - name: Comment Preview URL
+      - name: Verify MT browser isolation
+        if: steps.cloudflare.outputs.configured == 'true'
+        shell: pwsh
+        env:
+          PREVIEW_URL: ${{ steps.preview.outputs.preview_url }}
+        run: |
+          $baseUrl = $env:PREVIEW_URL.TrimEnd('/')
+          $mtUrl = "$baseUrl/mt/"
+          $browserCandidates = @(@(
+            (Join-Path ${env:ProgramFiles(x86)} "Microsoft\Edge\Application\msedge.exe"),
+            (Join-Path $env:ProgramFiles "Microsoft\Edge\Application\msedge.exe"),
+            (Join-Path $env:ProgramFiles "Google\Chrome\Application\chrome.exe"),
+            (Join-Path ${env:ProgramFiles(x86)} "Google\Chrome\Application\chrome.exe")
+          ) | Where-Object { Test-Path -LiteralPath $_ })
+
+          if (@($browserCandidates).Count -lt 1) {
+            throw "No supported Chromium browser was found on the Windows runner."
+          }
+
+          $browserPath = [string]$browserCandidates[0]
+          $profilePath = Join-Path $env:RUNNER_TEMP "video-speed-preview-browser-profile"
+          if (Test-Path -LiteralPath $profilePath) {
+            Remove-Item -LiteralPath $profilePath -Recurse -Force
+          }
+
+          $browserProcess = Start-Process -FilePath $browserPath -ArgumentList @(
+            "--headless=new",
+            "--disable-gpu",
+            "--no-first-run",
+            "--remote-debugging-port=9222",
+            "--user-data-dir=$profilePath",
+            $mtUrl
+          ) -PassThru
+
+          try {
+            $env:MT_URL = $mtUrl
+            node ./scripts/verify-mt-isolation.mjs
+            if ($LASTEXITCODE -ne 0) {
+              throw "MT browser isolation verification failed."
+            }
+
+            Write-Host "MT Preview browser check passed: crossOriginIsolated=true / SharedArrayBuffer=true."
+          } finally {
+            if ($null -ne $browserProcess -and -not $browserProcess.HasExited) {
+              Stop-Process -Id $browserProcess.Id -Force -ErrorAction SilentlyContinue
+            }
+          }
+
+      - name: Comment Preview URLs
         if: steps.cloudflare.outputs.configured == 'true'
         shell: pwsh
         env:
@@ -185,14 +244,20 @@ jobs:
           PREVIEW_URL: ${{ steps.preview.outputs.preview_url }}
           PREVIEW_NAME: ${{ steps.preview.outputs.preview_name }}
         run: |
+          $baseUrl = $env:PREVIEW_URL.TrimEnd('/')
           $body = @"
           ## Browser Kitty PR Preview
 
-          **[Previewを開く]($env:PREVIEW_URL)**
+          **[ST Previewを開く]($baseUrl/)**
+          **[MT Previewを開く]($baseUrl/mt/)**
+
+          **[Pages bootstrap QAを開く]($baseUrl/pages-bootstrap-control-ready/mt/)**
 
           - Preview: ``$env:PREVIEW_NAME``
           - Commit: ``${{ github.event.pull_request.head.sha }}``
           - Hosting: Cloudflare Workers Preview
+          - MT: COOP / COEP / CORP + crossOriginIsolated / SharedArrayBuffer verified
+          - Pages bootstrap QA: same MT wrapper without server isolation headers; fresh-browser helper/reload check required
 
           このPRへ追加でpushすると同じPreview URLが最新版へ更新されます。PRを閉じるとPreviewは自動削除されます。
           "@

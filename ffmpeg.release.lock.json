@@ -1,14 +1,25 @@
 {
-  "schemaVersion": 1,
+  "schemaVersion": 2,
   "repository": "ttomohisa/htmlapps-ffmpeg-wasm-builder",
-  "tag": "v1.8.1",
-  "asset": "ffmpeg-wasm-video-speed-changer-v1.8.1.zip",
+  "tag": "v1.10.6",
   "profile": "video-speed-changer",
-  "builderVersion": "1.8.1",
-  "releaseId": 383478756,
-  "assetId": 546791853,
-  "assetBytes": 3207461,
-  "sha256": "aef55e13bfb9f45cd042b3ec2582e449876a8e28bd612a01e4b7429dfbacac36",
-  "browserDownloadUrl": "https://github.com/ttomohisa/htmlapps-ffmpeg-wasm-builder/releases/download/v1.8.1/ffmpeg-wasm-video-speed-changer-v1.8.1.zip",
-  "pinnedAtUtc": "2026-09-06T05:42:53Z"
+  "builderVersion": "1.10.6",
+  "releaseId": 412105413,
+  "variants": {
+    "single-thread": {
+      "asset": "ffmpeg-wasm-video-speed-changer-single-thread-v1.10.6.zip",
+      "assetId": 638241209,
+      "assetBytes": 3209895,
+      "sha256": "705a7b0047858c3b9a4d3b2b73181cc40146c40c4ed34ce4eb9d6a4bc4995a2f",
+      "browserDownloadUrl": "https://github.com/ttomohisa/htmlapps-ffmpeg-wasm-builder/releases/download/v1.10.6/ffmpeg-wasm-video-speed-changer-single-thread-v1.10.6.zip"
+    },
+    "multi-thread": {
+      "asset": "ffmpeg-wasm-video-speed-changer-multi-thread-v1.10.6.zip",
+      "assetId": 638241253,
+      "assetBytes": 3260608,
+      "sha256": "a0fb319c8d035ce144cb8ee0bf257d16de14a1205675a274f67281f4507784c7",
+      "browserDownloadUrl": "https://github.com/ttomohisa/htmlapps-ffmpeg-wasm-builder/releases/download/v1.10.6/ffmpeg-wasm-video-speed-changer-multi-thread-v1.10.6.zip"
+    }
+  },
+  "pinnedAtUtc": "2026-10-13T21:12:42.0190287Z"
 }

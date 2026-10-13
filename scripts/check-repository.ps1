@@ -34,6 +34,9 @@ $required = @(
   "src\index.template.html",
   "build-standalone.ps1",
   "scripts\build-self-extract.ps1",
+  "scripts\build-variant.ps1",
+  "scripts\ffmpeg-release-tools.ps1",
+  "scripts\check-release-artifacts.ps1",
   "scripts\pin-ffmpeg-release.ps1",
   "scripts\import-release-ffmpeg.ps1",
   "scripts\import-local-ffmpeg.ps1",
@@ -126,8 +129,8 @@ foreach ($token in @("bytesAsync", "blobUrlAsync", "videoInput", "window.AppAsyn
   if (-not $sourceText.Contains($token)) { throw "src\index.template.html is missing required template behavior marker: $token" }
 }
 
-$builderText = Get-Content -Raw -Encoding UTF8 (Join-Path $Root "build-standalone.ps1")
-foreach ($token in @("compressionSetting", "Compress-GzipBytes", "build-size-report.json", "sizeBudget", "DependencyLockPath", "tarballSha256", "__EMBEDDED_ASSET_BUNDLE_JSON__", "__FFMPEG_JS_GZIP_BASE64__", "__FFMPEG_WASM_GZIP_BASE64__", "__FFMPEG_BROWSER_RUNTIME__", "vendor\ffmpeg")) {
+$builderText = Get-Content -Raw -Encoding UTF8 (Join-Path $Root "scripts/build-variant.ps1")
+foreach ($token in @("compressionSetting", "Compress-GzipBytes", "build-size-report", "sizeBudget", "DependencyLockPath", "tarballSha256", "__EMBEDDED_ASSET_BUNDLE_JSON__", "__FFMPEG_JS_GZIP_BASE64__", "__FFMPEG_WASM_GZIP_BASE64__", "__FFMPEG_BROWSER_RUNTIME__", "vendor/ffmpeg")) {
   if (-not $builderText.Contains($token)) { throw "build-standalone.ps1 is missing required asset pipeline marker: $token" }
 }
 if ($builderText.Contains("__EMBEDDED_ASSET_BUNDLE_BASE64__")) { throw "build-standalone.ps1 must not wrap the full asset bundle in Base64." }
@@ -149,18 +152,8 @@ for ($index = $selfExtractBuilderStart; $index -lt $selfExtractBuilderBytes.Leng
   }
 }
 
-$buildCompatibilityFiles = @(
-  "build-standalone.ps1",
-  "scripts\build-self-extract.ps1",
-  "scripts\verify-standalone.ps1",
-  "scripts\verify-self-extract.ps1",
-  "scripts\pin-ffmpeg-release.ps1",
-  "scripts\import-release-ffmpeg.ps1",
-  "scripts\import-local-ffmpeg.ps1",
-  "scripts\dependency-tools.ps1",
-  "scripts\check-dependency-updates.ps1",
-  "scripts\sync-dependency-lock.ps1",
-  "scripts\update-dependency.ps1"
+$buildCompatibilityFiles = @("build-standalone.ps1") + @(
+  Get-ChildItem -LiteralPath (Join-Path $Root "scripts") -Filter "*.ps1" | Where-Object { $_.Name -ne "check-repository.ps1" } | ForEach-Object { "scripts/" + $_.Name }
 )
 foreach ($relative in $buildCompatibilityFiles) {
   $compatibilityPath = Join-Path $Root $relative
@@ -235,33 +228,17 @@ if ([string]::IsNullOrWhiteSpace([string]$app.name)) { throw "app.config.json: n
 if ([string]::IsNullOrWhiteSpace([string]$app.slug)) { throw "app.config.json: slug is required" }
 if ([string]::IsNullOrWhiteSpace([string]$app.version)) { throw "app.config.json: version is required" }
 if ([string]$app.slug -ne "video-speed-changer") { throw "app.config.json: slug must be video-speed-changer" }
-if ([string]$app.version -ne "1.0.4") { throw "app.config.json: v1.0.4 source package must identify version 1.0.4" }
+if ([string]$app.version -ne "1.1.0") { throw "app.config.json: v1.1.0 source package must identify version 1.1.0" }
 if ([double]$app.build.sizeBudget.readableWarningMb -gt 8) { throw "Readable single-HTML warning budget must stay at or below 8 MB for v1.0.0." }
 if ([double]$app.build.sizeBudget.selfExtractWarningMb -gt 5) { throw "Self-extract single-HTML warning budget must stay at or below 5 MB for v1.0.0." }
 if (-not $sourceText.Contains("connect-src 'none'")) { throw "Video Speed Changer must keep connect-src 'none'." }
 if (-not $sourceText.Contains("'wasm-unsafe-eval'")) { throw "Video Speed Changer must allow wasm-unsafe-eval for the embedded FFmpeg WASM core." }
 # The app-icon regression below verifies the supplied header and favicon artwork.
+. (Join-Path $Root "scripts/ffmpeg-release-tools.ps1")
 $ffmpegReleaseConfig = Get-Content -Raw -Encoding UTF8 (Join-Path $Root "ffmpeg.release.json") | ConvertFrom-Json
 $ffmpegReleaseLock = Get-Content -Raw -Encoding UTF8 (Join-Path $Root "ffmpeg.release.lock.json") | ConvertFrom-Json
-foreach ($obj in @($ffmpegReleaseConfig, $ffmpegReleaseLock)) {
-  if ([int]$obj.schemaVersion -ne 1) { throw "FFmpeg release config/lock must use schemaVersion 1." }
-}
-foreach ($property in @("repository", "tag", "asset", "profile", "builderVersion")) {
-  if ([string]$ffmpegReleaseLock.$property -ne [string]$ffmpegReleaseConfig.$property) { throw "FFmpeg release lock mismatch for $property." }
-}
-if ([string]$ffmpegReleaseConfig.repository -ne "ttomohisa/htmlapps-ffmpeg-wasm-builder") { throw "FFmpeg release repository pin changed unexpectedly." }
-if ([string]$ffmpegReleaseConfig.tag -ne "v1.8.1") { throw "FFmpeg release tag must stay pinned to v1.8.1 for v1.0.0." }
-if ([string]$ffmpegReleaseConfig.asset -ne "ffmpeg-wasm-video-speed-changer-v1.8.1.zip") { throw "FFmpeg release asset name changed unexpectedly." }
-if ([string]$ffmpegReleaseLock.sha256 -notmatch '^[a-f0-9]{64}$') { throw "FFmpeg release is not pinned. Release Builder v1.8.1, run pin-ffmpeg-release.bat, and commit ffmpeg.release.lock.json." }
-if ([long]$ffmpegReleaseLock.releaseId -le 0 -or [long]$ffmpegReleaseLock.assetId -le 0 -or [long]$ffmpegReleaseLock.assetBytes -le 0) { throw "FFmpeg release lock metadata is incomplete." }
-$pinReleaseText = Get-Content -Raw -Encoding UTF8 (Join-Path $Root "scripts\pin-ffmpeg-release.ps1")
-foreach ($token in @("releases/tags", "asset.digest", "sha256:", "Assert-ReleasePayload", "pinnedAtUtc")) {
-  if (-not $pinReleaseText.Contains($token)) { throw "FFmpeg release pin script is missing required marker: $token" }
-}
-$importReleaseText = Get-Content -Raw -Encoding UTF8 (Join-Path $Root "scripts\import-release-ffmpeg.ps1")
-foreach ($token in @("ffmpeg.release.lock.json", "assetSha256", "github-release", "Get-Sha256FileHex", "Assert-ReleasePayload")) {
-  if (-not $importReleaseText.Contains($token)) { throw "Pinned FFmpeg import script is missing required marker: $token" }
-}
+Assert-ReleaseLock $ffmpegReleaseConfig $ffmpegReleaseLock
+if ([string]$ffmpegReleaseConfig.builderVersion -ne "1.10.6") { throw "This app requires Builder 1.10.6." }
 $selfExtractBuilderText = Get-Content -Raw -Encoding UTF8 (Join-Path $Root "scripts\build-self-extract.ps1")
 if (-not $selfExtractBuilderText.Contains("'wasm-unsafe-eval'")) { throw "Self-extract CSP must allow wasm-unsafe-eval for the restored FFmpeg WASM app." }
 $verifyStandaloneText = Get-Content -Raw -Encoding UTF8 (Join-Path $Root "scripts\verify-standalone.ps1")
@@ -272,21 +249,6 @@ $verifySelfExtractText = Get-Content -Raw -Encoding UTF8 (Join-Path $Root "scrip
 foreach ($token in @("self-extract-source-sha256", "self-extract-gzip-sha256", "Get-Sha256Hex", "byte-count metadata")) {
   if (-not $verifySelfExtractText.Contains($token)) { throw "Self-extract verification hardening is missing required marker: $token" }
 }
-$importScriptText = Get-Content -Raw -Encoding UTF8 (Join-Path $Root "scripts\import-local-ffmpeg.ps1")
-foreach ($token in @("dist\video-speed-changer", "ffmpeg.js.gz", "ffmpeg.wasm.gz", "browser-ffmpeg.js")) {
-  if (-not $importScriptText.Contains($token)) { throw "FFmpeg import script is missing required marker: $token" }
-}
-foreach ($token in @("1.8.1", "builderVersion", "video-speed-changer", "options.preservePitch === false", "options.signal", "videoSpeedChangerInspectArgs", "Assert-EmbeddedCorePayloads", "fileProtocolSingleHtml", "requiresSharedArrayBuffer", "requiresCrossOriginIsolation")) {
-  if (-not $importScriptText.Contains($token)) { throw "FFmpeg import compatibility check is missing required marker: $token" }
-}
-$releaseArtifactCheckText = Get-Content -Raw -Encoding UTF8 (Join-Path $Root "scripts\check-release-artifacts.ps1")
-foreach ($token in @("verify-standalone.ps1", "verify-self-extract.ps1", "embeddedRuntime", "fileProtocolSingleHtml", "build-size-report.json", "github-release", "ffmpeg.release.lock.json", "assetSha256")) {
-  if (-not $releaseArtifactCheckText.Contains($token)) { throw "Release artifact check is missing required marker: $token" }
-}
-$buildStandaloneText = Get-Content -Raw -Encoding UTF8 (Join-Path $Root "build-standalone.ps1")
-foreach ($token in @("manifest.json", "ffmpegBuilderVersion", "1.8.1", "options.preservePitch === false", "options.signal", "videoSpeedChangerInspectArgs", "Assert-EmbeddedCorePayloads", "embeddedRuntime", "fileProtocolSingleHtml", "requiresSharedArrayBuffer", "requiresCrossOriginIsolation", "import-release-ffmpeg.ps1", "UseLocalFfmpeg", "github-release", "assetSha256")) {
-  if (-not $buildStandaloneText.Contains($token)) { throw "Standalone FFmpeg compatibility check is missing required marker: $token" }
-}
 foreach ($token in @('id="speedPresetRange"', 'id="speedModeLabel"', 'id="noAudioInput"', 'id="outputNameInput"', 'id="resultPreview"', 'id="cancelConvertButton"', 'id="previewUnavailable"', 'id="convertErrorDetails"', 'name="quality"', "QUALITY_PRESETS", "resultStaleNotice", "preservePitch:", "noAudio:", "AbortController", "inspectSourceWithFfmpeg")) {
   if (-not $sourceText.Contains($token)) { throw "v1.0.0 UI/output UX is missing required marker: $token" }
 }
@@ -296,7 +258,7 @@ foreach ($token in @('#helpDialog[open]', 'flex-direction: column', 'min-height:
 
 # Check the committed download before a build could hide stale application code.
 $node = Get-Command node -ErrorAction Stop
-& $node.Source --test (Join-Path $Root "tests/build-contract.test.mjs")
+& $node.Source --test --test-name-pattern "PowerShell preflight|app configuration" (Join-Path $Root "tests/build-contract.test.mjs")
 if ($LASTEXITCODE -ne 0) { throw "Video Speed Changer build contract regression failed." }
 & $node.Source (Join-Path $Root "tests/check-release-parity.mjs") --source-only
 if ($LASTEXITCODE -ne 0) { throw "Video Speed Changer source/download parity failed." }
@@ -325,7 +287,7 @@ if (-not $webrtcReadyText.Contains("options.requireReadyChannelOpen!==false&&(!r
 # Node executes the real app script with synthetic DOM/media/runtime boundaries.
 $previousTarget = $env:VIDEO_SPEED_TEST_HTML
 try {
-  foreach ($target in @("src/index.template.html", "dist/index.html", "video-speed-changer.html", "dist/index.self-extract.html")) {
+  foreach ($target in @("src/index.template.html", "dist/index.html", "video-speed-changer.html", "dist/index.self-extract.html", "dist/index.mt.html", "dist/index.mt.self-extract.html", "video-speed-changer.mt.html")) {
     $env:VIDEO_SPEED_TEST_HTML = $target
     & $node.Source --test (Join-Path $Root "tests/result-ownership.test.mjs")
     if ($LASTEXITCODE -ne 0) { throw "Video Speed Changer result/source regression failed: $target" }
@@ -343,4 +305,12 @@ try {
 if ($LASTEXITCODE -ne 0) { throw "Header normalization regression failed." }
 & node (Join-Path $Root "tests\app-icon.test.mjs")
 if ($LASTEXITCODE -ne 0) { throw "App icon regression failed." }
+& (Join-Path $Root "scripts/prepare-pages.ps1")
+$previousPwsh = $env:PWSH
+try {
+  $env:PWSH = (Get-Process -Id $PID).Path
+  $regressions = @(Get-ChildItem -LiteralPath (Join-Path $Root "tests") -Filter "*.test.*" | ForEach-Object { $_.FullName })
+  & $node.Source --test @regressions
+  if ($LASTEXITCODE -ne 0) { throw "Complete Node regression suite failed." }
+} finally { $env:PWSH = $previousPwsh }
 Write-Host "[OK] Repository check passed." -ForegroundColor Green

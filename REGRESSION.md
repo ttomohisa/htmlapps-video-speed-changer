@@ -1,3 +1,34 @@
+# v1.1.0 ST/MT deployment regression (2026-10-13, unreleased)
+
+Current deterministic deployment checks were run with Node.js 24.19.0 and PowerShell 7.5.2 on Linux. The tests execute the real Pages staging script in temporary synthetic fixture directories and the real CDP verifier with deterministic transport/time boundaries. They do not launch a browser or decode media.
+
+- `node --test tests/pages-deployment.test.mjs tests/preview-isolation.test.mjs`: 25 tests passed after observed failing tests for missing deployment behavior, the preview-only bootstrap fixture and workflow telemetry opt-out.
+- `scripts/check-repository.ps1`: complete pinned ST/MT build, raw/self-extract verification, release parity and final 107-test repository suite passed after the control-wait fix. A separate `node --test tests/*.test.mjs` run passed 100 tests (the canonical gate also includes `.cjs` suites).
+- Raw ST root and raw `/mt/index.mt.html` remain byte-identical; only `/mt/index.html` receives the conditional helper bootstrap.
+- Helper version/commit/SHA-256 and MIT notice are checked; tampered helper, missing/malformed MT, and already-wrapped MT fail before overwriting a previous stage.
+- Executing the wrapper bootstrap proves already-isolated/unsupported contexts do not request the helper; only explicit false isolation triggers the same-origin relative script.
+- `_headers` contains only `/mt/*` with COOP/COEP/CORP. Normal Pages excludes the QA copy; preview-only `/pages-bootstrap-control-ready/mt/` copies exact wrapper/helper bytes and remains outside that header rule with a relative directory-scoped helper.
+- The actual workflow browser-selection expression was executed with a fixture containing exactly one executable path; the full path is preserved, including spaces.
+- CDP regressions cover exact target and execution-context URL matching, delayed navigation, initial `about:blank`, wrong origin/path/query, unavailable isolation/SAB, stalled fetch/socket/evaluation, errors, timer cleanup and socket cleanup.
+- Build/Pages/preview workflow contracts require Node 24 and the canonical repository gate. Preview cleanup remains deletion-only; unrelated dependency maintenance is unchanged.
+
+## Actual Windows / browser evidence at PR9 ac6e5dd
+
+- Canonical Windows run [38473645258](https://github.com/ttomohisa/htmlapps-video-speed-changer/actions/runs/38473645258) passed all 105 tests, real ST/MT builds and generated-file checks. Preview run [38473644986](https://github.com/ttomohisa/htmlapps-video-speed-changer/actions/runs/38473644986) passed its HTTP and exact-page browser-isolation checks.
+- Canonical artifact 11853451558 (9,924,473 bytes, SHA-256 `1b143cb1c8fadc26a91b8c47dd3944abe9dee9df80da1c78da6f7a35b454349d`) was independently unpacked: both aliases match the readable outputs; both self-extract payloads restore byte-for-byte; all manifest sizes/hashes and official embedded gzip payloads match. Checked-in versus Windows readable output differs only in generated timestamp/line endings.
+- The cloud Chromium browser used the actual PR preview ST `/` and server-isolated MT `/mt/`, selected synthetic MP4s, converted them and saved files with edited filenames. Native `ffprobe` and PCM FFT inspected the saved bytes independently.
+- Six-second H.264/AAC 440 Hz input at 2x: ST and MT preserve-pitch output are both 2.995563 seconds with H.264/AAC and dominant audio 440.24 Hz. MT pitch-shift output is 3.000000 seconds / 879.98 Hz. MT remove-audio output is 2.979167 seconds with no audio stream. ST silent-input output is also valid video-only 2.979167 seconds.
+- MT cancellation during a 20-second 1280x720 input returns to usable settings. Retry saves 9.999167 seconds H.264/AAC. Cancelling a subsequent changed-speed reconversion preserves the prior file byte-for-byte (SHA-256 `9cc06808d749b39261a103823af2de200ee8ee56823a96edb8fa6d79b8a479be`).
+- Pages-style bootstrap ultimately converted and saved exactly the same bytes as server-isolated MT, but its first automatic reload raced activation and initially stayed blocked. This is **not** accepted as first-visit success. The supported `doReload` override now waits for control; a regression using the actual upstream helper failed before the fix and passes afterward. Vendor bytes remain unchanged. A fresh, bounded preview-only scope `/pages-bootstrap-control-ready/mt/` is reserved for retesting the corrected first visit.
+- A verified 90-degree Display Matrix source converts to 360x640 H.264/AAC output, 2.995563 seconds, with a visibly portrait result preview. The earlier incorrectly named fixture without rotation metadata is excluded from this evidence.
+- Japanese/English Help was checked at a narrow desktop-browser viewport (500 px modal / 485 px page content): readable, scrollable, closable and no horizontal overflow. This does not establish 320/360/390 px or physical-device coverage.
+
+Still required: canonical Windows verification of the control-wait patch; fresh automatic Pages bootstrap and real conversion without a manual reload; ST `file://` and both browser self-extract loaders; full narrow/mobile, keyboard, console/network and device matrix. Successful server-isolated MT checks cannot substitute for first-load helper QA. Historical records below are not reruns for v1.1.0.
+
+See `VERIFY_OFFLINE.md` and `docs/MULTI_THREAD_DEPLOYMENT.md` for the complete release matrix. This section records executed automated checks; add browser/media evidence separately from its actual runs.
+
+---
+
 # Result/source lifecycle regression (2026-10-05, unreleased)
 
 The current change was checked with Node tests executing the actual application script, using tiny fictitious media metadata, DOM elements, and FFmpeg runtime doubles. No real media is decoded or converted by this test suite.

@@ -1,118 +1,90 @@
-# v1.0.0 stable release verification
+# v1.1.0 release, offline and isolation verification
 
-v1.0.0 treats the pinned Builder release, `dist/index.html`, and `dist/index.self-extract.html` as one release chain.
+ST and MT use separate Builder v1.10.6 assets and separate raw/self-extract artifacts. ST is the direct-file/offline requirement. MT needs isolated hosting; an embedded runtime does not remove that requirement. Record what was actually executed in `REGRESSION.md`.
 
-## 1. Builder release pin
+## 1. Pin and complete build
 
-Before running the stable build:
+Confirm schemaVersion 2 `ffmpeg.release.json` / `ffmpeg.release.lock.json` agree on:
 
-1. Confirm `ttomohisa/htmlapps-ffmpeg-wasm-builder` v1.8.1 is published.
-2. Confirm the release contains `ffmpeg-wasm-video-speed-changer-v1.8.1.zip`.
-3. Run `pin-ffmpeg-release.bat`.
-4. Confirm `ffmpeg.release.lock.json` now has:
-   - a 64-character lowercase `sha256`,
-   - positive `releaseId`, `assetId`, and `assetBytes`,
-   - tag `v1.8.1`,
-   - profile `video-speed-changer`,
-   - Builder version `1.8.1`.
-5. Commit that lock before release builds.
+- `ttomohisa/htmlapps-ffmpeg-wasm-builder`, tag `v1.10.6`, profile `video-speed-changer`.
+- ST: `ffmpeg-wasm-video-speed-changer-single-thread-v1.10.6.zip`.
+- MT: `ffmpeg-wasm-video-speed-changer-multi-thread-v1.10.6.zip`.
+- Each variant's real SHA-256, positive release/asset identity and byte count.
 
-The pin script must verify both GitHub release metadata and the downloaded archive contents before writing the lock.
+For an intentional upgrade only, run `pin-ffmpeg-release.bat`, review the downloaded assets and metadata, and commit the verified lock. Never hand-edit hashes or resolve `latest` in a normal build.
 
-## 2. Build
+With Node.js 24 and PowerShell available, run:
 
-Run:
-
-```bat
-build-standalone.bat
+```powershell
+./scripts/check-repository.ps1
 ```
 
-Do **not** use `build-with-local-ffmpeg.bat` for the stable release.
+This is the canonical CI/Pages/preview gate. A normal build-only entry is `build-standalone.bat`. `build-with-local-ffmpeg.bat` is not a stable release source. Both generated dependency manifests must record `github-release` provenance with the matching variant, Builder version, asset and hash. MT must include its pthread Worker and the isolation capability flags.
 
-The build must finish with the release-artifact verification success message and must record `github-release` provenance in `dist/dependency-manifest.json`.
+Check the four raw HTML artifacts, both root aliases, both dependency/restoration manifests and both size reports. Self-extract payloads must match their respective readable HTML byte-for-byte. Do not mistake a successful source-only test for a verified generated artifact.
 
-Confirm the provenance includes the same release tag / asset / SHA-256 as `ffmpeg.release.lock.json`.
+## 2. ST readable HTML through file://
 
-## 3. Readable single HTML via file://
+Open `dist/index.html` or `video-speed-changer.html` directly, with network disconnected after obtaining the file. Use DevTools Network with Preserve log enabled:
 
-Open `dist/index.html` directly from Explorer.
+1. Reload; confirm the ST badge and Japanese/English UI.
+2. Select a non-sensitive test video and preview it.
+3. Test representative speeds including 0.25×, 1.33×, 2× and 4×, and target-duration range/suggestion behavior.
+4. Convert with preserve-pitch, pitch-shift and remove-audio modes; also test an audio-less source.
+5. Preview output, edit a filename and save; inspect the saved MP4's duration, orientation, audio and filename.
+6. Cancel conversion and confirm source/settings remain usable.
+7. With an older successful result, cancel/fail a reconversion and verify the older result and matching filename survive.
+8. Replace/reset source during work and verify late callbacks cannot overwrite the new source.
+9. Exercise fallback inspection with a suitable native-preview-unavailable fixture, when available.
 
-With DevTools Network open and Preserve log enabled:
+Expected: no HTTP(S), XHR/fetch, WebSocket/EventSource, CDN/font/analytics/telemetry request. Blob URLs and Worker activity are local and expected.
 
-1. Reload the local file.
-2. Select a test video.
-3. Change speed.
-4. Convert.
-5. Preview the result.
-6. Save the MP4.
-7. Repeat for pitch preservation, pitch shifting, and audio removal.
-8. Cancel an active conversion and confirm controls recover.
-9. Reconvert, cancel, and confirm any older result remains available.
-10. Test a source that browser-native preview cannot decode when available; confirm FFmpeg inspection fallback is clear.
+## 3. ST self-extract through file://
 
-Expected runtime network behavior:
+Repeat the main flow with `dist/index.self-extract.html`. Confirm loader favicon, no corrupted Japanese text, restored app, actual conversion/save and the same network boundary. Static decompression verification alone does not exercise the browser loader.
 
-- no HTTP/HTTPS request,
-- no XHR/fetch request,
-- no WebSocket/EventSource,
-- no CDN/font/image/analytics/telemetry request.
+## 4. MT rejection and server-isolated hosting
 
-Blob URLs and Worker activity are expected and local.
+First open both `dist/index.mt.html` and `dist/index.mt.self-extract.html` directly. Confirm clear bilingual direct-file guidance, blocked conversion/FFmpeg inspection, and no attempted runtime startup/download. Following the ST link must not automatically transmit the selected video.
 
-## 4. Self-extract HTML via file://
+Then serve the raw MT files from a secure host (or supported loopback origin) with COOP `same-origin`, COEP `require-corp`, CORP `same-origin`. Confirm:
 
-Open `dist/index.self-extract.html` directly.
+- The exact requested document URL is loaded.
+- `crossOriginIsolated === true` and SharedArrayBuffer is available.
+- The MT badge, real conversion, cancellation, source replacement, old-result retention, filename editing and output validity work.
+- There is no runtime external asset request or video upload.
+- Raw MT and self-extract MT behave consistently.
+- An unisolated host or unavailable SharedArrayBuffer blocks processing with hosting/browser guidance.
 
-Confirm:
+Do not claim MT is universally faster. Record browser/version, fixture, measured timings if measured, and memory limitations. A native FFmpeg test is not an MT WASM browser test.
 
-- loader favicon appears,
-- Japanese text is not mojibake,
-- restored app loads,
-- video selection/preview/conversion/save work,
-- the same runtime network expectations hold.
+## 5. Hosted wrapper and service-worker boundary
 
-`scripts/verify-self-extract.ps1` must report byte-for-byte restoration against `dist/index.html`.
+Inspect `pages-dist/` produced by the canonical gate:
 
-## 5. Smartphone / narrow viewport
+- Root ST is identical to raw ST and has no helper reference.
+- `/mt/index.mt.html` is identical to raw MT.
+- `/mt/index.html` has only the conditional same-origin helper bootstrap.
+- The staged helper matches the committed SHA-256 and ships its MIT notice.
+- `_headers` contains only `/mt/*` with the three server isolation headers.
 
-Check at least 320px, 360px, and 390px widths:
+On the server-isolated Cloudflare `/mt/` route, use a fresh browser context to confirm isolation on the exact URL and no fallback script request. CI's real Chromium check verifies the exact URL and both capabilities; it does not verify conversion or first-load service-worker bootstrap.
 
-- no horizontal scrolling,
-- video does not overflow,
-- buttons do not overlap,
-- long filenames wrap,
-- target-duration fields remain usable,
-- progress/cancel controls fit,
-- result preview and save controls remain visible,
-- help and confirmation dialogs remain inside the viewport.
+For Pages behavior, use the actual GitHub Pages `/mt/` deployment or the preview-only `/pages-bootstrap/mt/` QA URL. The preview workflow stages the latter with `prepare-pages.ps1 -PreviewBootstrapCheck` outside the `/mt/*` server-header rule. Normal Pages output excludes it.
 
-## 6. Language and states
+In a fresh browser context without an existing registration:
 
-Check Japanese and English for:
+1. Verify the initial response lacks the server isolation headers.
+2. Observe the same-origin helper request, its directory-only registration and bootstrap reload.
+3. Confirm the final exact URL is isolated, SharedArrayBuffer exists and real MT conversion succeeds.
+4. Inspect worker scope: project `/htmlapps-video-speed-changer/mt/` or preview `/pages-bootstrap/mt/`, never site root.
+5. Visit ST root and confirm it is not controlled by that worker.
+6. Verify no selected video leaves the browser. The helper/reload is a hosting exception, not a runtime CDN or upload.
 
-- empty,
-- loading,
-- ready,
-- preview unavailable,
-- processing,
-- cancelled,
-- completed result,
-- stale previous result,
-- memory/unsupported/runtime error states.
+The helper is not an offline cache. Do not promise hosted MT works disconnected just because it has been opened once. The pinned upstream helper uses CORP `cross-origin` in its require-corp mode; Cloudflare server configuration uses CORP `same-origin`.
 
-## 7. Static release checks
+## 6. UI, browser and device coverage
 
-`build-standalone.bat` / `scripts/check-release-artifacts.ps1` must verify:
+Check Japanese/English and desktop/320/360/390px layouts: no overflow, readable variant/blocked notices, usable speed/target fields, visible progress/cancel/result/save, long filenames, keyboard focus and reduced motion, and viewport-safe dialogs. Cover empty/loading/ready/preview-unavailable/processing/cancel/result/stale-result/error states. Verify portrait/rotation input and explicit export filename.
 
-- readable standalone structure and CSP,
-- embedded favicon,
-- embedded FFmpeg JS/WASM validity,
-- Builder v1.8.1 profile/runtime flags,
-- `github-release` provenance,
-- release-asset SHA-256 matches the committed lock,
-- no external runtime resource references,
-- self-extract source/gzip SHA-256 metadata,
-- exact self-extract restoration,
-- app version and required dist files.
-
-A local-builder build may be used for development, but must not pass the release provenance gate.
+Review console and network logs throughout. Record unavailable browser/device/media cases honestly; deterministic DOM/runtime/CDP doubles are not substitutes for these checks.

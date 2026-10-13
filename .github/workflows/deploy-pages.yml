@@ -15,15 +15,23 @@ concurrency:
   group: github-pages
   cancel-in-progress: true
 
+env:
+  POWERSHELL_TELEMETRY_OPTOUT: "1"
+
 jobs:
   build:
     runs-on: windows-latest
-    timeout-minutes: 20
+    timeout-minutes: 30
     outputs:
       pages-ready: ${{ steps.pages-status.outputs.ready }}
     steps:
       - name: Checkout repository
         uses: actions/checkout@v6
+
+      - name: Setup Node.js for regression tests
+        uses: actions/setup-node@v6
+        with:
+          node-version: 24
 
       - name: Build and verify standalone HTML
         shell: pwsh
@@ -68,17 +76,25 @@ jobs:
         if: steps.pages-status.outputs.ready == 'true'
         uses: actions/upload-pages-artifact@v5
         with:
-          path: dist
+          path: pages-dist
 
       - name: Upload standalone build artifact
         uses: actions/upload-artifact@v7
         with:
           name: standalone-html-${{ github.sha }}
           path: |
+            video-speed-changer.html
+            video-speed-changer.mt.html
             dist/index.html
+            dist/index.mt.html
             dist/index.self-extract.html
+            dist/index.mt.self-extract.html
             dist/dependency-manifest.json
+            dist/dependency-manifest.mt.json
             dist/self-extract-manifest.json
+            dist/self-extract-manifest.mt.json
+            dist/build-size-report.json
+            dist/build-size-report.mt.json
             dist/.nojekyll
           if-no-files-found: error
           retention-days: 14
