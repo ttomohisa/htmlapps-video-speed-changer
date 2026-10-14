@@ -1,4 +1,4 @@
-# v1.1.0 release, offline and isolation verification
+# v1.1.1 release, offline and isolation verification
 
 ST and MT use separate Builder v1.10.6 assets and separate raw/self-extract artifacts. ST is the direct-file/offline requirement. MT needs isolated hosting; an embedded runtime does not remove that requirement. Record what was actually executed in `REGRESSION.md`.
 

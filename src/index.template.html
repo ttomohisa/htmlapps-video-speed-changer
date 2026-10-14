@@ -161,13 +161,17 @@
       border-radius: 14px; background: var(--danger-soft); color: var(--danger);
     }
     .error-icon svg { width: 26px; height: 26px; }
-    .ready-grid { display: grid; grid-template-columns: minmax(0, 1.55fr) minmax(280px, .85fr); min-height: 440px; }
-    .preview-pane { min-width: 0; padding: 20px; border-right: 1px solid var(--line); background: #181a18; }
+    .ready-grid { display: grid; grid-template-columns: minmax(0, 1.55fr) minmax(280px, .85fr); grid-template-areas: "source settings" "result settings"; grid-template-rows: auto 1fr; align-items: start; min-height: 440px; }
+    .preview-pane { grid-area: source; align-self: start; min-width: 0; padding: 18px; }
+    .preview-heading { display: flex; align-items: center; justify-content: space-between; gap: 12px; margin-bottom: 12px; }
+    .preview-heading h2 { margin: 0; font-size: 17px; }
+    .preview-heading p { margin: 3px 0 0; color: var(--muted); font-size: 11px; }
+    .preview-heading .button { flex: 0 0 auto; font-size: 11px; padding-inline: 10px; }
     .preview-frame {
-      position: relative; width: 100%; height: 100%; min-height: 400px; display: grid; place-items: center; overflow: hidden;
+      position: relative; width: 100%; height: auto; min-height: 0; display: grid; place-items: center; overflow: hidden;
       border-radius: 12px; background: #0b0c0b;
     }
-    .preview-frame video { display: block; width: 100%; max-height: 66vh; aspect-ratio: 16/9; object-fit: contain; background: #0b0c0b; }
+    .preview-frame video { display: block; width: 100%; height: auto; max-height: 66vh; object-fit: contain; background: #0b0c0b; }
     .preview-unavailable {
       width: min(430px, calc(100% - 32px)); padding: 20px; border: 1px solid rgba(255,255,255,.16); border-radius: 12px;
       background: rgba(255,255,255,.06); color: #f2f4f1; text-align: center;
@@ -175,10 +179,9 @@
     .preview-unavailable svg { width: 30px; height: 30px; margin-bottom: 8px; opacity: .9; }
     .preview-unavailable strong { display: block; font-size: 14px; }
     .preview-unavailable span { display: block; margin-top: 6px; color: rgba(255,255,255,.68); font-size: 11px; line-height: 1.6; }
-    .info-pane { min-width: 0; padding: 22px; }
+    .info-pane { grid-area: settings; min-width: 0; padding: 18px; border-left: 1px solid var(--line); }
     .info-head { display: flex; align-items: flex-start; justify-content: space-between; gap: 12px; }
     .info-head h2 { margin: 0; font-size: 18px; letter-spacing: -.015em; }
-    .info-head p { margin: 4px 0 0; color: var(--muted); font-size: 12px; }
     .file-name {
       margin: 20px 0 0; padding: 12px 13px; border-radius: 11px; background: var(--surface-muted);
       font-size: 13px; font-weight: 720; overflow-wrap: anywhere; word-break: break-word;
@@ -194,21 +197,18 @@
       margin: 18px 0 0; padding: 11px 12px; border: 1px solid color-mix(in srgb, var(--accent) 22%, var(--line));
       border-radius: 10px; background: var(--accent-soft); color: var(--text); font-size: 12px; line-height: 1.65;
     }
-    .replace-row { margin-top: 18px; }
-    .settings-section { margin-top: 20px; padding-top: 20px; border-top: 1px solid var(--line); }
-    .settings-section:first-of-type { margin-top: 18px; }
+    .settings-section { margin-top: 14px; padding-top: 14px; border-top: 1px solid var(--line); }
+    .info-head + .settings-section { margin-top: 12px; padding-top: 0; border-top: 0; }
     .section-head { display: flex; align-items: baseline; justify-content: space-between; gap: 10px; }
     .section-head h3 { margin: 0; font-size: 14px; }
     .section-help { color: var(--muted); font-size: 11px; }
     .speed-selector {
-      --speed-pos: 37.5%; margin-top: 11px; padding: 16px; border: 1px solid color-mix(in srgb, var(--accent) 16%, var(--line));
-      border-radius: 15px; background: linear-gradient(180deg, color-mix(in srgb, var(--accent-soft) 76%, white), var(--surface));
-      box-shadow: inset 0 1px 0 rgba(255,255,255,.85);
+      margin-top: 11px; padding: 16px; border: 1px solid color-mix(in srgb, var(--accent) 16%, var(--line));
+      border-radius: 15px; background: var(--accent-soft);
     }
     .speed-current { display: flex; align-items: end; justify-content: space-between; gap: 14px; }
     .speed-current-copy { min-width: 0; }
     .speed-selector-copy { margin: 8px 0 0; color: var(--muted); font-size: 11px; line-height: 1.55; }
-    .speed-current-copy { min-width: 0; }
     .speed-current-label { display: block; color: var(--muted); font-size: 10px; font-weight: 700; }
     .speed-current-value { display: block; margin-top: 1px; color: var(--accent); font-size: 29px; line-height: 1.12; letter-spacing: -.035em; }
     .speed-mode-label {
@@ -220,7 +220,7 @@
       width: 100%; height: 24px; margin: 0; appearance: none; -webkit-appearance: none; background: transparent; cursor: pointer;
     }
     .speed-range::-webkit-slider-runnable-track {
-      height: 6px; border-radius: 999px; background: linear-gradient(to right, var(--accent) 0 var(--speed-pos), var(--line) var(--speed-pos) 100%);
+      height: 6px; border-radius: 999px; background: var(--line);
     }
     .speed-range::-webkit-slider-thumb {
       width: 22px; height: 22px; margin-top: -8px; appearance: none; -webkit-appearance: none; border: 4px solid #fff; border-radius: 50%;
@@ -234,7 +234,8 @@
     .speed-scale span:first-child { left: 0; transform: none; }
     .speed-scale span:nth-child(2) { left: 37.5%; }
     .speed-scale span:last-child { right: 0; left: auto; transform: none; }
-    .speed-input-row { display: grid; grid-template-columns: minmax(0, 1fr); align-items: end; gap: 10px; margin-top: 14px; }
+    .speed-input-row { margin-top: 10px; }
+    .speed-input-row .field-label { grid-template-columns: minmax(70px, .65fr) minmax(0, 1fr); align-items: center; }
     .field-label { display: grid; gap: 6px; color: var(--muted); font-size: 11px; font-weight: 700; }
     .number-wrap { position: relative; display: flex; align-items: center; }
     .number-input {
@@ -245,6 +246,7 @@
     .number-input[aria-invalid="true"] { border-color: var(--danger); }
     .number-suffix { position: absolute; right: 11px; color: var(--muted); font-size: 12px; pointer-events: none; }
     .field-error { min-height: 17px; margin: 5px 0 0; color: var(--danger); font-size: 11px; }
+    .field-error:empty { min-height: 0; margin: 0; }
     .preview-rate { min-width: 88px; padding: 10px 11px; border-radius: 10px; background: var(--surface-muted); text-align: center; }
     .preview-rate span { display: block; color: var(--muted); font-size: 10px; }
     .preview-rate strong { display: block; margin-top: 2px; font-size: 14px; }
@@ -274,7 +276,7 @@
     .switch input:checked + .switch-track::after { transform: translateX(18px); }
     .switch input:focus-visible + .switch-track { outline: 3px solid var(--accent-soft); outline-offset: 2px; }
 
-    .convert-panel { margin-top: 18px; padding-top: 18px; border-top: 1px solid var(--line); }
+    .convert-panel { margin-top: 14px; padding-top: 14px; border-top: 1px solid var(--line); }
     .sticky-actions-note { margin-top: 8px; color: var(--muted); font-size: 10px; line-height: 1.5; }
     .convert-button { width: 100%; min-height: 46px; }
     .convert-progress { margin-top: 11px; }
@@ -312,23 +314,23 @@
     .quality-option input:focus-visible + span { outline: 3px solid var(--accent-soft); outline-offset: 2px; }
     .quality-option input:disabled + span { cursor: not-allowed; opacity: .58; }
     .quality-help { margin: 8px 0 0; color: var(--muted); font-size: 10px; line-height: 1.5; }
-    .convert-result { margin-top: 12px; padding: 13px; border: 1px solid color-mix(in srgb, var(--accent) 24%, var(--line)); border-radius: 12px; background: var(--surface); }
-    .result-heading { display: flex; align-items: center; gap: 9px; }
+    .convert-result { grid-area: result; align-self: start; min-width: 0; margin: 0 18px 18px; padding: 16px; scroll-margin-top: calc(var(--header-height) + 12px); border: 1px solid color-mix(in srgb, var(--accent) 24%, var(--line)); border-radius: 12px; background: var(--surface); }
+    .result-heading { display: flex; align-items: center; flex-wrap: wrap; gap: 8px; }
     .result-heading-icon { display: grid; place-items: center; width: 30px; height: 30px; flex: 0 0 auto; border-radius: 9px; background: var(--accent-soft); color: var(--accent); }
     .result-heading-icon svg { width: 18px; height: 18px; }
-    .result-heading strong { display: block; font-size: 13px; }
+    .result-heading h2 { margin: 0; font-size: 17px; }
+    .result-done { margin-left: auto; color: var(--accent); font-size: 11px; }
     .result-stale { margin: 9px 0 0; padding: 8px 9px; border-radius: 8px; background: #fff6df; color: #7a5718 !important; font-size: 10px !important; line-height: 1.55; }
     .result-preview { margin-top: 10px; overflow: hidden; border-radius: 10px; background: #0b0c0b; }
-    .result-preview video { display: block; width: 100%; max-height: 250px; aspect-ratio: 16/9; object-fit: contain; background: #0b0c0b; }
+    .result-preview video { display: block; width: 100%; height: auto; max-height: 48vh; object-fit: contain; background: #0b0c0b; }
     .result-metrics { display: grid; grid-template-columns: repeat(2, minmax(0, 1fr)); gap: 8px; margin-top: 10px; }
     .result-metric { padding: 9px 10px; border: 1px solid var(--line); border-radius: 9px; background: var(--surface-muted); min-width: 0; }
     .result-metric span { display: block; color: var(--muted); font-size: 9px; }
     .result-metric strong { display: block; margin-top: 2px; font-size: 12px; overflow-wrap: anywhere; }
     .convert-result-summary { margin: 9px 0 0; color: var(--muted); font-size: 10px; line-height: 1.55; }
-    .convert-actions { display: grid; grid-template-columns: 1fr 1fr; gap: 8px; margin-top: 10px; }
+    .convert-actions { display: grid; grid-template-columns: 1.4fr 1fr 1fr; gap: 8px; margin-top: 10px; }
     .convert-actions .button { width: 100%; }
-    .convert-actions .button.primary { grid-column: 1 / -1; }
-    .source-details { margin-top: 18px; }
+    .source-details { margin-top: 12px; }
     .source-details summary { color: var(--muted); font-size: 11px; font-weight: 750; cursor: pointer; }
     .source-details .meta-list { margin-top: 8px; }
     .dev-note {
@@ -409,6 +411,7 @@
       .brand-mark { width: 34px; height: 34px; border-radius:25%; }
       .brand-name { font-size: 15px; }
       .brand-meta { display: none; }
+      footer { display: none; }
       .header-actions { gap: 11px; }
       .header-icon-button { padding-block: 6px; }
       .main { padding-top: 17px; padding-bottom: 42px; }
@@ -418,15 +421,18 @@
       .local-badge { margin-top: 12px; }
       .drop-stage { padding: 12px; }
       .drop-zone { min-height: 290px; padding: 28px 18px; }
-      .ready-grid { grid-template-columns: 1fr; min-height: 0; }
-      .preview-pane { padding: 12px; border-right: 0; border-bottom: 1px solid var(--line); }
+      .ready-grid { grid-template-columns: 1fr; grid-template-areas: "source" "settings" "result"; grid-template-rows: auto auto auto; min-height: 0; }
+      .preview-pane { padding: 12px; border-bottom: 1px solid var(--line); }
       .preview-frame { min-height: 0; }
       .preview-frame video { max-height: 48vh; }
-      .info-pane { padding: 18px; }
+      .info-pane { padding: 16px; border-left: 0; }
+      .convert-result { margin: 0 12px 12px; padding: 12px; }
+      .convert-actions { grid-template-columns: 1fr 1fr; }
+      .convert-actions .button.primary { grid-column: 1 / -1; }
+      .result-done { width: calc(100% - 38px); margin-left: 38px; }
       .info-head { display: block; }
       .duration-item strong { font-size: 17px; }
       .result-preview video { max-height: 42vh; }
-      .replace-row .button { width: 100%; }
       .status-panel { min-height: 290px; }
       .app-toast { right: 12px; bottom: calc(12px + env(safe-area-inset-bottom)); max-width: calc(100vw - 24px); }
       dialog { width: calc(100% - 18px); max-height: calc(100dvh - 18px); }
@@ -464,7 +470,7 @@
           <svg viewBox="0 0 1095 1095" xmlns="http://www.w3.org/2000/svg"><rect x="48" y="48" width="999" height="999" rx="249.75" fill="#16624f"/><path d="m852.5 555.8c-5.63-3.59-10.27-9.11-15.64-13.21-9.22-7.03-19.19-12.5-29.27-18.1-0.81-5.53-0.31-11.4-0.3-17 0.01-10 0.01-20 0.01-30-0.01-31.33 0.04-62.67-0.01-94-0.01-11.37 1.66-31.43-0.63-41.76-1.1-4.98-4.07-9.68-7.82-13.1-9.46-8.66-23.58-6.37-35.34-6.39-28-0.05-56 0.09-84 0.02-113.3-0.27-226.7 0.06-340-0.01-30.67-0.02-61.33-0.08-92 0-13.35 0.03-29.02-2.38-38.43 9.35-8.43 10.5-5.56 26.29-5.54 38.89 0.04 30.33-0.05 60.67-0.01 91 0.05 42-0.01 84-0.03 126 0 9.33 0.06 18.67 0.04 28-0.02 7.24-0.41 14.2 4.35 20.16 7.28 9.11 18.03 8.55 28.62 8.58 18.67 0.03 37.33-0.01 56-0.01 53.33 0.01 106.7-0.05 160 0 28.97 0.03 58.05 0.73 87-0.08 3.77-5.31 5.94-12.36 8.94-18.24 4.14-8.1 9.27-15.95 14.72-23.21 26.82-35.72 65.04-62.18 108.4-73.58 19.9-5.24 41.42-7.66 61.95-5.83 17.7 1.58 35.3 5.26 51.83 11.92 83.38 33.58 130.3 122.3 115.4 210.2-2.39 14.07-6.38 28.28-12.67 41.14-1.85 3.78-3.34 8.59-6.43 11.54-5.57 5.32-25.11 5.28-29.4-1.85-4.61-7.69 3.05-16.49 6.24-23.3 7.69-16.37 12.35-34.4 13.41-52.47 4.3-73.64-45.92-144-118.4-160.3-17.9-4.03-36.62-5.35-54.86-2.87-82.02 11.14-145.3 84.64-138.9 168.2 1.38 17.98 5.11 36.47 13.81 52.46 11.85 1.04 24.09 0.27 36 0.27 23.67 0 47.33-0.07 71 0 5.23 0.02 10.62-0.47 15.66 1.19 9.46 3.13 15.39 14.3 13.51 23.88-3.39 17.35-17.54 18.87-32.17 18.87-16.67 0-33.33 0.02-50 0.01-87-0.04-174-0.14-261 0-35.33 0.06-70.67 0.07-106 0.02-29.7-0.05-53.56 2.21-77.42-18.77-13.93-12.23-23.75-30.5-25.86-48.95-1.05-9.2-0.46-18.73-0.45-27.98 0.01-12.67-0.02-25.33 0.01-38 0.18-84.33 0.11-168.7 0.01-253-0.03-20.33 0.06-40.67 0.02-61-0.04-18.87-0.46-37.5 8.49-54.72 11.9-22.89 33.45-40.85 59.2-45.71 18.29-3.44 39.34-1.37 58-1.39 61.33-0.06 122.7 0.13 184-0.03 82.67-0.21 165.3 0.19 248 0.02 13-0.03 26 0.03 39 0.02 9.57-0.01 19.47-0.75 28.98 0.53 16.77 2.28 33.01 10.99 45.05 22.75 28.5 27.81 25.26 58.9 25.29 95.53 0.04 35.33-0.09 70.67 0 106 0.03 12.33-0.02 24.67 0 37 0.01 7.01 0.6 14.37-0.32 21.31zm-418.7-164.4c11.44-2.24 26.4 10.68 35.87 16.51 29.85 18.39 59.1 37.91 89.35 55.61 10.47 6.13 31.21 15.45 31.04 28.99-0.06 4-1.45 7.86-4.2 10.81-4.55 4.88-21.62 13.31-28.24 16.78-29.4 15.39-57.49 33.42-86.54 49.46-8.55 4.72-26.46 17.83-35.55 17.85-20.74 0.03-16.29-26.48-16.3-39.9-0.01-39.33 0.02-78.67 0.01-118-0.01-13.37-3.29-34.6 14.56-38.11zm280.9 181.9c15.14-3.5 14.27 12.68 14.28 22.23 0 8.37 1.25 21.32-10.5 22.18-14.46 1.06-12.13-16.03-12.16-25.18-0.03-7.3-0.79-17.11 8.38-19.23zm190 17.22c15.23-0.52 30.59-0.08 45.83-0.02 8.53 0.04 17.3-0.67 25.8-0.02 7.7 0.6 13.52 7.57 12.1 15.32-1.19 6.5-6.55 10.17-12.9 10.42-18.26 0.75-36.73 0.12-55 0.06-6.65-0.02-16.86 1.93-22.83-1.4-12.52-7-6.57-23.9 7-24.36zm-277.9 11.85c10.77-2.83 15.71 8.05 21.36 15.02 2.33 2.87 5.83 6.56 6.78 10.19 1.26 4.84-0.66 10.22-5.05 12.81-10.99 6.48-18.56-7.5-24.14-14.59-2.17-2.76-5.41-6.08-6.34-9.53-1.53-5.73 1.37-12.32 7.39-13.9zm172.8-0.12c7.71-1.6 15.24 4.14 14.42 12.28-0.41 3.98-3.64 7.02-5.99 10.01-5.31 6.78-12.44 20.55-22.93 16.94-2.45-0.85-4.77-2.69-6.1-4.91-5.6-9.36 5.56-19.23 11.06-25.99 2.67-3.29 5.07-7.41 9.54-8.33zm33.92 45.1c2.73 4.83-2.39 7.9-5.61 11.07-8.4 8.26-17.16 16.17-25.6 24.4-11.98 11.69-24.25 23.11-36.4 34.62-4.73 4.48-12.31 9.85-15.96 15.04-1.71 2.43-1.55 6.58-2.49 9.47-2 6.17-6.19 11.8-11.5 15.54-13.14 9.25-32.83 6.76-42.53-6.34-9.85-13.28-7.21-32.29 5.65-42.58 4.18-3.35 10.14-5.76 15.46-6.35 3.14-0.35 6.43 0.38 9.42-0.76 8.96-3.42 17.57-9.43 26.04-13.94 12.86-6.85 25.83-13.47 38.68-20.34 10.26-5.47 20.7-10.59 31.01-15.96 4.38-2.28 8.96-5.99 13.83-3.87zm90.15 5.12c12.79-0.93 26.02 0 38.85 0.01 7.74 0 16.53-1.17 24.15 0.18 7.3 1.3 11.47 8.51 9.97 15.62-1.23 5.79-6.48 9.33-12.12 9.69-15.2 0.98-30.77 0.04-46 0.05-6.34 0-14.48 1.41-20.26-1.7-11.16-6.02-7.01-22.95 5.41-23.85zm-392.9 21.06c-8.89-1.72-19.13-0.48-28.24-0.48-18.33-0.01-36.67 0-55 0.02-56 0.03-112-0.02-168-0.02-19-0.01-38-0.01-57 0.01-7.88 0-17.81-0.66-18.89 9.47-0.74 6.86-0.12 14.1-0.1 21 0.05 12.72 0.01 25.44-0.01 38.15-0.03 11.26-0.81 21.98 8.05 30.3 7.53 7.07 17.36 6.28 26.95 6.28 17.67 0.02 35.33-0.02 53 0.02 55.67 0.12 111.3-0.05 167-0.05 17 0 34 0.01 51 0.02 8.39 0.01 18.49 1.48 26.52-0.72-4.45-12.5-7.04-25.38-8.93-38.48h-109.4c-7.66 19.14-30.24 27.23-47.88 15.6-6.06-4-8.55-9.63-12.35-15.46-33.3-0.71-66.69-0.08-100-0.07-9.95 0-30.73 3.92-30.61-11.59 0.12-15.41 20.7-11.77 30.61-11.8 33.31-0.07 66.7 0.68 100-0.12 4.98-5.7 6.63-11.49 13.79-15.79 17.17-10.3 38.84-2.19 46.21 15.87h108c0.89-7.68 0.81-15.45 1.75-23.14 0.78-6.4 2.26-12.71 3.49-19.02zm51.97 0.8c4.59-1.17 8.85 0.89 13.14 2.28 7.73 2.51 20.68 4.02 22 13.95 0.41 3.1-0.26 6.17-2.12 8.72-6.76 9.2-19.96 1.48-28.27-1.19-4.1-1.32-8.45-2.15-11.09-5.9-4.39-6.23-1.24-15.93 6.34-17.86zm343.9 39.96c9.5-1.57 20.29-0.17 29.92-0.2 7.5-0.02 16.33-1.27 23.66 0.37 6.51 1.46 10.53 8.06 9.31 14.52-1.67 8.77-9.42 10.07-16.97 10.06-11.33-0.02-22.67 0.02-34 0.02-5.54 0-11.96 1.04-16.79-2.24-8.85-6.03-5.84-20.75 4.87-22.53z" fill="#fcfdfd"/></svg>
         </div>
         <div class="brand-copy">
-          <p class="brand-name"><span id="brandName">動画速度変更</span><span class="version-badge" id="versionBadge">v1.1.0</span></p>
+          <p class="brand-name"><span id="brandName">動画速度変更</span><span class="version-badge" id="versionBadge">v1.1.1</span></p>
           <p class="brand-meta" data-i18n="brandMeta">動画の速度変更 · 目標時間から調整</p>
         </div>
       </div>
@@ -481,11 +487,11 @@
     <section class="page-intro" aria-labelledby="introTitle">
       <div>
         <h1 id="introTitle" data-i18n="introTitle">動画の速度と仕上がり時間を調整</h1>
-        <p data-i18n="lead">速く・遅くしたときの長さを確認しながら、再生速度を決められます。目標時間から倍率を逆算することもできます。</p>
+        <p data-i18n="lead">速く・遅くしたときの長さを確認しながら、再生速度を決められます。</p>
       </div>
       <div class="local-badge">
         <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.9" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M12 3 5 6v5c0 4.6 2.8 8 7 10 4.2-2 7-5.4 7-10V6z"/><path d="m9 12 2 2 4-5"/></svg>
-        <span id="runtimeBadge" data-i18n="localBadge">完全ローカル処理 · ST</span>
+        <span id="runtimeBadge" data-i18n="localBadge">完全ローカル処理</span>
       </div>
     </section>
 
@@ -532,7 +538,11 @@
       </div>
 
       <div class="ready-grid" id="readyView" hidden>
-        <div class="preview-pane">
+        <section class="preview-pane" id="sourcePreviewSection" aria-labelledby="sourcePreviewTitle">
+          <div class="preview-heading">
+            <div><h2 id="sourcePreviewTitle" data-i18n="sourcePreviewTitle">元動画</h2><p data-i18n="sourcePreviewHint">選択した速度でプレビュー</p></div>
+            <button class="button" id="replaceVideoButton" type="button" data-i18n="chooseAnother">別の動画を選択</button>
+          </div>
           <div class="preview-frame">
             <video id="videoPreview" controls playsinline preload="metadata" data-i18n-aria-label="videoPreviewLabel"></video>
             <div class="preview-unavailable" id="previewUnavailable" hidden>
@@ -541,12 +551,21 @@
               <span data-i18n="previewUnavailableBody">動画情報は読み取れたため、変換は試すことができます。</span>
             </div>
           </div>
-        </div>
-        <aside class="info-pane" aria-labelledby="speedSettingsTitle">
+          <details class="source-details">
+            <summary data-i18n="sourceDetailsSummary">元動画の情報</summary>
+            <p class="file-name" id="fileName">—</p>
+            <dl class="meta-list">
+              <div class="meta-row"><dt data-i18n="durationLabel">長さ</dt><dd id="durationValue">—</dd></div>
+              <div class="meta-row"><dt data-i18n="resolutionLabel">解像度</dt><dd id="resolutionValue">—</dd></div>
+              <div class="meta-row"><dt data-i18n="sizeLabel">容量</dt><dd id="sizeValue">—</dd></div>
+              <div class="meta-row"><dt data-i18n="formatLabel">形式</dt><dd id="formatValue">—</dd></div>
+            </dl>
+          </details>
+        </section>
+        <aside class="info-pane" id="settingsPane" aria-labelledby="speedSettingsTitle">
           <div class="info-head">
             <div>
               <h2 id="speedSettingsTitle" data-i18n="speedSettingsTitle">再生速度</h2>
-              <p data-i18n="speedSettingsBody">変更した速度は左のプレビューへすぐ反映されます。</p>
             </div>
           </div>
 
@@ -604,6 +623,21 @@
             </div>
           </div>
 
+          <div class="convert-panel">
+            <button class="button primary convert-button" id="convertButton" type="button" data-i18n="convertButton">この設定で動画を変換</button>
+            <div class="convert-progress" id="convertProgress" hidden aria-live="polite">
+              <progress id="convertProgressBar" max="1" value="0"></progress>
+              <div class="convert-progress-row"><span data-i18n="convertingLabel">動画を変換しています</span><strong id="convertProgressText">0%</strong></div>
+              <div class="convert-progress-row"><span data-i18n="progressTimeLabel">処理位置の目安</span><span id="convertProgressTime">0:00 / 0:00</span></div>
+              <div class="convert-progress-actions"><button class="button" id="cancelConvertButton" type="button" data-i18n="cancelConvertButton">変換をキャンセル</button></div>
+            </div>
+            <p class="field-error" id="convertError" role="status"></p>
+            <details class="technical-details" id="convertErrorDetails" hidden>
+              <summary data-i18n="technicalDetails">詳細情報</summary>
+              <pre id="convertErrorDetailText"></pre>
+            </details>
+          </div>
+
           <div class="settings-section">
             <div class="section-head">
               <h3 data-i18n="audioSettingsTitle">音声</h3>
@@ -646,56 +680,28 @@
               <p class="quality-help" data-i18n="qualityBody">画質を上げるとファイルが大きく、ファイルを小さくすると画質が下がる場合があります。</p>
             </details>
           </div>
-
-          <div class="convert-panel">
-            <button class="button primary convert-button" id="convertButton" type="button" data-i18n="convertButton">この設定で動画を変換</button>
-            <div class="convert-progress" id="convertProgress" hidden aria-live="polite">
-              <progress id="convertProgressBar" max="1" value="0"></progress>
-              <div class="convert-progress-row"><span data-i18n="convertingLabel">動画を変換しています</span><strong id="convertProgressText">0%</strong></div>
-              <div class="convert-progress-row"><span data-i18n="progressTimeLabel">処理位置の目安</span><span id="convertProgressTime">0:00 / 0:00</span></div>
-              <div class="convert-progress-actions"><button class="button" id="cancelConvertButton" type="button" data-i18n="cancelConvertButton">変換をキャンセル</button></div>
-            </div>
-            <div class="convert-result" id="convertResult" hidden aria-live="polite">
-              <div class="result-heading">
-                <span class="result-heading-icon" aria-hidden="true"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="m5 12 4 4L19 6"/></svg></span>
-                <strong data-i18n="convertDoneTitle">変換が完了しました</strong>
-              </div>
-              <p class="result-stale" id="resultStaleNotice" hidden data-i18n="resultStaleNotice">現在の設定は変換時から変更されています。保存されるのは下の変換結果です。</p>
-              <div class="result-preview">
-                <video id="resultPreview" controls playsinline preload="metadata" data-i18n-aria-label="resultPreviewLabel" aria-label="変換後動画のプレビュー"></video>
-              </div>
-              <div class="result-metrics">
-                <div class="result-metric"><span data-i18n="resultDurationLabel">動画の長さ</span><strong id="resultDurationMetric">—</strong></div>
-                <div class="result-metric"><span data-i18n="resultSizeLabel">ファイルサイズ</span><strong id="resultSizeMetric">—</strong></div>
-              </div>
-              <p class="convert-result-summary" id="convertResultSummary">—</p>
-              <div class="convert-actions">
-                <button class="button primary" id="downloadResultButton" type="button" data-i18n="downloadResultButton">MP4を保存</button>
-                <button class="button" id="editSettingsButton" type="button" data-i18n="editSettingsButton">設定を変更</button>
-                <button class="button" id="resultAnotherButton" type="button" data-i18n="chooseAnother">別の動画を選択</button>
-              </div>
-            </div>
-            <p class="field-error" id="convertError" role="status"></p>
-            <details class="technical-details" id="convertErrorDetails" hidden>
-              <summary data-i18n="technicalDetails">詳細情報</summary>
-              <pre id="convertErrorDetailText"></pre>
-            </details>
-          </div>
-
-          <details class="source-details">
-            <summary data-i18n="sourceDetailsSummary">元動画の情報</summary>
-            <p class="file-name" id="fileName">—</p>
-            <dl class="meta-list">
-              <div class="meta-row"><dt data-i18n="durationLabel">長さ</dt><dd id="durationValue">—</dd></div>
-              <div class="meta-row"><dt data-i18n="resolutionLabel">解像度</dt><dd id="resolutionValue">—</dd></div>
-              <div class="meta-row"><dt data-i18n="sizeLabel">容量</dt><dd id="sizeValue">—</dd></div>
-              <div class="meta-row"><dt data-i18n="formatLabel">形式</dt><dd id="formatValue">—</dd></div>
-            </dl>
-          </details>
-          <div class="replace-row">
-            <button class="button" id="replaceVideoButton" type="button" data-i18n="chooseAnother">別の動画を選択</button>
-          </div>
         </aside>
+        <section class="convert-result" id="convertResult" hidden aria-live="polite" aria-labelledby="resultPreviewTitle">
+          <div class="result-heading">
+            <span class="result-heading-icon" aria-hidden="true"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="m5 12 4 4L19 6"/></svg></span>
+            <h2 id="resultPreviewTitle" tabindex="-1" data-i18n="resultPreviewTitle">変換後の動画</h2>
+            <span class="result-done" data-i18n="convertDoneTitle">変換が完了しました</span>
+          </div>
+          <p class="result-stale" id="resultStaleNotice" hidden data-i18n="resultStaleNotice">現在の設定は変換時から変更されています。保存されるのは下の変換結果です。</p>
+          <div class="result-preview">
+            <video id="resultPreview" controls playsinline preload="metadata" data-i18n-aria-label="resultPreviewLabel" aria-label="変換後動画のプレビュー"></video>
+          </div>
+          <div class="result-metrics">
+            <div class="result-metric"><span data-i18n="resultDurationLabel">動画の長さ</span><strong id="resultDurationMetric">—</strong></div>
+            <div class="result-metric"><span data-i18n="resultSizeLabel">ファイルサイズ</span><strong id="resultSizeMetric">—</strong></div>
+          </div>
+          <p class="convert-result-summary" id="convertResultSummary">—</p>
+          <div class="convert-actions">
+            <button class="button primary" id="downloadResultButton" type="button" data-i18n="downloadResultButton">MP4を保存</button>
+            <button class="button" id="editSettingsButton" type="button" data-i18n="editSettingsButton">設定を変更</button>
+            <button class="button" id="resultAnotherButton" type="button" data-i18n="chooseAnother">別の動画を選択</button>
+          </div>
+        </section>
       </div>
       <input class="sr-only" id="videoInput" type="file" accept="video/*,.mp4,.mov,.webm,.m4v,.mkv,.avi,.mpeg,.mpg,.ts,.mts,.m2ts">
     </section>
@@ -738,15 +744,15 @@
       <h3 data-i18n="helpBasicsTitle">使い方</h3>
       <ol>
         <li data-i18n="helpStep1">「動画を選択」から動画を選ぶか、画面へ動画をドロップします。</li>
-        <li data-i18n="helpStep2">スライダーまたは倍率入力で速度を決めます。左の動画ですぐに速度感を確認できます。</li>
+        <li data-i18n="helpStep2">スライダーまたは倍率入力で速度を決めます。「元動画」のプレビューで速度感を確認できます。</li>
         <li data-i18n="helpStep3">「目標時間から決める」には入力できる1秒単位の範囲を表示します。開くだけでは速度は変わりません。時間を編集すると必要な倍率を逆算します。</li>
-        <li data-i18n="helpStep4">ファイル名や画質を確認して変換し、結果をプレビューしてMP4を保存します。</li>
+        <li data-i18n="helpStep4">ファイル名や画質を確認して変換します。「変換後の動画」で仕上がりを確認し、MP4を保存します。</li>
       </ol>
 
       <h3 data-i18n="helpFormatsTitle">対応形式</h3>
       <p data-i18n="helpFormatsBody">プレビューはブラウザー標準の動画再生機能を使います。再生できない動画でも、動画情報を読み取れた場合は変換を試せます。</p>
       <h3 data-i18n="helpPrivacyTitle">プライバシー</h3>
-      <p data-i18n="helpPrivacyBody">選択した動画はブラウザー内だけで扱います。このアプリからBrowser Kittyや外部サーバーへアップロードしません。</p>
+      <p data-i18n="helpPrivacyBody">選択した動画はブラウザー内だけで扱います。このアプリから外部サーバーへアップロードしません。</p>
       <h3 data-i18n="helpNotesTitle">注意事項</h3>
       <ul>
         <li data-i18n="helpNotePreview">プレビューで確認した速度でMP4へ変換できます。</li>
@@ -844,7 +850,7 @@
       const translations = {
         ja: {
           brandMeta: '動画の速度変更 · 目標時間から調整', helpTitle: '使い方と注意事項', close: '閉じる',
-          introTitle: '動画の速度と仕上がり時間を調整', lead: '速く・遅くしたときの長さを確認しながら、再生速度を決められます。目標時間から倍率を逆算することもできます。', localBadge: '完全ローカル処理',
+          introTitle: '動画の速度と仕上がり時間を調整', lead: '速く・遅くしたときの長さを確認しながら、再生速度を決められます。', localBadge: '完全ローカル処理',
           runtimeStTitle: 'シングルスレッド版', runtimeMtTitle: 'マルチスレッド版',
           runtimeRequirements: 'MT版にはSharedArrayBufferとクロスオリジン分離が必要です。現在のブラウザーまたは公開先の設定では利用できません。ST版をご利用ください。選択した動画は自動で引き継がれません。',
           runtimeFile: 'MT版はローカルのHTMLファイルからは変換できません。MT版の公開ページか、ローカルで使えるST版をご利用ください。選択した動画は自動で引き継がれません。',
@@ -853,7 +859,7 @@
           dropZoneAria: '動画を追加。クリックまたはEnterキーでファイルを選択できます。', dropTitle: '動画を追加', dropBody: '動画をここにドロップするか、ファイルを選択してください。', chooseVideo: '動画を選択', formatHint: 'MP4 / MOV / WebM など',
           loadingTitle: '動画を確認しています', loadingBody: 'プレビューに必要な情報を端末内で読み込んでいます。',
           errorTitle: '動画を読み込めませんでした', errorDecode: 'このブラウザーで再生できない形式か、ファイルが破損している可能性があります。', errorNotVideo: '動画ファイルを選択してください。',
-          chooseAnother: '別の動画を選択', videoPreviewLabel: '選択した動画の速度プレビュー', previewUnavailableTitle: 'この動画はブラウザーでプレビューできません', previewUnavailableBody: '動画情報は読み取れたため、変換は試すことができます。', speedSettingsTitle: '再生速度', speedSettingsBody: '変更した速度は左のプレビューへすぐ反映されます。',
+          chooseAnother: '別の動画を選択', videoPreviewLabel: '選択した動画の速度プレビュー', previewUnavailableTitle: 'この動画はブラウザーでプレビューできません', previewUnavailableBody: '動画情報は読み取れたため、変換は試すことができます。', speedSettingsTitle: '再生速度', speedSettingsBody: '変更した速度は左のプレビューへすぐ反映されます。', sourcePreviewTitle: '元動画', sourcePreviewHint: '選択した速度でプレビュー', resultPreviewTitle: '変換後の動画',
           speedPresetTitle: '速度を選ぶ', speedRangeHint: '0.25〜4.00倍', selectedSpeedLabel: '現在の速度', speedStateSlow: 'ゆっくり', speedStateNormal: '標準', speedStateFast: '速く', customSpeedLabel: '細かく調整', previewSpeedLabel: 'プレビュー', speedRangeError: '0.25〜4.00倍の範囲で指定してください。',
           originalDurationLabel: '元の長さ', afterDurationLabel: '変換後', durationSame: '元の動画と同じ長さです。', durationShorter: '{time}短くなります。', durationLonger: '{time}長くなります。',
           targetDurationButton: '目標時間から決める', targetDurationClose: '目標時間を閉じる', targetDurationTitle: '変換後の長さ', targetDurationHint: '入力すると倍率を逆算します', hoursLabel: '時間', minutesLabel: '分', secondsLabel: '秒',
@@ -864,15 +870,15 @@
           convertButton: 'この設定で動画を変換', reconvertButton: '変更した設定で再変換', repeatConvertButton: '同じ設定でもう一度変換', convertingLabel: '動画を変換しています', progressTimeLabel: '処理位置の目安', cancelConvertButton: '変換をキャンセル', cancellingLabel: 'キャンセルしています…', cancelledToast: '変換をキャンセルしました。設定はそのままです。', technicalDetails: '詳細情報', convertDoneTitle: '変換が完了しました', downloadResultButton: 'MP4を保存', editSettingsButton: '設定を変更', resultPreviewLabel: '変換後動画のプレビュー', resultDurationLabel: '動画の長さ', resultSizeLabel: 'ファイルサイズ', resultStaleNotice: '現在の設定は変換時から変更されています。保存されるのは下の変換結果です。', convertSummary: '{speed}× · {audio} · {quality}', audioSummaryPreserve: '音程を保つ', audioSummaryShift: '音程も変える', audioSummaryNone: '音声なし', convertErrorMessage: '動画を変換できませんでした。もう一度試してください。', convertErrorMemory: '端末のメモリが不足した可能性があります。他のタブを閉じるか、短い動画でお試しください。', convertErrorUnsupported: 'この動画の形式を変換できませんでした。別の動画でお試しください。', convertErrorRuntime: '動画変換の処理を開始できませんでした。ブラウザーを再読み込みしてお試しください。', wasmCspErrorMessage: '動画変換の実行がブラウザーのセキュリティ設定でブロックされました。配布用HTMLを再ビルドしてください。', saveStartedToast: 'MP4の保存を開始しました', unsavedResultTitle: '未保存の変換結果があります', unsavedResultMessage: '別の動画を選ぶと、まだ保存していない変換結果は破棄されます。', discardAndChoose: '破棄して選ぶ',
           sourceDetailsSummary: '元動画の情報', durationLabel: '長さ', resolutionLabel: '解像度', sizeLabel: '容量', formatLabel: '形式',
           developmentNote: 'v1.0.0 正式版です。動画の読み込みから速度変更、変換、保存までブラウザー内で完結します。', footer: '完全ローカル処理',
-          helpBasicsTitle: '使い方', helpStep1: '「動画を選択」から動画を選ぶか、画面へ動画をドロップします。', helpStep2: 'スライダーまたは倍率入力で速度を決めます。左の動画ですぐに速度感を確認できます。', helpStep3: '「目標時間から決める」には入力できる1秒単位の範囲を表示します。開くだけでは速度は変わりません。時間を編集すると必要な倍率を逆算します。', helpStep4: 'ファイル名や画質を確認して変換し、結果をプレビューしてMP4を保存します。',
+          helpBasicsTitle: '使い方', helpStep1: '「動画を選択」から動画を選ぶか、画面へ動画をドロップします。', helpStep2: 'スライダーまたは倍率入力で速度を決めます。「元動画」のプレビューで速度感を確認できます。', helpStep3: '「目標時間から決める」には入力できる1秒単位の範囲を表示します。開くだけでは速度は変わりません。時間を編集すると必要な倍率を逆算します。', helpStep4: '必要に応じて音声・出力設定を調整し、速度設定の下にある変換ボタンを押します。「変換後の動画」で仕上がりを確認し、MP4を保存します。',
            helpFormatsTitle: '対応形式', helpFormatsBody: 'プレビューはブラウザー標準の動画再生機能を使います。再生できない動画でも、動画情報を読み取れた場合は変換を試せます。',
-          helpPrivacyTitle: 'プライバシー', helpPrivacyBody: '選択した動画はブラウザー内だけで扱います。このアプリからBrowser Kittyや外部サーバーへアップロードしません。',
+          helpPrivacyTitle: 'プライバシー', helpPrivacyBody: '選択した動画はブラウザー内だけで扱います。このアプリから外部サーバーへアップロードしません。',
           helpNotesTitle: '注意事項', helpNotePreview: 'プレビューで確認した速度でMP4へ変換できます。', helpNotePitch: '「音程を保つ」をOFFにすると、速度に合わせて声の高さも変わります。ブラウザーのプレビューと書き出し結果にはわずかな差が出る場合があります。', helpNoteMemory: '大きな動画では、端末性能やブラウザーのメモリ制限の影響を受ける場合があります。', helpNoteCancel: '変換中はキャンセルできます。再変換をキャンセルした場合や失敗した場合、前の結果とその自動ファイル名は残ります。編集したファイル名も維持します。', helpNoteReplacement: '別の動画を選ぶと、前の変換結果とエラーは消去されます。', helpNoteFallback: 'ブラウザーでプレビューできない動画でも、動画情報を読み取れた場合は変換を試せます。', helpNoteDevelopment: '変換に必要な処理は配布HTMLに含まれており、動画を外部サーバーへ送信せずブラウザー内で実行します。', helpOffline: '配布用HTMLは実行時通信を必要とせず、ローカルで直接開ける構成です。',
           confirmTitle: '確認', confirmAction: '実行する', cancel: 'キャンセル', loadedToast: '動画を読み込みました'
         },
         en: {
           brandMeta: 'Change video speed · Target duration', helpTitle: 'How to use & notes', close: 'Close',
-          introTitle: 'Adjust video speed and final duration', lead: 'Choose a faster or slower speed while seeing the resulting duration. You can also calculate the required speed from a target duration.', localBadge: 'Fully local processing',
+          introTitle: 'Adjust video speed and final duration', lead: 'Choose a faster or slower speed while seeing the resulting duration.', localBadge: 'Fully local processing',
           runtimeStTitle: 'Single-thread edition', runtimeMtTitle: 'Multi-thread edition',
           runtimeRequirements: 'The MT edition needs SharedArrayBuffer and cross-origin isolation. This browser or hosting configuration does not provide them. Use the ST edition instead. Your selected video will not transfer automatically.',
           runtimeFile: 'The MT edition cannot convert from a local HTML file. Use its hosted page or the ST edition for local files. Your selected video will not transfer automatically.',
@@ -881,7 +887,7 @@
           dropZoneAria: 'Add a video. Click or press Enter to choose a file.', dropTitle: 'Add a video', dropBody: 'Drop a video here or choose a file from your device.', chooseVideo: 'Choose video', formatHint: 'MP4 / MOV / WebM and more',
           loadingTitle: 'Checking the video', loadingBody: 'Reading the information needed for preview locally on this device.',
           errorTitle: 'Could not load the video', errorDecode: 'The format may not be playable in this browser, or the file may be damaged.', errorNotVideo: 'Choose a video file.',
-          chooseAnother: 'Choose another video', videoPreviewLabel: 'Speed preview of the selected video', previewUnavailableTitle: 'This video cannot be previewed in the browser', previewUnavailableBody: 'Its media information was read successfully, so you can still try converting it.', speedSettingsTitle: 'Playback speed', speedSettingsBody: 'Speed changes are applied to the preview immediately.',
+          chooseAnother: 'Choose another video', videoPreviewLabel: 'Speed preview of the selected video', previewUnavailableTitle: 'This video cannot be previewed in the browser', previewUnavailableBody: 'Its media information was read successfully, so you can still try converting it.', speedSettingsTitle: 'Playback speed', speedSettingsBody: 'Speed changes are applied to the preview immediately.', sourcePreviewTitle: 'Original video', sourcePreviewHint: 'Preview at the selected speed', resultPreviewTitle: 'Converted video',
           speedPresetTitle: 'Choose a speed', speedRangeHint: '0.25× to 4.00×', selectedSpeedLabel: 'Current speed', speedStateSlow: 'Slower', speedStateNormal: 'Normal', speedStateFast: 'Faster', customSpeedLabel: 'Fine tune', previewSpeedLabel: 'Preview', speedRangeError: 'Enter a speed from 0.25× to 4.00×.',
           originalDurationLabel: 'Original', afterDurationLabel: 'After', durationSame: 'Same duration as the original.', durationShorter: '{time} shorter.', durationLonger: '{time} longer.',
           targetDurationButton: 'Set by target duration', targetDurationClose: 'Close target duration', targetDurationTitle: 'Final duration', targetDurationHint: 'Calculates the speed as you type', hoursLabel: 'Hours', minutesLabel: 'Minutes', secondsLabel: 'Seconds',
@@ -892,9 +898,9 @@
           convertButton: 'Convert with these settings', reconvertButton: 'Reconvert with changed settings', repeatConvertButton: 'Convert again with same settings', convertingLabel: 'Converting video', progressTimeLabel: 'Approx. media position', cancelConvertButton: 'Cancel conversion', cancellingLabel: 'Cancelling…', cancelledToast: 'Conversion cancelled. Your settings are unchanged.', technicalDetails: 'Technical details', convertDoneTitle: 'Conversion complete', downloadResultButton: 'Save MP4', editSettingsButton: 'Change settings', resultPreviewLabel: 'Preview of the converted video', resultDurationLabel: 'Video duration', resultSizeLabel: 'File size', resultStaleNotice: 'The current settings have changed since this result was created. Save downloads the result shown below.', convertSummary: '{speed}× · {audio} · {quality}', audioSummaryPreserve: 'Preserve pitch', audioSummaryShift: 'Shift pitch', audioSummaryNone: 'No audio', convertErrorMessage: 'Could not convert the video. Try again.', convertErrorMemory: 'The device may be low on memory. Close other tabs or try a shorter video.', convertErrorUnsupported: 'This video format could not be converted. Try another video.', convertErrorRuntime: 'Video conversion could not start. Reload the browser and try again.', wasmCspErrorMessage: 'Video conversion was blocked by the page security policy. Rebuild the distributable HTML.', saveStartedToast: 'Started saving the MP4', unsavedResultTitle: 'You have an unsaved converted video', unsavedResultMessage: 'Choosing another video will discard the converted result that has not been saved yet.', discardAndChoose: 'Discard and choose',
           sourceDetailsSummary: 'Source video information', durationLabel: 'Duration', resolutionLabel: 'Resolution', sizeLabel: 'File size', formatLabel: 'Format',
           developmentNote: 'v1.0.0 is the stable release. Loading, speed adjustment, conversion, and saving run in the browser.', footer: 'Fully local processing',
-          helpBasicsTitle: 'How to use', helpStep1: 'Choose a video with Choose video, or drop a video onto the page.', helpStep2: 'Use the slider or enter a speed directly. The video on the left previews the speed immediately.', helpStep3: 'Set by target duration shows the available whole-second range. Opening it keeps your selected speed; editing the time calculates and applies a new speed.', helpStep4: 'Check the file name and quality, convert the video, preview the result, and save the MP4.',
+          helpBasicsTitle: 'How to use', helpStep1: 'Choose a video with Choose video, or drop a video onto the page.', helpStep2: 'Use the slider or enter a speed directly. Original video previews the selected speed.', helpStep3: 'Set by target duration shows the available whole-second range. Opening it keeps your selected speed; editing the time calculates and applies a new speed.', helpStep4: 'Adjust Audio and Output if needed, then use the conversion button below the speed settings. Review Converted video and save the MP4.',
            helpFormatsTitle: 'Formats', helpFormatsBody: 'Preview uses the browser’s native video playback support. If preview is unavailable but media information can be read, conversion can still be attempted.',
-          helpPrivacyTitle: 'Privacy', helpPrivacyBody: 'The selected video is handled only inside your browser. This app does not upload it to Browser Kitty or another server.',
+          helpPrivacyTitle: 'Privacy', helpPrivacyBody: 'The selected video is handled only inside your browser. This app does not upload it to any server.',
           helpNotesTitle: 'Notes', helpNotePreview: 'The selected preview speed can be converted and saved as MP4.', helpNotePitch: 'Turning Preserve pitch off changes voice pitch together with speed. Browser preview and export may differ slightly.', helpNoteMemory: 'Large videos can be affected by device performance and browser memory limits.', helpNoteCancel: 'You can cancel while converting. Cancelling or failing a reconversion keeps the previous result and its automatic filename. Your edited filename is preserved.', helpNoteReplacement: 'Selecting another video clears the previous result and errors.', helpNoteFallback: 'If media information can be read, you can still try converting a video that the browser cannot preview.', helpNoteDevelopment: 'The conversion runtime is included in the distributable HTML, so selected videos are processed in the browser without being uploaded to an external server.', helpOffline: 'The distributable HTML needs no runtime network access and can be opened directly as a local file.',
           confirmTitle: 'Confirm', confirmAction: 'Continue', cancel: 'Cancel', loadedToast: 'Video loaded'
         }
@@ -942,7 +948,7 @@
       function runtimeUnavailableKey() { return window.location.protocol === 'file:' ? 'runtimeFile' : 'runtimeRequirements'; }
       function updateRuntimeUi() {
         const mt = RUNTIME_THREADING === 'multi-thread';
-        $('#runtimeBadge').textContent = `${translate('localBadge')} · ${mt ? 'MT' : 'ST'}`;
+        $('#runtimeBadge').textContent = translate('localBadge');
         $('#runtimeBadge').title = translate(mt ? 'runtimeMtTitle' : 'runtimeStTitle');
         $('#runtimeNotice').hidden = runtimeAvailable();
         $('#runtimeNoticeMessage').textContent = translate(runtimeUnavailableKey());
@@ -1133,7 +1139,6 @@
         }
         const index = nearestPresetIndex(currentSpeed);
         range.value = String(index);
-        range.style.setProperty('--speed-pos', `${(index / (SPEED_PRESETS.length - 1)) * 100}%`);
         range.setAttribute('aria-valuetext', `${formatSpeed(currentSpeed)}×`);
         $('#speedModeLabel').textContent = translate(speedStateKey(currentSpeed));
       }
@@ -1428,7 +1433,12 @@
           if (!outputNameDirty) $('#outputNameInput').value = defaultOutputBaseName(resultSnapshot.speed);
           const preview = $('#resultPreview'); preview.src = resultUrl; preview.load();
           $('#convertResult').hidden = false; updateProgress(1); refreshResultUi();
-          requestAnimationFrame(() => $('#convertResult').scrollIntoView({ behavior: 'smooth', block: 'nearest' }));
+          requestAnimationFrame(() => {
+            // A late frame must not reveal an obsolete result or steal focus behind a modal.
+            if (runId !== conversionGeneration || !resultBlob || $('#convertResult').hidden || $('#helpDialog').open || $('#appConfirmDialog').open) return;
+            $('#resultPreviewTitle').focus({ preventScroll: true });
+            $('#convertResult').scrollIntoView({ behavior: window.matchMedia?.('(prefers-reduced-motion: reduce)')?.matches ? 'auto' : 'smooth', block: 'start' });
+          });
         } catch (error) {
           if (runId !== conversionGeneration) return;
           if (controller.signal.aborted || isAbortError(error)) AppToast.show({ message: translate('cancelledToast') });

@@ -5,7 +5,7 @@
 
 [日本語版 README](README.ja.md)
 
-Change a video's speed from 0.25× to 4.00×, check its resulting duration, and save an MP4 entirely in your browser. Version 1.1.0 provides separate single-thread (ST) and multi-thread (MT) builds.
+Change a video's speed from 0.25× to 4.00×, check its resulting duration, and save an MP4 entirely in your browser. Version 1.1.1 provides separate single-thread (ST) and multi-thread (MT) builds.
 
 [Open the standard ST app](https://ttomohisa.github.io/htmlapps-video-speed-changer/) · [Open the hosted MT app](https://ttomohisa.github.io/htmlapps-video-speed-changer/mt/)
 
@@ -15,7 +15,7 @@ Change a video's speed from 0.25× to 4.00×, check its resulting duration, and 
 
 - Set a speed with the slider or a precise number, and see the resulting duration immediately.
 - Calculate speed from a target duration. The whole-second range is shown; opening the panel does not change your speed.
-- Preview the original at the selected speed, then preview the converted result before saving.
+- Preview the original at the selected speed, then review the clearly labeled converted video and save it. On desktop the result appears below the source, keeping settings compact. Previews fit the video without cropping, including portrait sources.
 - Preserve pitch, shift pitch with speed, or remove audio.
 - Choose High quality, Standard, or Smaller file, and edit the output filename.
 - Cancel an active conversion. Cancelling or failing a reconversion keeps the previous result and its matching automatic filename; your edited filename is preserved.
@@ -27,7 +27,7 @@ Change a video's speed from 0.25× to 4.00×, check its resulting duration, and 
 2. Choose or drop one video.
 3. Set speed from 0.25× to 4.00×. Alternatively, open **Set by target duration**, check the available range, and deliberately edit the desired time. The initial value is only a rounded suggestion.
 4. Choose audio behavior and, if needed, output quality in **Advanced settings**.
-5. Check the filename and choose **Convert with these settings**.
+5. Check the filename, then choose **Convert with these settings** directly below the speed/target-duration controls. Progress and cancellation appear in the same place.
 6. Preview the result, compare duration/file size, and choose **Save MP4**.
 
 If native video preview fails, embedded FFmpeg can inspect some files and allow conversion without a native preview. Support for every codec or damaged file is not guaranteed.
