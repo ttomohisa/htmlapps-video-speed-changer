@@ -1,5 +1,20 @@
 # v1.1.0 ST/MT deployment regression (2026-10-13, unreleased)
 
+## 2026-10-14 v1.1.1 preview and UI refinement checks
+
+- Test-first regression: the original layout/labels failed the new assertions before the source fix; the focused source UI/lifecycle suite passed 63/63 afterward.
+- Official pinned Builder v1.10.6 ST and MT builds passed with unchanged dependency locks and runtime payloads. Both readable/self-extract pairs restore byte-for-byte and pass provenance checks.
+- `scripts/check-repository.ps1` passed on Linux with official PowerShell 7.5.2 and Node 24.19.0: 115/115 tests, zero failures/skips.
+- Independent source review found no blocking issue. CSS-contract assertions are not substitutes for rendered geometry checks.
+- The exact initial PR head `7f8da5203d05c0372b503497260cd438085916ff` passed Windows standalone CI and Cloudflare preview CI, including ST/MT HTTP probes and actual Chromium MT isolation checks.
+- On the [ST preview](https://r1358853866-pr-10-bk-previews.ttomohisa.workers.dev/) in cloud Chrome, a genuine 640×360 landscape video rendered at 671.34×377.63 with `object-fit: contain`. Expanding target-duration and advanced settings did not increase preview height. An edited output name, 2× conversion and Save MP4 worked; the result was 640×360 and 2.995083 seconds, 432,496 bytes and an audio stream.
+- On the [MT preview](https://r1358853866-pr-10-bk-previews.ttomohisa.workers.dev/mt/), a genuine 90° display-matrix source was recognized as 360×640. Conversion at 2× and saving with an edited filename worked; the result remained 360×640 and lasted 2.995083 seconds, 433,315 bytes and an audio stream.
+- Japanese/English responsive checks at exact 320px and 390px CSS widths showed no horizontal overflow and a hidden footer. These used ordinary desktop Chrome resize/200% zoom, not physical-phone or device-emulation tests. Portrait playback remained fully contained. Source replacement cleared the prior result.
+- Japanese/English Help omitted catalog branding. Enter opened Help, Escape closed it, and focus returned to Help. Rendered app backgrounds contained no gradients. No app-origin console errors occurred; the browser extension emitted unrelated metadata messages.
+- Updated both README desktop screenshots from actual synthetic-media preview sessions. Narrow full-page captures at 200% zoom had a browser-tool clipping defect and were excluded.
+- Layout-contract tests passed against source, both root downloads, both readable artifacts and both self-extract artifacts (10/10 for each form).
+- Limits: direct `file://`, Safari/Firefox, physical mobile devices and native DevTools Network inspection were not tested in this run. Chrome policy disables DevTools. Unchanged embedded-runtime/CSP rules and automated checks are separate evidence, not a claim of a manual network capture.
+
 Current deterministic deployment checks were run with Node.js 24.19.0 and PowerShell 7.5.2 on Linux. The tests execute the real Pages staging script in temporary synthetic fixture directories and the real CDP verifier with deterministic transport/time boundaries. They do not launch a browser or decode media.
 
 - `node --test tests/pages-deployment.test.mjs tests/preview-isolation.test.mjs`: 25 tests passed after observed failing tests for missing deployment behavior, the preview-only bootstrap fixture and workflow telemetry opt-out.
