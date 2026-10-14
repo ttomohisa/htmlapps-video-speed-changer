@@ -39,6 +39,20 @@ test('Source and result have distinct visible bilingual titles and source replac
  assert.ok(ancestors('replaceVideoButton').includes('sourcePreviewSection'));
  assert.equal(ancestors('speedInput').includes('sourcePreviewSection'),false);
 });
-test('Marked introduction sentence and duplicate preview explanation are removed in both languages',()=>{
- for(const text of ['目標時間から倍率を逆算することもできます。','変更した速度は左のプレビューへすぐ反映されます。','You can also calculate the required speed from a target duration.','Speed changes are applied to the preview immediately.'])assert.equal(html.includes(text),false,text);
+test('Marked introduction sentence stays removed in both languages',()=>{
+ for(const text of ['目標時間から倍率を逆算することもできます。','You can also calculate the required speed from a target duration.'])assert.equal(html.includes(text),false,text);
+});
+test('Live-preview explanation appears once inside the current-speed card, not below its section heading',()=>{
+ const start=workspace.indexOf('<div class="speed-selector">'),end=workspace.indexOf('<div class="speed-input-row">');
+ assert.match(workspace.slice(start,end),/<p class="speed-selector-copy" data-i18n="speedSettingsBody">変更した速度は左のプレビューへすぐ反映されます。<\/p>/);
+ assert.equal([...workspace.matchAll(/data-i18n="speedSettingsBody"/g)].length,1);
+ assert.equal(workspace.slice(workspace.indexOf('id="speedSettingsTitle"'),start).includes('data-i18n="speedSettingsBody"'),false);
+ assert.match(html,/speedSettingsBody: 'Speed changes are applied to the preview immediately.'/);
+});
+test('One conversion action with progress and cancellation follows speed settings before audio and output options',()=>{
+ const speedEnd=workspace.indexOf('id="targetResult"'),convert=workspace.indexOf('id="convertButton"'),progress=workspace.indexOf('id="convertProgress"'),cancel=workspace.indexOf('id="cancelConvertButton"'),audio=workspace.indexOf('data-i18n="audioSettingsTitle"'),output=workspace.indexOf('data-i18n="outputSettingsTitle"');
+ assert.ok(speedEnd<convert&&convert<progress&&progress<cancel&&cancel<audio&&audio<output,'conversion must be reachable immediately after choosing speed');
+ assert.equal([...workspace.matchAll(/id="convertButton"/g)].length,1,'one primary conversion action');
+ assert.ok(ancestors('convertButton').includes('settingsPane'));
+ assert.ok(ancestors('cancelConvertButton').includes('settingsPane'));
 });

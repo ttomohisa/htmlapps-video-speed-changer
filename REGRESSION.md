@@ -1,5 +1,13 @@
 # v1.1.0 ST/MT deployment regression (2026-10-13, unreleased)
 
+## 2026-10-14 v1.1.1 conversion-action follow-up
+
+- Restored the Japanese/English live-preview explanation only inside the current-speed card. The marked introduction sentence and duplicate paragraph below the section heading stay removed.
+- Following the approved layout, moved the existing single conversion action with progress, cancellation and errors immediately after speed/target-duration controls and before Audio/Output. Source/result regions and conversion state logic are unchanged.
+- Test-first: the restored-card-copy and conversion-position assertions failed before their respective fixes. The focused UI/lifecycle suite passed 74/74 afterward.
+- Official pinned ST/MT readable/self-extract builds and the complete repository gate passed on PowerShell 7.5.2 / Node 24.19.0: 126/126 tests, zero failures/skips. All seven source/release forms passed the updated UI contracts, with provenance, exact restoration and root-download parity preserved.
+- Independent review and rendered preview verification for this follow-up are pending; earlier results below apply to their recorded heads.
+
 ## 2026-10-14 v1.1.1 workspace-layout follow-up
 
 - Removed the two screenshot-marked explanatory passages in Japanese and English. Original/converted video now have distinct visible headings; desktop results and Save sit below the source preview rather than extending the settings column. Narrow layouts keep source, adjacent speed settings, then result.

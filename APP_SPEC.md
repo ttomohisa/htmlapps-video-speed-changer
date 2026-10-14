@@ -164,7 +164,8 @@ Cancellation returns from `processing` to `ready` while preserving source/settin
 - The source preview is top-aligned and sized to its video rather than stretched to the settings column. Source/result videos keep their intrinsic ratio with contained, uncropped playback and viewport height limits.
 - Distinct “元動画” / “Original video” and “変換後の動画” / “Converted video” regions identify the source speed preview and encoded result. On desktop the result, metrics and Save action sit below the source, outside the settings column; source information/replacement stays with the source.
 - Narrow layouts retain source → settings → result order so speed controls stay near the source. Successful conversion focuses/reveals the result, respecting reduced motion; late frames after source replacement and open modal dialogs must not steal focus.
-- Keep the settings column compact: omit repeated preview instructions, align fine-tuning label/input in one row, and avoid empty error spacing. Conversion, editable filenames, cancellation and older-result retention remain unchanged.
+- Keep the settings column compact: retain the live-preview explanation once inside the current-speed card, not below the section heading; align fine-tuning label/input in one row and avoid empty error spacing.
+- Place one conversion action, progress, cancellation and errors immediately after speed/target-duration controls, before the secondary Audio and Output settings, on desktop and narrow screens. Preserve editable filenames, older-result retention and the separate result/Save region.
 - Hide the app-name/license/local-processing footer at the existing smartphone breakpoint (760px and below); desktop retains it.
 - Help privacy copy describes browser-local processing without catalog branding.
 - Browser Kitty accent `#16624F`.

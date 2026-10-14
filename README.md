@@ -27,7 +27,7 @@ Change a video's speed from 0.25× to 4.00×, check its resulting duration, and 
 2. Choose or drop one video.
 3. Set speed from 0.25× to 4.00×. Alternatively, open **Set by target duration**, check the available range, and deliberately edit the desired time. The initial value is only a rounded suggestion.
 4. Choose audio behavior and, if needed, output quality in **Advanced settings**.
-5. Check the filename and choose **Convert with these settings**.
+5. Check the filename, then choose **Convert with these settings** directly below the speed/target-duration controls. Progress and cancellation appear in the same place.
 6. Preview the result, compare duration/file size, and choose **Save MP4**.
 
 If native video preview fails, embedded FFmpeg can inspect some files and allow conversion without a native preview. Support for every codec or damaged file is not guaranteed.
