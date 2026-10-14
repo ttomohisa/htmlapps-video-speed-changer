@@ -23,7 +23,7 @@ class Element {
   async emit(type, additions={}) { const event={target:this,preventDefault(){},stopPropagation(){},...additions}; for(const fn of this.listeners[type]??[]) await fn(event); }
   setAttribute(k,v){this.attributes[k]=v;}
   removeAttribute(k){delete this.attributes[k];if(k==='src')this.src='';}
-  pause(){} load(){} focus(){} scrollIntoView(){} click(){this.clicked=true;} remove(){} append(){}
+  pause(){} load(){} focus(options){this.focusCalls=(this.focusCalls||0)+1;this.focusOptions=options;} scrollIntoView(options){this.scrollCalls=(this.scrollCalls||0)+1;this.scrollOptions=options;} click(){this.clicked=true;} remove(){} append(){}
   showModal(){this.open=true;} close(){this.open=false;} contains(node){return node===this;}
 }
 function harness(language = 'en', options = {}){
@@ -53,8 +53,8 @@ function harness(language = 'en', options = {}){
     URL:{createObjectURL(){return `blob:synthetic-${++nextUrl}`;},revokeObjectURL(url){revoked.push(url);}},
     BrowserFFmpeg,Blob,Uint8Array,AbortController,DOMException,WebAssembly,TextDecoder,Intl,HTMLElement:Element,
     location:{protocol:options.protocol || 'https:'},crossOriginIsolated:options.isolated ?? true,SharedArrayBuffer:options.sharedMemory === false ? undefined : SharedArrayBuffer,
-    DecompressionStream,Response,atob,
-    clearTimeout(){},setTimeout(){return 1;},requestAnimationFrame:fn=>fn(),addEventListener(){}};
+    DecompressionStream,Response,atob,matchMedia:()=>({matches:options.reducedMotion ?? false}),
+    clearTimeout(){},setTimeout(){return 1;},requestAnimationFrame:fn=>options.frames?options.frames.push(fn):fn(),addEventListener(){}};
   sandbox.window=sandbox;
   const manifest = options.threading ? {embeddedRuntime:{ffmpeg:{threading:options.threading}}} : null;
   const script = manifest ? originalScript.replace(/const BUILD_MANIFEST = [^\n]+/, `const BUILD_MANIFEST = ${JSON.stringify(manifest)};`) : originalScript;
@@ -575,3 +575,17 @@ for (const language of ['en', 'ja']) for (const threading of ['single-thread', '
   assert.equal(h.get('runtimeBadge').textContent,language==='ja'?'Fully local processing':'完全ローカル処理');
  });
 }
+
+for(const reducedMotion of [false,true])test(`Completed conversion reveals and focuses the result; reduced motion ${reducedMotion}`,async()=>{
+ const h=harness('en',{reducedMotion});await h.load();await h.api.convertCurrentVideo();
+ assert.equal(h.get('resultPreviewTitle').focusCalls,1);assert.equal(h.get('resultPreviewTitle').focusOptions.preventScroll,true);
+ assert.equal(h.get('convertResult').scrollOptions.block,'start');assert.equal(h.get('convertResult').scrollOptions.behavior,reducedMotion?'auto':'smooth');
+});
+test('Delayed completion reveal cannot focus or scroll a replaced source',async()=>{
+ const frames=[],h=harness('en',{frames});await h.load();await h.api.convertCurrentVideo();h.api.resetSourceBoundary();frames.forEach(fn=>fn());
+ assert.equal(h.get('resultPreviewTitle').focusCalls,undefined);assert.equal(h.get('convertResult').scrollCalls,undefined);
+});
+test('Completing conversion does not move focus behind an open Help dialog',async()=>{
+ const h=harness();await h.load();h.get('helpDialog').open=true;await h.api.convertCurrentVideo();
+ assert.equal(h.get('resultPreviewTitle').focusCalls,undefined);assert.equal(h.get('convertResult').scrollCalls,undefined);
+});

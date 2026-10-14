@@ -1,5 +1,13 @@
 # v1.1.0 ST/MT deployment regression (2026-10-13, unreleased)
 
+## 2026-10-14 v1.1.1 workspace-layout follow-up
+
+- Removed the two screenshot-marked explanatory passages in Japanese and English. Original/converted video now have distinct visible headings; desktop results and Save sit below the source preview rather than extending the settings column. Narrow layouts keep source, adjacent speed settings, then result.
+- Test-first: nine new layout/focus assertions failed before the implementation. The focused source UI/lifecycle suite then passed 72/72.
+- Official pinned Builder v1.10.6 ST/MT builds and `scripts/check-repository.ps1` passed on PowerShell 7.5.2 / Node 24.19.0: 124/124 tests, zero failures/skips, source/download parity and byte-exact self-extract restoration.
+- The canonical gate now tests workspace structure, labels and responsive layout contracts on all seven source/readable/root/self-extract forms. Result reveal tests cover reduced motion, stale completion frames after source replacement, and keeping focus inside an open Help dialog.
+- Rendered preview verification for this follow-up is pending; the previous rendered evidence below applies to the earlier PR10 layout only.
+
 ## 2026-10-14 v1.1.1 preview and UI refinement checks
 
 - Test-first regression: the original layout/labels failed the new assertions before the source fix; the focused source UI/lifecycle suite passed 63/63 afterward.

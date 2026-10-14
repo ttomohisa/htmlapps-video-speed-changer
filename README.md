@@ -15,7 +15,7 @@ Change a video's speed from 0.25× to 4.00×, check its resulting duration, and 
 
 - Set a speed with the slider or a precise number, and see the resulting duration immediately.
 - Calculate speed from a target duration. The whole-second range is shown; opening the panel does not change your speed.
-- Preview the original at the selected speed, then preview the converted result before saving. Previews fit the video without cropping, including portrait sources.
+- Preview the original at the selected speed, then review the clearly labeled converted video and save it. On desktop the result appears below the source, keeping settings compact. Previews fit the video without cropping, including portrait sources.
 - Preserve pitch, shift pitch with speed, or remove audio.
 - Choose High quality, Standard, or Smaller file, and edit the output filename.
 - Cancel an active conversion. Cancelling or failing a reconversion keeps the previous result and its matching automatic filename; your edited filename is preserved.

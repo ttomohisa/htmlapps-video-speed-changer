@@ -2,6 +2,9 @@
 
 ## 1.1.1 - Unreleased
 
+- Label original and converted video regions, place desktop results and saving below the source preview, and move source information/replacement out of the settings column.
+- Remove redundant introduction/preview copy, compact the controls, and reveal completed results with reduced-motion and stale-generation/modal focus guards.
+
 - Fit the preview to the video instead of stretching its black frame to the full settings column; preserve the complete image and natural source/result aspect ratios.
 - Use flat UI backgrounds, simplify the visible local-processing badge, remove catalog branding from Help, and hide the app footer on smartphones.
 
