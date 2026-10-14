@@ -35,3 +35,28 @@ for(const reducedMotion of [false,true])test(`Change settings reveals its focuse
   assert.equal(input.value,'2.00');assert.deepEqual(calls.map(c=>c.slice(0,2)),[['focus','input'],['scroll','input']]);
   assert.equal(calls[0][2].preventScroll,true);assert.equal(calls[1][2].block,'center');assert.equal(calls[1][2].behavior,reducedMotion?'auto':'smooth');
 });
+
+// Keep these source contracts separate from the real-browser geometry checks.
+test('Preview does not stretch to the settings column and uses natural video ratio',()=>{
+  assert.match(rule('.preview-pane'), /align-self\s*:\s*start/);
+  assert.match(rule('.preview-frame'), /height\s*:\s*auto/);
+  assert.match(rule('.preview-frame'), /min-height\s*:\s*0/);
+  for (const selector of ['.preview-frame video', '.result-preview video']) {
+    assert.match(rule(selector), /height\s*:\s*auto/);
+    assert.match(rule(selector), /object-fit\s*:\s*contain/);
+    assert.doesNotMatch(rule(selector), /aspect-ratio\s*:\s*16\/9/);
+  }
+});
+test('App uses flat backgrounds without gradients',()=>{
+  assert.doesNotMatch(css, /(?:linear|radial|conic)-gradient\s*\(/i);
+});
+test('Mobile hides only the app footer at the existing responsive breakpoint',()=>{
+  const mobile=css.slice(css.indexOf('@media (max-width: 760px)'),css.indexOf('@media (max-width: 420px)'));
+  assert.match(mobile, /footer\s*\{[^}]*display\s*:\s*none/);
+  assert.doesNotMatch(rule('footer'), /display\s*:\s*none/);
+});
+test('Privacy help describes local processing without catalog branding',()=>{
+  assert.doesNotMatch(html, /Browser Kitty/);
+  assert.match(html, /このアプリから外部サーバーへアップロードしません/);
+  assert.match(html, /This app does not upload it to any server/);
+});

@@ -552,7 +552,7 @@ for (const options of [{isolated:false},{sharedMemory:false},{protocol:'file:'}]
 test('ST works as a local file without isolation or shared memory', async () => {
  const h=harness('en',{threading:'single-thread',protocol:'file:',isolated:false,sharedMemory:false});
  await h.load(); await h.api.convertCurrentVideo(); assert.equal(h.runtimeCalls.length,1); assert.ok(h.api.state().resultBlob);
- assert.equal(h.get('runtimeNotice').hidden,true); assert.match(h.get('runtimeBadge').textContent,/ST/);
+ assert.equal(h.get('runtimeNotice').hidden,true); assert.equal(h.get('runtimeBadge').textContent,'Fully local processing'); assert.match(h.get('runtimeBadge').title,/single.thread|ST/i);
  assert.match(h.get('helpOfflineNote').textContent,/local file/);
 });
 test('MT inspection fallback explains requirements rather than damaged media', async () => {
@@ -563,6 +563,15 @@ test('MT inspection fallback explains requirements rather than damaged media', a
 });
 test('isolated MT exposes hosted offline limits and selected edition', async () => {
  const h=harness('en',{threading:'multi-thread'}); await h.load(); await h.api.convertCurrentVideo();
- assert.equal(h.get('runtimeNotice').hidden,true); assert.match(h.get('runtimeBadge').textContent,/MT/);
+ assert.equal(h.get('runtimeNotice').hidden,true); assert.equal(h.get('runtimeBadge').textContent,'Fully local processing'); assert.match(h.get('runtimeBadge').title,/multi.thread|MT/i);
  assert.match(h.get('helpOfflineNote').textContent,/host|isolation/); assert.equal(h.runtimeCalls.length,1);
 });
+
+for (const language of ['en', 'ja']) for (const threading of ['single-thread', 'multi-thread']) {
+ test(`${language} ${threading} keeps the privacy label free of edition suffixes`, async()=>{
+  const h=harness(language,{threading});
+  assert.equal(h.get('runtimeBadge').textContent,language==='ja'?'完全ローカル処理':'Fully local processing');
+  await h.get('languageButton').emit('click');
+  assert.equal(h.get('runtimeBadge').textContent,language==='ja'?'Fully local processing':'完全ローカル処理');
+ });
+}

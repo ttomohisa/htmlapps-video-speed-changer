@@ -1,6 +1,11 @@
 # Changelog
 
-## 1.1.0 - Unreleased
+## 1.1.1 - Unreleased
+
+- Fit the preview to the video instead of stretching its black frame to the full settings column; preserve the complete image and natural source/result aspect ratios.
+- Use flat UI backgrounds, simplify the visible local-processing badge, remove catalog branding from Help, and hide the app footer on smartphones.
+
+## 1.1.0 - 2026-10-14
 
 - Wait for Pages service-worker control before the first isolation reload, avoiding an install/activation race.
 

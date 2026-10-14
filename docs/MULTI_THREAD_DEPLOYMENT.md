@@ -1,6 +1,6 @@
 # Multi-thread deployment
 
-Version 1.1.0 supplies separate ST/MT HTML builds using the pinned Builder v1.10.6 `video-speed-changer` profile. ST is the default portable `file://`/offline build. MT embeds its own runtime and pthread Worker but requires an isolated hosted environment; a standalone HTML cannot set its own response headers.
+Version 1.1.1 supplies separate ST/MT HTML builds using the pinned Builder v1.10.6 `video-speed-changer` profile. ST is the default portable `file://`/offline build. MT embeds its own runtime and pthread Worker but requires an isolated hosted environment; a standalone HTML cannot set its own response headers.
 
 ## Raw release files
 

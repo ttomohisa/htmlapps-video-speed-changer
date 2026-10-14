@@ -5,7 +5,7 @@
 One editable app template produces independent ST and MT distributions. Both share the speed-changing UI, local media handling, source/result lifecycle and output formats.
 
 ```text
-app.config.json                     Product version (1.1.0)
+app.config.json                     Product version (1.1.1)
 APP_SPEC.md                         Product and acceptance contract
 src/index.template.html             Shared editable application
 ffmpeg.release.json                 Builder v1.10.6 profile/variant selection

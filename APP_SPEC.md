@@ -6,7 +6,7 @@
 - **Japanese name:** 動画速度変更
 - **Slug:** `video-speed-changer`
 - **Repository:** `ttomohisa/htmlapps-video-speed-changer`
-- **Current package version:** `1.1.0`
+- **Current package version:** `1.1.1`
 - **Release artifacts:** ST `dist/index.html` / `dist/index.self-extract.html`; MT `dist/index.mt.html` / `dist/index.mt.self-extract.html`; root aliases `video-speed-changer.html` / `video-speed-changer.mt.html`
 - **Builder dependency:** `ttomohisa/htmlapps-ffmpeg-wasm-builder` v1.10.6 / `video-speed-changer`
 
@@ -85,7 +85,7 @@ If browser-native metadata/preview loading fails, FFmpeg media inspection may re
 
 When inspection succeeds, the UI explicitly says preview is unavailable but conversion can be attempted. Preview failure must not be presented as proof that conversion will fail.
 
-## 4. v1.1.0 pinned ST / MT dependency contract
+## 4. v1.1.1 pinned ST / MT dependency contract
 
 `ffmpeg.release.json` and `ffmpeg.release.lock.json` use schemaVersion 2 and select exactly:
 
@@ -109,7 +109,7 @@ Each ST or MT readable HTML embeds UI/CSS/JavaScript, browser runtime, gzip-comp
 
 ST supports direct `file://` opening and offline processing after the file is obtained. MT is a one-file processing artifact, but requires isolated hosting: a secure HTTP(S) context, `crossOriginIsolated === true`, and a `SharedArrayBuffer` function. MT must refuse direct-file, unisolated or missing-SharedArrayBuffer execution before cached/fresh loader use, conversion or FFmpeg fallback inspection. It must not silently switch to ST.
 
-The runtime variant is derived from build metadata and shown in the local-processing badge. The bilingual blocked-state explanation distinguishes direct-file opening from browser/host capability and links to the standard ST app. The selected video and result do not automatically transfer to another page.
+The runtime variant is derived from build metadata and retained in the local-processing badge tooltip. The visible badge says only “完全ローカル処理” / “Fully local processing” for both editions. The bilingual blocked-state explanation distinguishes direct-file opening from browser/host capability and links to the standard ST app. The selected video and result do not automatically transfer to another page.
 
 MT budgets are pthread pool 8, video decoder 2, H.264 encoder 4, x264 lookahead 1. Audio codecs and filtergraphs remain single-threaded. No universal speedup is promised.
 
@@ -160,7 +160,10 @@ Cancellation returns from `processing` to `ready` while preserving source/settin
 
 ## 8. UX and accessibility
 
-- Light-only UI matching htmlapps-template tokens.
+- Light-only UI matching htmlapps-template tokens, using flat backgrounds without gradients.
+- The source preview is top-aligned and sized to its video rather than stretched to the settings column. Source/result videos keep their intrinsic ratio with contained, uncropped playback and viewport height limits.
+- Hide the app-name/license/local-processing footer at the existing smartphone breakpoint (760px and below); desktop retains it.
+- Help privacy copy describes browser-local processing without catalog branding.
 - Browser Kitty accent `#16624F`.
 - SVG icons, no emoji UI icons.
 - Header icon and embedded favicon use the same video-player + speed-meter artwork.
@@ -234,13 +237,13 @@ Dedicated `video-speed-changer` Builder profile:
 - ST without SharedArrayBuffer; MT with required SharedArrayBuffer and cross-origin isolation,
 - no arbitrary command-string interface.
 
-Both runtime variants are pinned to Builder v1.10.6 for v1.1.0.
+Both runtime variants are pinned to Builder v1.10.6 for v1.1.1.
 
-## 13. v1.1.0 acceptance criteria
+## 13. v1.1.1 acceptance criteria
 
 ### Dependency pin / build
 
-- `app.config.json` version is `1.1.0`.
+- `app.config.json` version is `1.1.1`.
 - `ffmpeg.release.json` selects Builder v1.10.6 and both explicit video-speed-changer ST/MT assets.
 - Each variant in `ffmpeg.release.lock.json` contains a real 64-hex SHA-256, positive release/asset IDs and byte count, and matching config fields.
 - Normal `build-standalone.bat` obtains FFmpeg only through the committed release lock.
@@ -282,7 +285,7 @@ Both runtime variants are pinned to Builder v1.10.6 for v1.1.0.
 
 ## 14. Release verification
 
-ST and MT retain the same speed/audio, source/result ownership, cancellation, fallback inspection and export-name behavior. Synthetic lifecycle and deployment tests are distinct from real browser/media verification. Record actual commands, tested URLs/artifacts and limitations in `REGRESSION.md`; do not treat historical v1.0 results as fresh v1.1.0 browser evidence.
+ST and MT retain the same speed/audio, source/result ownership, cancellation, fallback inspection and export-name behavior. Synthetic lifecycle and deployment tests are distinct from real browser/media verification. Record actual commands, tested URLs/artifacts and limitations in `REGRESSION.md`; do not treat historical v1.0 results as fresh v1.1.1 browser evidence.
 
 ## Header normalization (1.0.1)
 

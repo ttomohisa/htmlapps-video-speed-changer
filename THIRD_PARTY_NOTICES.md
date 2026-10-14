@@ -1,6 +1,6 @@
 # Third-Party Notices
 
-Video Speed Changer v1.1.0 embeds separate single-thread and multi-thread `video-speed-changer` builds from the pinned [FFmpeg WASM Builder v1.10.6 release](https://github.com/ttomohisa/htmlapps-ffmpeg-wasm-builder/releases/tag/v1.10.6).
+Video Speed Changer v1.1.1 embeds separate single-thread and multi-thread `video-speed-changer` builds from the pinned [FFmpeg WASM Builder v1.10.6 release](https://github.com/ttomohisa/htmlapps-ffmpeg-wasm-builder/releases/tag/v1.10.6).
 
 ## FFmpeg / x264 core
 
