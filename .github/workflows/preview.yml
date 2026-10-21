@@ -13,6 +13,8 @@ permissions:
 concurrency:
   group: pr-preview-build-${{ github.event.pull_request.number }}
   cancel-in-progress: true
+env:
+  POWERSHELL_TELEMETRY_OPTOUT: '1'
 jobs:
   preview:
     if: github.event.pull_request.head.repo.full_name == github.repository

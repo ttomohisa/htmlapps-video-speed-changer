@@ -230,6 +230,55 @@ jobs:
             Stop-Process -Id $browserProcess.Id -Force -ErrorAction SilentlyContinue
           }
         }
+    - name: Verify Pages bootstrap service-worker isolation
+      shell: pwsh
+      env:
+        PREVIEW_URL: ${{ needs.deploy.outputs.preview_url }}
+        MT_WAIT_FOR_SERVICE_WORKER: '1'
+      run: |
+        $baseUrl = $env:PREVIEW_URL.TrimEnd('/')
+        $mtUrl = "$baseUrl/pages-bootstrap-control-ready/mt/"
+        $browserCandidates = @(@(
+          (Join-Path ${env:ProgramFiles(x86)} "Microsoft\Edge\Application\msedge.exe"),
+          (Join-Path $env:ProgramFiles "Microsoft\Edge\Application\msedge.exe"),
+          (Join-Path $env:ProgramFiles "Google\Chrome\Application\chrome.exe"),
+          (Join-Path ${env:ProgramFiles(x86)} "Google\Chrome\Application\chrome.exe")
+        ) | Where-Object { Test-Path -LiteralPath $_ })
+
+        if (@($browserCandidates).Count -lt 1) {
+          throw "No supported Chromium browser was found on the Windows runner."
+        }
+
+        $browserPath = [string]$browserCandidates[0]
+        $profilePath = Join-Path $env:RUNNER_TEMP "video-speed-bootstrap-browser-profile"
+        if (Test-Path -LiteralPath $profilePath) {
+          Remove-Item -LiteralPath $profilePath -Recurse -Force
+        }
+
+        $browserProcess = Start-Process -FilePath $browserPath -ArgumentList @(
+          "--headless=new",
+          "--disable-gpu",
+          "--no-first-run",
+          "--remote-debugging-port=9222",
+          "--user-data-dir=$profilePath",
+          $mtUrl
+        ) -PassThru
+
+        try {
+          $env:MT_URL = $mtUrl
+          node ./scripts/verify-mt-isolation.mjs
+          if ($LASTEXITCODE -ne 0) {
+            throw "MT browser isolation verification failed."
+          }
+
+          Write-Host "MT Preview browser check passed: crossOriginIsolated=true / SharedArrayBuffer=true."
+        } finally {
+          if ($null -ne $browserProcess -and -not $browserProcess.HasExited) {
+            Stop-Process -Id $browserProcess.Id -Force -ErrorAction SilentlyContinue
+          }
+        }
+    env:
+      POWERSHELL_TELEMETRY_OPTOUT: '1'
   report:
     needs:
     - resolve

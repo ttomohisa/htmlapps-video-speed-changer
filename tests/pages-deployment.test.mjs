@@ -194,7 +194,7 @@ test('COI fallback uses the reviewed upstream bytes, license and directory-scope
 test('build, Pages and preview share the canonical Node 24 repository gate and staged site', () => {
   for (const name of ['build-standalone', 'deploy-pages', 'preview']) {
     const workflow = read(`.github/workflows/${name}.yml`);
-    assert.match(workflow, /actions\/setup-node@v6/);
+    assert.match(workflow, /actions\/setup-node@(?:v6|249970729cb0ef3589644e2896645e5dc5ba9c38)/);
     assert.match(workflow, /node-version: 24/);
     assert.match(workflow, /POWERSHELL_TELEMETRY_OPTOUT: ['"]1['"]/);
     assert.match(workflow, /run: \.\/scripts\/check-repository\.ps1/);
@@ -202,9 +202,10 @@ test('build, Pages and preview share the canonical Node 24 repository gate and s
   }
   assert.match(read('.github/workflows/deploy-pages.yml'), /path: pages-dist/);
   assert.match(read('wrangler.preview.jsonc'), /"directory": "\.\/pages-dist"/);
-  const preview = read('.github/workflows/preview.yml');
+  const buildPreview = read('.github/workflows/preview.yml');
+  const preview = read('.github/workflows/preview-deploy.yml');
   assert.match(preview, /Probe ST and MT Preview/);
-  assert.match(preview, /prepare-pages\.ps1 -PreviewBootstrapCheck/);
+  assert.match(buildPreview, /prepare-pages\.ps1 -PreviewBootstrapCheck/);
   assert.match(preview, /\$baseUrl\/pages-bootstrap-control-ready\/mt\//);
   assert.match(preview, /node \.\/scripts\/verify-mt-isolation\.mjs/);
   assert.match(preview, /Cross-Origin-Opener-Policy/);
@@ -213,7 +214,7 @@ test('build, Pages and preview share the canonical Node 24 repository gate and s
 });
 
 test('preview browser selection treats one executable as an array, never its first character', t => {
-  const workflow = read('.github/workflows/preview.yml');
+  const workflow = read('.github/workflows/preview-deploy.yml');
   const selection = workflow.match(/\$browserCandidates = ([\s\S]*?)\n\s*if \(/)?.[1];
   assert.ok(selection, 'browser candidate discovery must exist');
   assert.match(selection, /^@\(\s*@\(/, 'wrap the filtered pipeline in @()');

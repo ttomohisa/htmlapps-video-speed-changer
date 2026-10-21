@@ -6,7 +6,7 @@ import vm from 'node:vm';
 // Execute the actual CI helper. CDP transport and time are deterministic doubles;
 // these regressions do not replace the workflow's real Chromium isolation check.
 const helperPath = new URL('../scripts/verify-mt-isolation.mjs', import.meta.url);
-const workflow = fs.readFileSync(new URL('../.github/workflows/preview.yml', import.meta.url), 'utf8');
+const workflow = fs.readFileSync(new URL('../.github/workflows/preview.yml', import.meta.url), 'utf8') + '\n' + fs.readFileSync(new URL('../.github/workflows/preview-deploy.yml', import.meta.url), 'utf8');
 const source = fs.existsSync(helperPath) ? fs.readFileSync(helperPath, 'utf8') : '';
 
 test('isolation helper exists', () => assert.ok(source, 'exact-URL isolation helper must exist'));
@@ -20,7 +20,7 @@ const page = (url = mtUrl) => ({
 
 async function runHelper({
   targets = [[page()]], states = [isolated], stalledFetch = false,
-  stalledOpen = false, stalledMethod = '', evaluationError = false
+  stalledOpen = false, stalledMethod = '', evaluationError = false, waitForServiceWorker = false
 } = {}) {
   let now = 0, timerId = 0, fetchCount = 0, evaluationCount = 0;
   const timers = new Map(), sockets = [], messages = [], logs = [];
@@ -48,6 +48,7 @@ async function runHelper({
           result: { value: vm.runInNewContext(request.params.expression, {
             self: { crossOriginIsolated: state.crossOriginIsolated },
             SharedArrayBuffer: state.sharedArrayBuffer ? function SharedArrayBuffer() {} : undefined,
+            navigator: { serviceWorker: { controller: state.serviceWorkerControlled ? {} : null } },
             location: { href: state.href }
           }) }
         };
@@ -59,7 +60,7 @@ async function runHelper({
     close() { this.closed = true; }
   }
   const context = {
-    process: { env: { MT_URL: mtUrl } },
+    process: { env: { MT_URL: mtUrl, MT_WAIT_FOR_SERVICE_WORKER: waitForServiceWorker ? '1' : undefined } },
     console: { log: value => logs.push(value) },
     Date: { now: () => now }, URL, AbortController,
     setTimeout: setTimer, clearTimeout: id => timers.delete(id),
@@ -104,6 +105,29 @@ test('passes only for the exact MT page with both isolation capabilities', async
   assert.deepEqual(JSON.parse(result.logs.at(-1)), isolated);
   assert.equal(result.evaluationCount, 1);
   assertClean(result);
+});
+
+test('bootstrap waits for service-worker control and isolated reload', async () => {
+  const result = await runHelper({ waitForServiceWorker: true, states: [
+    { ...isolated, crossOriginIsolated: false, sharedArrayBuffer: false },
+    { ...isolated, serviceWorkerControlled: true }
+  ] });
+  assert.equal(result.error, undefined);
+  assert.equal(result.evaluationCount, 2);
+  assert.equal(JSON.parse(result.logs.at(-1)).serviceWorkerControlled, true);
+  assertClean(result);
+});
+
+test('bootstrap cannot pass permanently nonisolated or uncontrolled pages', async () => {
+  for (const state of [
+    { ...isolated, crossOriginIsolated: false, sharedArrayBuffer: false },
+    { ...isolated, serviceWorkerControlled: false }
+  ]) {
+    const result = await runHelper({ waitForServiceWorker: true, states: [state] });
+    assert.match(result.error?.message ?? '', /Timed out/);
+    assert.equal(result.now, 30000);
+    assertClean(result);
+  }
 });
 
 test('waits for delayed navigation instead of evaluating the initial about:blank page', async () => {

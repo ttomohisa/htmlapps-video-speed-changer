@@ -1,6 +1,7 @@
 // CI-only Chromium DevTools check. Do not accept a startup page or a redirect
 // as evidence that the expected MT preview is cross-origin isolated.
 const mtUrl = process.env.MT_URL;
+const waitForServiceWorker = process.env.MT_WAIT_FOR_SERVICE_WORKER === '1';
 if (!mtUrl || !['http:', 'https:'].includes(new URL(mtUrl).protocol)) {
   throw new Error('MT_URL must be the expected HTTP(S) MT preview URL.');
 }
@@ -69,7 +70,9 @@ async function readState(target) {
     };
     await call('Runtime.enable');
     const evaluation = await call('Runtime.evaluate', {
-      expression: 'JSON.stringify({ crossOriginIsolated: self.crossOriginIsolated, sharedArrayBuffer: typeof SharedArrayBuffer === "function", href: location.href })',
+      expression: waitForServiceWorker
+        ? 'JSON.stringify({ crossOriginIsolated: self.crossOriginIsolated, sharedArrayBuffer: typeof SharedArrayBuffer === "function", href: location.href, serviceWorkerControlled: Boolean(navigator.serviceWorker?.controller) })'
+        : 'JSON.stringify({ crossOriginIsolated: self.crossOriginIsolated, sharedArrayBuffer: typeof SharedArrayBuffer === "function", href: location.href })',
       returnByValue: true
     });
     if (evaluation.exceptionDetails) {
@@ -95,7 +98,9 @@ while (remaining() > 0) {
       const observed = await readState(target);
       lastObservation = JSON.stringify(observed);
       // Target metadata can update before its execution context leaves about:blank.
-      if (observed.href === mtUrl) {
+      if (observed.href === mtUrl && (!waitForServiceWorker ||
+          (observed.crossOriginIsolated === true && observed.sharedArrayBuffer === true &&
+           observed.serviceWorkerControlled === true))) {
         state = observed;
         break;
       }
