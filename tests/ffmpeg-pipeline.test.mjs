@@ -110,6 +110,7 @@ test('local Builder import builds both development editions but cannot pass rele
     fs.mkdirSync(path.join(builder,'runtime'),{recursive:true});fs.mkdirSync(path.join(app,'src'),{recursive:true});fs.mkdirSync(path.join(app,'scripts'));
     for(const name of ['app.config.json','dependencies.json','dependencies.lock.json','ffmpeg.release.json','ffmpeg.release.lock.json','build-standalone.ps1'])fs.copyFileSync(path.join(root,name),path.join(app,name));
     fs.copyFileSync(path.join(root,'src/index.template.html'),path.join(app,'src/index.template.html'));
+    fs.mkdirSync(path.join(app,'components'));for(const name of ['ui-conventions.js','ui-conventions.css','ui-conventions.lock.json'])fs.copyFileSync(path.join(root,'components',name),path.join(app,'components',name));
     for(const name of fs.readdirSync(path.join(root,'scripts')).filter(name=>name.endsWith('.ps1')))fs.copyFileSync(path.join(root,'scripts',name),path.join(app,'scripts',name));
     for(let i=0;i<fixtures.length;i++){
       const destination=path.join(builder,'dist/video-speed-changer',['single-thread','multi-thread'][i]);

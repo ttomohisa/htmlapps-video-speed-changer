@@ -49,10 +49,10 @@ function harness(language = 'en', options = {}){
   const runner={run:async args=>{runtimeCalls.push(args);return run(args);},dispose(){}};
   const loaderCalls=[];
   const BrowserFFmpeg={loadEmbedded:async args=>{loaderCalls.push(args);return runner;},videoSpeedChangerArgs:options=>options,videoSpeedChangerInspectArgs:options=>options,decodeJsonOutput:result=>result.report};
-  const sandbox={document,console:{error(){}},navigator:{language:'en'},localStorage:{getItem(key){return key.endsWith(':language') ? language : null;},setItem(){}},
-    URL:{createObjectURL(){return `blob:synthetic-${++nextUrl}`;},revokeObjectURL(url){revoked.push(url);}},
+  const sandbox={document,console:{error(){}},navigator:{language:'en',languages:options.languages||['en']},localStorage:{getItem(key){if(options.storageUnavailable)throw Error('denied');return options.saved?.[key] ?? (key.endsWith(':language')?language:null)},setItem(key,value){if(options.storageUnavailable)throw Error('denied');(options.writes||[]).push([key,value])}},
+    URL:Object.assign(class extends URL {},{createObjectURL(){return `blob:synthetic-${++nextUrl}`;},revokeObjectURL(url){revoked.push(url);}}),
     BrowserFFmpeg,Blob,Uint8Array,AbortController,DOMException,WebAssembly,TextDecoder,Intl,HTMLElement:Element,
-    location:{protocol:options.protocol || 'https:'},crossOriginIsolated:options.isolated ?? true,SharedArrayBuffer:options.sharedMemory === false ? undefined : SharedArrayBuffer,
+    location:{protocol:options.protocol || 'https:',href:options.url||'https://example.invalid/'},history:{replaceState(){}},crossOriginIsolated:options.isolated ?? true,SharedArrayBuffer:options.sharedMemory === false ? undefined : SharedArrayBuffer,
     DecompressionStream,Response,atob,matchMedia:()=>({matches:options.reducedMotion ?? false}),
     clearTimeout(){},setTimeout(){return 1;},requestAnimationFrame:fn=>options.frames?options.frames.push(fn):fn(),addEventListener(){}};
   sandbox.window=sandbox;
@@ -65,6 +65,7 @@ function harness(language = 'en', options = {}){
       setRunner(value){ffmpegRunnerPromise=Promise.resolve(value);}, clearRunner(){ffmpegRunnerPromise=null;},
       state(){return {currentFile,currentSpeed,converting,resultBlob,resultUrl,resultSnapshot,resultSaved,phase:asyncState.state.phase,activeProbe};}
     };})();`);
+  vm.runInNewContext(fs.readFileSync(new URL('../components/ui-conventions.js',import.meta.url),'utf8'),sandbox);
   vm.runInNewContext(source,sandbox,{filename:'upstream-index-script.js'});
   const api=sandbox.assessment;api.setRunner(runner);
   async function load(name='sample.mp4',duration=60){api.loadVideo({name,type:'video/mp4',size:8});const probe=api.state().activeProbe;Object.assign(probe,{duration,videoWidth:16,videoHeight:9});await probe.emit('loadedmetadata');}
@@ -338,7 +339,7 @@ test('Save uses the retained result URL and its filename after failed reconversi
   assert.equal(link.href, old.resultUrl);
   assert.equal(link.download, 'sample-speed-2.00x.mp4');
   assert.equal(link.clicked, true);
-  assert.equal(h.api.state().resultSaved, true);
+  assert.equal(h.api.state().resultSaved, false);
 });
 
 test('cancel followed by successful runtime settlement keeps the previous result', async () => {
@@ -588,4 +589,30 @@ test('Delayed completion reveal cannot focus or scroll a replaced source',async(
 test('Completing conversion does not move focus behind an open Help dialog',async()=>{
  const h=harness();await h.load();h.get('helpDialog').open=true;await h.api.convertCurrentVideo();
  assert.equal(h.get('resultPreviewTitle').focusCalls,undefined);assert.equal(h.get('convertResult').scrollCalls,undefined);
+});
+
+
+test('conversion freezes source and speed/audio settings before runtime loading',async()=>{
+ const h=harness();await h.load();h.api.setSpeed(2);const pending=h.api.convertCurrentVideo();h.api.setSpeed(.5);h.get('noAudioInput').checked=true;await pending;
+ assert.equal(h.runtimeCalls[0].args.rate,2);assert.equal(h.runtimeCalls[0].args.noAudio,false);assert.equal(h.api.state().resultSnapshot.speed,2);assert.equal(h.api.state().resultSnapshot.audioMode,"preserve");
+});
+test('download handoff keeps tab-only result replacement warning and exact bytes/name',async()=>{
+ const h=harness();await h.load();await h.api.convertCurrentVideo();h.get('outputNameInput').value='edited-result';await h.get('downloadResultButton').emit('click');
+ assert.equal(h.created.at(-1).download,'edited-result.mp4');assert.equal(h.api.state().resultSaved,false);
+ assert.deepEqual(new Uint8Array(await h.api.state().resultBlob.arrayBuffer()),new Uint8Array([109,112,52,97]));
+});
+
+
+test('language precedence is read-only at startup and explicit denied-storage switching preserves current result',async()=>{
+ const writes=[];const h=harness('en',{url:'https://test.invalid/?lang=ja',saved:{'browser-kitty:ui-language:v1':'en'},writes});
+ assert.equal(h.get('languageButton').textContent,'EN');assert.deepEqual(writes,[]);
+ await h.load();await h.api.convertCurrentVideo();const before=h.api.state();await h.get('languageButton').emit('click');assert.deepEqual(writes,[['browser-kitty:ui-language:v1','en']]);assert.equal(h.api.state().resultBlob,before.resultBlob);
+ const denied=harness('en',{storageUnavailable:true});await denied.load();await denied.api.convertCurrentVideo();const blob=denied.api.state().resultBlob;await denied.get('languageButton').emit('click');assert.equal(denied.api.state().resultBlob,blob);assert.match(denied.get('languageStatus').textContent,/この画面/);
+});
+test('source-drop replacement is cancel-first, translates while open and cancellation keeps prior result',async()=>{
+ const h=harness();await h.load('captured-name.mp4');await h.api.convertCurrentVideo();const old=h.api.state();
+ const pending=h.get('dropZone').emit('drop',{dataTransfer:{files:[{name:'new.mp4',type:'video/mp4',size:8}]}});await tick();
+ assert.equal(h.get('appConfirmDialog').open,true);assert.equal(h.get('appConfirmCancel').focusCalls,1);
+ await h.get('languageButton').emit('click');assert.match(h.get('appConfirmMessage').textContent,/captured-name.mp4/);assert.match(h.get('appConfirmMessage').textContent,/元動画/);
+ await h.get('appConfirmCancel').emit('click');await pending;assert.equal(h.api.state().resultBlob,old.resultBlob);assert.equal(h.api.state().currentFile,old.currentFile);
 });

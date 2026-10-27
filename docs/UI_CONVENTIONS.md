@@ -1,0 +1,9 @@
+# Common UI v1
+
+Pinned components/ui-conventions.js and .css embed in scripts/build-variant.ps1 through scripts/embed-ui-conventions.ps1, in both ST/MT readable and exact self-extract outputs. Shared lock verifies bytes before build; engines, dependency pins, release hashes and ST/MT isolation conditions remain unchanged.
+
+Tab-only retention, one-result MP4 scope and unavailable prerequisites remain visible. Conversion and Stop use real busy/stopping disabled states; help and language stay usable. The conversion captures source/speed/audio/quality before runtime loading. Existing generation guards, worker termination and old-result retention remain. Retried output settings are separate from previous-result snapshot and editable filename. Browser download handoff says Download started and retains discard confirmation because disk completion is unknown.
+
+Changing source uses the existing cancel-first in-app confirmation, including drag/drop; it names the captured result/source, explains source files are unchanged and updates while open. No Undo or autosave was invented. Startup language reads URL/common/legacy/browser/English without writes. Explicit switch writes common key; denied storage keeps a visible screen-only notice, current work and running conversion. Existing dynamic errors retranslate without clearing them.
+
+Human acceptance pending: actual media in ST local files and isolated MT, Worker termination, portrait output orientation, narrow/short mobile touch layout and 44px header/executable targets, dialogs/focus/Escape/backdrop, language during conversion/errors and real download bytes. Dense speed/audio/quality choice controls retain their selected appearance/compact layout; source/DOM tests are not device geometry acceptance. Run the canonical Windows PowerShell scripts/check-repository.ps1 gate and scripts/check-dependency-updates.ps1; exact decoded variant/release parity is checked.

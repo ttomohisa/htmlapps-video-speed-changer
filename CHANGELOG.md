@@ -224,3 +224,6 @@ All notable changes to Video Speed Changer are documented here.
 ### Not yet included
 
 - Playback-speed settings, target-duration calculation, FFmpeg conversion, audio options, and MP4 export.
+
+
+Common UI v1: shared button/language state, tab retention, scoped MP4 delivery and cancel-first source replacement; preserve previous-result and output snapshots.

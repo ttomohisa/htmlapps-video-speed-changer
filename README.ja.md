@@ -103,3 +103,6 @@ Node状態テストは実際のアプリスクリプトを合成DOM・動画情�
 アプリソースは [MIT](LICENSE)、内包するFFmpeg/x264のST／MTバイナリはGPL-2.0-or-laterです。Builder v1.10.6の対応ソースに関する条件を維持します。Pages補助スクリプトはcoi-serviceworker 0.1.7（MIT）をcommitとSHA-256で固定しています。詳しくは [THIRD_PARTY_NOTICES.md](THIRD_PARTY_NOTICES.md) を参照してください。
 
 Copyright © 2026 ttomohisa。バグ報告・提案はGitHub Issuesへ。[CONTRIBUTING.md](CONTRIBUTING.md) も参照してください。
+
+
+作業はこのタブ内だけに保持します。「MP4を保存」は表示中の変換結果を保存します。保存開始は端末への保存完了を保証しません。再変換の失敗・中止では前回の結果を保持します。

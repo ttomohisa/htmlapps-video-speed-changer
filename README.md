@@ -103,3 +103,6 @@ The Node lifecycle tests execute the actual app script with synthetic DOM/media/
 Application source: [MIT](LICENSE). Embedded FFmpeg/x264 ST and MT binaries: GPL-2.0-or-later, with corresponding Builder v1.10.6 source obligations. Hosted Pages helper: coi-serviceworker 0.1.7, MIT, pinned by commit and SHA-256. See [THIRD_PARTY_NOTICES.md](THIRD_PARTY_NOTICES.md).
 
 Copyright © 2026 ttomohisa. Contributions and bug reports are welcome; see [CONTRIBUTING.md](CONTRIBUTING.md).
+
+
+Work stays in this tab. Save MP4 downloads the displayed converted result; Download started acknowledges browser handoff. A previous result remains available when reconversion fails or stops.

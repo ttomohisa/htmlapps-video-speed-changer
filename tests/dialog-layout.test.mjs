@@ -56,7 +56,7 @@ test('Mobile hides only the app footer at the existing responsive breakpoint',()
   assert.doesNotMatch(rule('footer'), /display\s*:\s*none/);
 });
 test('Privacy help describes local processing without catalog branding',()=>{
-  assert.doesNotMatch(html, /Browser Kitty/);
+  const privacyCopy=[...html.matchAll(/helpPrivacyBody:\s*'([^']*)'/g)].map(m=>m[1]);assert.equal(privacyCopy.length,2);for(const copy of privacyCopy)assert.doesNotMatch(copy,/Browser Kitty/);
   assert.match(html, /このアプリから外部サーバーへアップロードしません/);
   assert.match(html, /This app does not upload it to any server/);
 });

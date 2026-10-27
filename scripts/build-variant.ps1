@@ -353,6 +353,8 @@ $manifest = [ordered]@{
 
 Write-Step "Generating standalone HTML"
 $template = [System.IO.File]::ReadAllText($TemplatePath, [System.Text.Encoding]::UTF8)
+. (Join-Path $Root "scripts/embed-ui-conventions.ps1")
+$template = Expand-BrowserKittyUI -Template $template -ComponentsPath (Join-Path $Root "components")
 $assetBundleJson = ConvertTo-SafeJson $assetBundle 50
 $FfmpegVendorRoot = Join-Path $Root "vendor/ffmpeg/$Variant"
 $FfmpegJsGzipPath = Join-Path $FfmpegVendorRoot "ffmpeg.js.gz"

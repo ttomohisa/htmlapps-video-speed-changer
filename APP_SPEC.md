@@ -308,3 +308,8 @@ ST and MT retain the same speed/audio, source/result ownership, cancellation, fa
 - At widths up to 420 px, allow the title and version to wrap without clipping the version or shrinking the language/Help actions; preserve desktop header layout.
 
 - Change settings focuses and scrolls the existing speed input into view together, without changing its value; reduced-motion preferences disable smooth scrolling.
+
+
+## Common UI v1
+
+Tab-only retention is visible above work. Shared v1 button states connect to actual conversion, stopping, prerequisite and result state. The one displayed MP4 is the save scope. Source/speed/audio/quality are captured before runtime loading; failure or cancellation retains the prior result/snapshot and filename. Browser download handoff says Download started and does not suppress later discard confirmation. Picker/drop replacement use the same scoped cancel-first confirmation; its language updates while open. Language resolves URL, shared key, existing tool key, first supported browser language, then English; startup writes nothing, and only an explicit switch writes the shared key. Denied storage shows a screen-only notice without clearing work.
