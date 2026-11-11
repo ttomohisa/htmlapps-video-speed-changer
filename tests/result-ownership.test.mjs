@@ -40,6 +40,7 @@ function harness(language = 'en', options = {}){
   get('ffmpeg-js-gzip').textContent = gzipSync('synthetic core').toString('base64');
   get('ffmpeg-wasm-gzip').textContent = gzipSync(new Uint8Array([0,97,115,109])).toString('base64');
   const created = [];
+  const windowListeners = {};
   const document={documentElement:{},body:new Element(),head:new Element(),activeElement:null,
     querySelector(s){if(s==='input[name="quality"]:checked')return qualities.find(x=>x.checked);if(s.startsWith('#'))return get(s.slice(1));throw Error(`query ${s}`);},
     querySelectorAll(s){if(s.startsWith('[data-i18n'))return [];if(s.includes(','))return s.split(',').flatMap(x=>this.querySelectorAll(x.trim()));if(s==='.target-time')return ['targetHours','targetMinutes','targetSeconds'].map(get);if(s==='input[name="quality"]')return qualities;if(s.startsWith('#'))return [get(s.slice(1))];throw Error(`queryAll ${s}`);},
@@ -54,7 +55,7 @@ function harness(language = 'en', options = {}){
     BrowserFFmpeg,Blob,Uint8Array,AbortController,DOMException,WebAssembly,TextDecoder,Intl,HTMLElement:Element,
     location:{protocol:options.protocol || 'https:'},crossOriginIsolated:options.isolated ?? true,SharedArrayBuffer:options.sharedMemory === false ? undefined : SharedArrayBuffer,
     DecompressionStream,Response,atob,matchMedia:()=>({matches:options.reducedMotion ?? false}),
-    clearTimeout(){},setTimeout(){return 1;},requestAnimationFrame:fn=>options.frames?options.frames.push(fn):fn(),addEventListener(){}};
+    clearTimeout(){},setTimeout(){return 1;},requestAnimationFrame:fn=>options.frames?options.frames.push(fn):fn(),addEventListener(type,fn){(windowListeners[type]??=[]).push(fn);}};
   sandbox.window=sandbox;
   const manifest = options.threading ? {embeddedRuntime:{ffmpeg:{threading:options.threading}}} : null;
   const script = manifest ? originalScript.replace(/const BUILD_MANIFEST = [^\n]+/, `const BUILD_MANIFEST = ${JSON.stringify(manifest)};`) : originalScript;
@@ -63,12 +64,12 @@ function harness(language = 'en', options = {}){
     .replace(/\}\)\(\);\s*$/,`globalThis.assessment = {loadVideo, resetSourceBoundary, setSpeed, setTargetPanel, updateTargetFromInputs, convertCurrentVideo, cancelCurrentConversion, resultFileName,
       getFfmpegRunner,
       setRunner(value){ffmpegRunnerPromise=Promise.resolve(value);}, clearRunner(){ffmpegRunnerPromise=null;},
-      state(){return {currentFile,currentSpeed,converting,resultBlob,resultUrl,resultSnapshot,resultSaved,phase:asyncState.state.phase,activeProbe};}
+      state(){return {currentFile,currentSpeed,converting,resultBlob,resultUrl,resultSnapshot,phase:asyncState.state.phase,activeProbe};}
     };})();`);
   vm.runInNewContext(source,sandbox,{filename:'upstream-index-script.js'});
   const api=sandbox.assessment;api.setRunner(runner);
-  async function load(name='sample.mp4',duration=60){api.loadVideo({name,type:'video/mp4',size:8});const probe=api.state().activeProbe;Object.assign(probe,{duration,videoWidth:16,videoHeight:9});await probe.emit('loadedmetadata');}
-  return {api,get,load,revoked,runtimeCalls,loaderCalls,created,setRun:fn=>{run=fn;}};
+  async function load(name='sample.mp4',duration=60){api.loadVideo({name,type:'video/mp4',size:8});const probe=api.state().activeProbe;Object.assign(probe,{duration,videoWidth:16,videoHeight:9});if(options.nativeAudio!==null)probe.mozHasAudio=options.nativeAudio??true;await probe.emit('loadedmetadata');}
+  return {api,get,load,revoked,runtimeCalls,loaderCalls,created,emitWindow:async(type,event={})=>{for(const fn of windowListeners[type]??[]) await fn(event);},setRun:fn=>{run=fn;}};
 }
 const deferred=()=>{let resolve,reject;const promise=new Promise((a,b)=>{resolve=a;reject=b;});return {promise,resolve,reject};};
 const tick=()=>new Promise(resolve=>setImmediate(resolve));
@@ -338,7 +339,7 @@ test('Save uses the retained result URL and its filename after failed reconversi
   assert.equal(link.href, old.resultUrl);
   assert.equal(link.download, 'sample-speed-2.00x.mp4');
   assert.equal(link.clicked, true);
-  assert.equal(h.api.state().resultSaved, true);
+  assert.equal(h.api.state().resultBlob, old.resultBlob);
 });
 
 test('cancel followed by successful runtime settlement keeps the previous result', async () => {
@@ -588,4 +589,72 @@ test('Delayed completion reveal cannot focus or scroll a replaced source',async(
 test('Completing conversion does not move focus behind an open Help dialog',async()=>{
  const h=harness();await h.load();h.get('helpDialog').open=true;await h.api.convertCurrentVideo();
  assert.equal(h.get('resultPreviewTitle').focusCalls,undefined);assert.equal(h.get('convertResult').scrollCalls,undefined);
+});
+
+test('a requested download never skips confirmation before discarding the result', async () => {
+  const h = harness();
+  const old = await completedResult(h);
+  await h.get('downloadResultButton').emit('click');
+  const pending = h.get('replaceVideoButton').emit('click');
+  await tick();
+  assert.equal(h.get('appConfirmDialog').open, true);
+  await h.get('appConfirmCancel').emit('click');
+  await pending;
+  assert.equal(h.api.state().resultBlob, old.resultBlob);
+  assert.equal(h.get('videoInput').clicked, undefined);
+});
+
+test('restoring a valid rate clears a stale-result warning after invalid input', async () => {
+  const h = harness();
+  await completedResult(h, 2);
+  h.get('speedInput').value = '5';
+  await h.get('speedInput').emit('input');
+  assert.equal(h.get('resultStaleNotice').hidden, false);
+  await h.get('speedInput').emit('change');
+  assert.equal(h.api.state().currentSpeed, 2);
+  assert.equal(h.get('resultStaleNotice').hidden, true);
+  assert.match(h.get('convertButton').textContent, /same settings/i);
+});
+
+test('bfcache navigation retains media and results; ordinary unload releases them', async () => {
+  const h = harness();
+  const old = await completedResult(h);
+  await h.emitWindow('pagehide', { persisted: true });
+  assert.equal(h.api.state().resultBlob, old.resultBlob);
+  assert.equal(h.api.state().resultUrl, old.resultUrl);
+  assert.equal(h.revoked.includes(old.resultUrl), false);
+  await h.api.convertCurrentVideo();
+  const next = h.api.state().resultUrl;
+  await h.emitWindow('pagehide', { persisted: false });
+  await tick();
+  assert.equal(h.revoked.includes(next), true);
+  assert.equal(h.api.state().resultBlob, null);
+});
+
+test('native no-audio metadata disables irrelevant audio controls', async () => {
+  const h = harness('en', { nativeAudio: false });
+  await h.load();
+  assert.equal(h.get('sourceAudioNote').hidden, false);
+  assert.equal(h.get('preservePitchInput').disabled, true);
+  assert.equal(h.get('noAudioInput').disabled, true);
+});
+
+test('unknown native audio is checked locally before sharing the runner with conversion', async () => {
+  const h = harness('en', { nativeAudio: null });
+  const inspection = deferred();
+  h.setRun(args => args.outputs?.[0] === '/inspect.json' ? inspection.promise : output([1]));
+  await h.load();
+  await tick();
+  assert.equal(h.runtimeCalls.length, 1);
+  h.get('noAudioInput').checked = true;
+  const pending = h.api.convertCurrentVideo();
+  await tick();
+  assert.equal(h.runtimeCalls.length, 1, 'conversion must not overlap media inspection');
+  inspection.resolve({ report: { duration: 60, video: { width: 16, height: 9 }, audio: false } });
+  await pending;
+  assert.equal(h.get('noAudioInput').checked, false);
+  assert.equal(h.get('sourceAudioNote').hidden, false);
+  assert.equal(h.runtimeCalls.length, 2);
+  assert.equal(h.runtimeCalls[1].args.noAudio, false);
+  assert.equal(h.api.state().resultSnapshot.audioMode, 'none');
 });
