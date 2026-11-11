@@ -10,6 +10,8 @@ Video Speed Changer has no application backend. Selected video, metadata and con
 
 Both ST and MT releases embed the FFmpeg browser runtime and JS/WASM core; MT embeds its pthread Worker too. CSP preserves `connect-src 'none'`, blocks frames/objects/forms/base URLs, and allows only the local Blob/script/media and WASM permissions required for conversion. `'wasm-unsafe-eval'` permits WASM compilation without generic JavaScript `'unsafe-eval'`.
 
+For source videos whose audio tracks cannot be determined through native browser metadata, the embedded FFmpeg runtime may inspect audio in the background. The selected video stays on-device. When the browser keeps a page in its back-forward cache, in-memory source/result Blob URLs remain valid so returning does not lose the work; on ordinary unload the URLs are revoked.
+
 ST supports direct-file/offline operation. MT requires a secure isolated host, `crossOriginIsolated === true` and SharedArrayBuffer. Direct-file or unsupported MT contexts must block runtime loading, conversion and fallback inspection; they must not silently fetch or switch runtimes. Moving to ST does not transfer a selected video.
 
 ## Hosted MT helper boundary
