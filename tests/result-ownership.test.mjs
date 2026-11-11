@@ -650,6 +650,7 @@ test('unknown native audio is checked locally before sharing the runner with con
   const pending = h.api.convertCurrentVideo();
   await tick();
   assert.equal(h.runtimeCalls.length, 1, 'conversion must not overlap media inspection');
+  assert.equal(h.runtimeCalls[0].args.fast, true, 'unknown audio uses fast metadata-only inspection');
   inspection.resolve({ report: { duration: 60, video: { width: 16, height: 9 }, audio: false } });
   await pending;
   assert.equal(h.get('noAudioInput').checked, false);

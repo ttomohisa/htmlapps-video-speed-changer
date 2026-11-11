@@ -1659,7 +1659,7 @@
         return null;
       }
       function inspectAudioInBackground(file, token) {
-        const task = inspectSourceWithFfmpeg(file, token);
+        const task = inspectSourceWithFfmpeg(file, token, true);
         audioInspectPromise = task;
         void task.then(report => {
           if (!report || !asyncState.isCurrent(token) || !Object.prototype.hasOwnProperty.call(report, 'audio')) return;
@@ -1894,7 +1894,7 @@
         preview.hidden = !nativePreviewAvailable;
         $('#previewUnavailable').hidden = nativePreviewAvailable;
       }
-      async function inspectSourceWithFfmpeg(file, token) {
+      async function inspectSourceWithFfmpeg(file, token, fast = false) {
         if (!window.BrowserFFmpeg?.videoSpeedChangerInspectArgs || !window.BrowserFFmpeg?.decodeJsonOutput) throw new Error('Video inspection runtime is unavailable.');
         sourceInspectController?.abort();
         const controller = new AbortController(); sourceInspectController = controller;
@@ -1905,7 +1905,7 @@
           const result = await runner.run({
             files: [{ name: '/workerfs/input.bin', data: file, workerfs: true }],
             outputs: [output],
-            args: BrowserFFmpeg.videoSpeedChangerInspectArgs({ input: '/workerfs/input.bin', output }),
+            args: BrowserFFmpeg.videoSpeedChangerInspectArgs({ input: '/workerfs/input.bin', output, fast }),
             signal: controller.signal
           });
           if (!asyncState.isCurrent(token)) return null;
