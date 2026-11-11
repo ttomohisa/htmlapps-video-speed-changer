@@ -1,0 +1,90 @@
+name: Validate and publish a version release on main
+
+on:
+  push:
+    branches: [main]
+  workflow_dispatch:
+
+permissions:
+  contents: write
+
+concurrency:
+  group: video-speed-changer-release
+  cancel-in-progress: false
+
+jobs:
+  release:
+    runs-on: windows-latest
+    timeout-minutes: 45
+    env:
+      POWERSHELL_TELEMETRY_OPTOUT: "1"
+      GH_TOKEN: ${{ github.token }}
+    steps:
+      - name: Checkout merged source
+        uses: actions/checkout@v6
+        with:
+          persist-credentials: false
+      - name: Setup Node.js
+        uses: actions/setup-node@v6
+        with:
+          node-version: 24
+      - name: Check version, tag and release status
+        id: version
+        shell: pwsh
+        run: |
+          $version = (Get-Content -Raw -Encoding UTF8 app.config.json | ConvertFrom-Json).version
+          if ($version -notmatch '^[0-9]+\.[0-9]+\.[0-9]+$') { throw "Invalid SemVer version: $version" }
+          $tag = "v$version"
+          $existing = gh api "repos/$env:GITHUB_REPOSITORY/git/ref/tags/$tag" 2>$null | ConvertFrom-Json
+          if ($LASTEXITCODE -eq 0 -and $existing) {
+            if ([string]$existing.object.sha -ne $env:GITHUB_SHA) {
+              Write-Host "Tag $tag already belongs to a previous commit. Skipping."
+              "publish=false" | Out-File $env:GITHUB_OUTPUT -Append -Encoding utf8
+              exit 0
+            }
+            gh release view $tag --repo $env:GITHUB_REPOSITORY --json url *> $null
+            if ($LASTEXITCODE -eq 0) {
+              Write-Host "Release $tag already exists. Skipping."
+              "publish=false" | Out-File $env:GITHUB_OUTPUT -Append -Encoding utf8
+              exit 0
+            }
+          }
+          "publish=true" | Out-File $env:GITHUB_OUTPUT -Append -Encoding utf8
+          "tag=$tag" | Out-File $env:GITHUB_OUTPUT -Append -Encoding utf8
+      - name: Build ST and MT and run all regressions
+        if: steps.version.outputs.publish == 'true'
+        shell: pwsh
+        run: ./scripts/check-repository.ps1
+      - name: Check release files and calculate SHA-256
+        if: steps.version.outputs.publish == 'true'
+        shell: pwsh
+        run: |
+          $files = @('dist/index.html', 'dist/index.mt.html', 'dist/index.self-extract.html', 'dist/index.mt.self-extract.html')
+          $lines = foreach ($path in $files) {
+            if (-not (Test-Path -LiteralPath $path -PathType Leaf)) { throw "Missing release artifact: $path" }
+            "{0}  {1}" -f (Get-FileHash -Algorithm SHA256 $path).Hash.ToLowerInvariant(), (Split-Path $path -Leaf)
+          }
+          [System.IO.File]::WriteAllLines((Join-Path (Resolve-Path dist).Path 'SHA256SUMS.txt'), [string[]]$lines, (New-Object System.Text.UTF8Encoding($false)))
+      - name: Create version tag and GitHub Release
+        if: steps.version.outputs.publish == 'true'
+        shell: pwsh
+        env:
+          RELEASE_TAG: ${{ steps.version.outputs.tag }}
+        run: |
+          gh api "repos/$env:GITHUB_REPOSITORY/git/ref/tags/$env:RELEASE_TAG" --silent 2>$null
+          if ($LASTEXITCODE -ne 0) {
+            gh api "repos/$env:GITHUB_REPOSITORY/git/refs" -f "ref=refs/tags/$env:RELEASE_TAG" -f "sha=$env:GITHUB_SHA" --silent
+            if ($LASTEXITCODE -ne 0) { throw "Could not create version tag." }
+          }
+          gh release create $env:RELEASE_TAG `
+            dist/index.html `
+            dist/index.mt.html `
+            dist/index.self-extract.html `
+            dist/index.mt.self-extract.html `
+            dist/SHA256SUMS.txt `
+            --repo $env:GITHUB_REPOSITORY `
+            --verify-tag `
+            --title "Video Speed Changer $env:RELEASE_TAG" `
+            --generate-notes `
+            --notes "Validated ST and MT single-HTML builds. MT requires cross-origin isolation."
+          if ($LASTEXITCODE -ne 0) { throw "GitHub Release publication failed." }

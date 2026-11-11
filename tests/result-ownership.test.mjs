@@ -658,3 +658,24 @@ test('unknown native audio is checked locally before sharing the runner with con
   assert.equal(h.runtimeCalls[1].args.noAudio, false);
   assert.equal(h.api.state().resultSnapshot.audioMode, 'none');
 });
+
+test('speed validation controls conversion and matches three-decimal precision', async () => {
+  assert.match(html.match(/<input[^>]*id="speedInput"[^>]*>/)[0], /step="0\\.001"/);
+  const h = harness();
+  await h.load();
+  h.api.setSpeed(1.333);
+  assert.equal(h.get('convertButton').disabled, false);
+  h.get('speedInput').value = '8';
+  await h.get('speedInput').emit('input');
+  assert.equal(h.get('convertButton').disabled, true);
+  await h.get('speedInput').emit('change');
+  assert.equal(h.get('convertButton').disabled, false);
+});
+test('output audio summary is derived from source metadata without a full MP4 scan', async () => {
+  assert.doesNotMatch(html, /function bytesContainAscii\\(/);
+  assert.doesNotMatch(html, /audioSummaryMode\\(file\\.data\\)/);
+  const h = harness('en', { nativeAudio: false });
+  await h.load();
+  await h.api.convertCurrentVideo();
+  assert.equal(h.api.state().resultSnapshot.audioMode, 'none');
+});

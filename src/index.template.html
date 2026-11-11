@@ -592,7 +592,7 @@
               <label class="field-label" for="speedInput">
                 <span data-i18n="customSpeedLabel">細かく調整</span>
                 <span class="number-wrap">
-                  <input class="number-input" id="speedInput" type="number" min="0.25" max="4" step="0.05" inputmode="decimal" value="1.00" aria-describedby="speedError">
+                  <input class="number-input" id="speedInput" type="number" min="0.25" max="4" step="0.001" inputmode="decimal" value="1.00" aria-describedby="speedError">
                   <span class="number-suffix">×</span>
                 </span>
               </label>
@@ -955,7 +955,7 @@
         $('#singleThreadLink').textContent = translate('openSingleThread');
         $('#singleThreadLink').setAttribute('href', 'https://ttomohisa.github.io/htmlapps-video-speed-changer/');
         $('#helpOfflineNote').textContent = translate(mt ? 'helpOfflineMt' : 'helpOffline');
-        $('#convertButton').disabled = converting || !runtimeAvailable();
+        $('#convertButton').disabled = converting || !runtimeAvailable() || asyncState.state.phase !== 'ready' || !Number.isFinite(currentSpeed) || currentSpeed < .25 || currentSpeed > 4;
       }
 
 
@@ -1099,21 +1099,15 @@
         preview.muted = noAudio;
         setPreservesPitch(preview, preservePitch.checked);
       }
-      function bytesContainAscii(bytes, text) {
-        if (!bytes || !text) return false;
-        const needle = Array.from(text, char => char.charCodeAt(0));
-        outer: for (let i = 0; i <= bytes.length - needle.length; i += 1) {
-          for (let j = 0; j < needle.length; j += 1) if (bytes[i + j] !== needle[j]) continue outer;
-          return true;
-        }
-        return false;
-      }
-      function audioSummaryMode(outputBytes = null) {
-        if ($('#noAudioInput').checked || (outputBytes && !bytesContainAscii(outputBytes, 'mp4a'))) return 'none';
+      function audioSummaryMode() {
+        // Audio presence is determined from source metadata. Never scan the entire
+        // output video for an incidental codec marker on the main UI thread.
+        const knownSilent = sourceInspection && Object.prototype.hasOwnProperty.call(sourceInspection, 'audio') && !sourceInspection.audio;
+        if ($('#noAudioInput').checked || knownSilent) return 'none';
         return $('#preservePitchInput').checked ? 'preserve' : 'shift';
       }
-      function audioSummaryText(outputBytes = null) {
-        const mode = audioSummaryMode(outputBytes);
+      function audioSummaryText() {
+        const mode = audioSummaryMode();
         return translate(mode === 'none' ? 'audioSummaryNone' : mode === 'preserve' ? 'audioSummaryPreserve' : 'audioSummaryShift');
       }
       function audioSummaryTextForMode(mode) {
@@ -1169,6 +1163,7 @@
         if (syncInput && valid) $('#speedInput').value = formatSpeed(currentSpeed);
         $('#speedInput').setAttribute('aria-invalid', valid ? 'false' : 'true');
         $('#speedError').textContent = valid ? '' : translate('speedRangeError');
+        $('#convertButton').disabled = converting || !runtimeAvailable() || !valid || asyncState.state.phase !== 'ready';
         $('#previewSpeedValue').textContent = valid ? `${formatSpeed(currentSpeed)}×` : '—';
         updatePresetPressed();
         if (valid) {
@@ -1420,7 +1415,7 @@
       }
       async function convertCurrentVideo() {
         if (!runtimeAvailable()) { updateRuntimeUi(); return; }
-        if (converting || !currentFile || !Number.isFinite(currentSpeed) || currentSpeed < .25 || currentSpeed > 4) return;
+        if (converting || asyncState.state.phase !== 'ready' || !currentFile || !Number.isFinite(currentSpeed) || currentSpeed < .25 || currentSpeed > 4) return;
         // The visible name belongs to the downloadable result until its replacement succeeds.
         syncDefaultOutputName();
         const runId = ++conversionGeneration;
@@ -1454,7 +1449,7 @@
           const nextBlob = new Blob([file.data], { type: 'video/mp4' });
           clearConvertedResult();
           resultBlob = nextBlob; resultUrl = URL.createObjectURL(resultBlob); blobUrls.add(resultUrl);
-          settingsSnapshot.audioMode = audioSummaryMode(file.data); resultSnapshot = Object.freeze(settingsSnapshot);
+          settingsSnapshot.audioMode = audioSummaryMode(); resultSnapshot = Object.freeze(settingsSnapshot);
           if (!outputNameDirty) $('#outputNameInput').value = defaultOutputBaseName(resultSnapshot.speed);
           const preview = $('#resultPreview'); preview.src = resultUrl; preview.load();
           $('#convertResult').hidden = false; updateProgress(1); refreshResultUi();
