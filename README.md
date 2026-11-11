@@ -5,7 +5,7 @@
 
 [日本語版 README](README.ja.md)
 
-Change a video's speed from 0.25× to 4.00×, check its resulting duration, and save an MP4 entirely in your browser. Version 1.1.1 provides separate single-thread (ST) and multi-thread (MT) builds.
+Change a video's speed from 0.25× to 4.00×, check its resulting duration, and save an MP4 entirely in your browser. Version 1.1.2 provides separate single-thread (ST) and multi-thread (MT) builds.
 
 [Open the standard ST app](https://ttomohisa.github.io/htmlapps-video-speed-changer/) · [Open the hosted MT app](https://ttomohisa.github.io/htmlapps-video-speed-changer/mt/)
 
@@ -33,6 +33,8 @@ Change a video's speed from 0.25× to 4.00×, check its resulting duration, and 
 If native video preview fails, embedded FFmpeg can inspect some files and allow conversion without a native preview. Support for every codec or damaged file is not guaranteed.
 
 **Cancel conversion** stops the active Worker and retains the current source/settings. An older result remains saveable until a replacement conversion succeeds or you select another source. Switching to another app URL does not automatically transfer your selected video or result.
+
+**Before choosing another video:** You will be asked to confirm discarding a converted result, even after selecting Save MP4. Browsers cannot reliably tell this page whether a download was completed or cancelled. Audio presence is checked from browser metadata where available; otherwise the embedded FFmpeg runtime may inspect it locally before conversion.
 
 ## Privacy and local processing
 
