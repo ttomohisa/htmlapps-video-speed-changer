@@ -6,7 +6,7 @@
 - **Japanese name:** 動画速度変更
 - **Slug:** `video-speed-changer`
 - **Repository:** `ttomohisa/htmlapps-video-speed-changer`
-- **Current package version:** `1.1.1`
+- **Current package version:** `1.1.2`
 - **Release artifacts:** ST `dist/index.html` / `dist/index.self-extract.html`; MT `dist/index.mt.html` / `dist/index.mt.self-extract.html`; root aliases `video-speed-changer.html` / `video-speed-changer.mt.html`
 - **Builder dependency:** `ttomohisa/htmlapps-ffmpeg-wasm-builder` v1.10.6 / `video-speed-changer`
 
@@ -50,7 +50,7 @@ Core user flow:
 - Preserve pitch: default ON.
 - Preserve pitch OFF: pitch changes with speed.
 - Remove audio: output contains no audio stream.
-- Audio-less source videos remain valid inputs.
+- Audio-less source videos remain valid inputs. When native metadata cannot reliably report audio presence, an optional embedded-FFmpeg inspection runs locally. Conversion waits for any pending inspection so the same runner is not used concurrently. A failed optional check must not block conversion.
 
 ### Output
 
@@ -70,7 +70,7 @@ Core user flow:
 - Cancellation retains the source/settings and does not turn into a user-facing error.
 - If an earlier successful result exists, cancelling or failing a reconversion keeps that older result, settings snapshot, preview URL, and automatic filename available.
 - The automatic filename changes to match the newly converted speed only when a replacement result succeeds. A user-edited filename is preserved across attempts for the same source.
-- Replacing/resetting the source clears the prior result and conversion error/details, aborts and invalidates any old conversion, and immediately restores usable controls. Late progress, results, errors, cancellation notices, and finalizers from an old conversion must not affect the newer source.
+- Replacing/resetting the source first confirms disposal whenever a converted result exists, including after a download was requested (which does not prove saving completed). It then clears the prior result and conversion error/details, aborts and invalidates any old conversion, and immediately restores usable controls. Late progress, results, errors, cancellation notices, and finalizers from an old conversion must not affect the newer source.
 - Generation guards prevent stale inspection/conversion results from overwriting a newer source.
 - Blob URLs and Workers are released on source replacement, reconversion, cancellation, and page exit.
 
@@ -308,3 +308,10 @@ ST and MT retain the same speed/audio, source/result ownership, cancellation, fa
 - At widths up to 420 px, allow the title and version to wrap without clipping the version or shrinking the language/Help actions; preserve desktop header layout.
 
 - Change settings focuses and scrolls the existing speed input into view together, without changing its value; reduced-motion preferences disable smooth scrolling.
+
+## v1.1.2 lifecycle regression
+
+- Preserve Object URLs and the FFmpeg runner when `pagehide.persisted` places the page in the back-forward cache; clean them up on ordinary unload.
+- Normalize result freshness after invalid speed input is restored to the last valid value.
+- Detect audio-less sources using browser track APIs when trustworthy; otherwise inspect locally with the embedded FFmpeg runner and serialize inspection with conversion.
+- Always confirm before discarding an existing result; a requested MP4 download is not a confirmed completed save.
