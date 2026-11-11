@@ -1,4 +1,4 @@
-Video Speed Changer v1.1.1
+Video Speed Changer v1.1.2
 =========================
 
 1. Read README.ja.md or README.md.
