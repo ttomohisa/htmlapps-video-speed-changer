@@ -31,26 +31,7 @@ jobs:
       - name: Check version, tag and release status
         id: version
         shell: pwsh
-        run: |
-          $version = (Get-Content -Raw -Encoding UTF8 app.config.json | ConvertFrom-Json).version
-          if ($version -notmatch '^[0-9]+\.[0-9]+\.[0-9]+$') { throw "Invalid SemVer version: $version" }
-          $tag = "v$version"
-          $existing = gh api "repos/$env:GITHUB_REPOSITORY/git/ref/tags/$tag" 2>$null | ConvertFrom-Json
-          if ($LASTEXITCODE -eq 0 -and $existing) {
-            if ([string]$existing.object.sha -ne $env:GITHUB_SHA) {
-              Write-Host "Tag $tag already belongs to a previous commit. Skipping."
-              "publish=false" | Out-File $env:GITHUB_OUTPUT -Append -Encoding utf8
-              exit 0
-            }
-            gh release view $tag --repo $env:GITHUB_REPOSITORY --json url *> $null
-            if ($LASTEXITCODE -eq 0) {
-              Write-Host "Release $tag already exists. Skipping."
-              "publish=false" | Out-File $env:GITHUB_OUTPUT -Append -Encoding utf8
-              exit 0
-            }
-          }
-          "publish=true" | Out-File $env:GITHUB_OUTPUT -Append -Encoding utf8
-          "tag=$tag" | Out-File $env:GITHUB_OUTPUT -Append -Encoding utf8
+        run: ./.github/scripts/release-preflight.ps1
       - name: Build ST and MT and run all regressions
         if: steps.version.outputs.publish == 'true'
         shell: pwsh
@@ -71,8 +52,7 @@ jobs:
         env:
           RELEASE_TAG: ${{ steps.version.outputs.tag }}
         run: |
-          gh api "repos/$env:GITHUB_REPOSITORY/git/ref/tags/$env:RELEASE_TAG" --silent 2>$null
-          if ($LASTEXITCODE -ne 0) {
+          if ('${{ steps.version.outputs.tag_exists }}' -ne 'true') {
             gh api "repos/$env:GITHUB_REPOSITORY/git/refs" -f "ref=refs/tags/$env:RELEASE_TAG" -f "sha=$env:GITHUB_SHA" --silent
             if ($LASTEXITCODE -ne 0) { throw "Could not create version tag." }
           }
