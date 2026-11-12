@@ -2,6 +2,9 @@
 
 ## 1.1.2 - Unreleased
 
+- Hide the local-processing badge at mobile widths while keeping desktop disclosure and the Help privacy description.
+- Offer a second, unrestricted system-file picker on mobile for videos that cannot be opened through the video/photo picker. Both selectors share file validation, change/cancel, and unsaved-result confirmation; retain drag-and-drop and the original video picker.
+
 - Confirm before discarding converted results even after a download request, because browsers cannot verify completed saving.
 - Preserve video URLs and runtime across back-forward-cache navigation and clean them up on ordinary unload.
 - Restore the correct result-freshness label when an invalid speed is reset.

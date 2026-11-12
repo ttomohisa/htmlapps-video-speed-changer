@@ -20,7 +20,7 @@ The app is a focused speed-changing utility, not a general-purpose video editor.
 
 Core user flow:
 
-1. Select or drop one video.
+1. Select or drop one video. On mobile, offer separate video/photo and unfiltered device-file pickers to work around photo-provider selection problems. Both use the same local validation and loading path; the browser/OS ultimately chooses the file provider.
 2. Preview the video or inspect it with FFmpeg when browser-native metadata fails.
 3. Choose a speed from 0.25x to 4.00x, or enter a target duration.
 4. See the resulting duration and time difference immediately.
@@ -109,7 +109,7 @@ Each ST or MT readable HTML embeds UI/CSS/JavaScript, browser runtime, gzip-comp
 
 ST supports direct `file://` opening and offline processing after the file is obtained. MT is a one-file processing artifact, but requires isolated hosting: a secure HTTP(S) context, `crossOriginIsolated === true`, and a `SharedArrayBuffer` function. MT must refuse direct-file, unisolated or missing-SharedArrayBuffer execution before cached/fresh loader use, conversion or FFmpeg fallback inspection. It must not silently switch to ST.
 
-The runtime variant is derived from build metadata and retained in the local-processing badge tooltip. The visible badge says only “完全ローカル処理” / “Fully local processing” for both editions. The bilingual blocked-state explanation distinguishes direct-file opening from browser/host capability and links to the standard ST app. The selected video and result do not automatically transfer to another page.
+The runtime variant is derived from build metadata and retained in the local-processing badge tooltip. The visible badge says only “完全ローカル処理” / “Fully local processing” for both editions on desktop; it is hidden in narrow/mobile layouts (at or below 760 CSS px). The bilingual blocked-state explanation distinguishes direct-file opening from browser/host capability and links to the standard ST app. The selected video and result do not automatically transfer to another page.
 
 MT budgets are pthread pool 8, video decoder 2, H.264 encoder 4, x264 lookahead 1. Audio codecs and filtergraphs remain single-threaded. No universal speedup is promised.
 

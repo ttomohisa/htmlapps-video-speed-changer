@@ -56,3 +56,18 @@ test('One conversion action with progress and cancellation follows speed setting
  assert.ok(ancestors('convertButton').includes('settingsPane'));
  assert.ok(ancestors('cancelConvertButton').includes('settingsPane'));
 });
+
+test('Mobile hides the privacy badge and provides an unfiltered file picker in each input state', () => {
+ const mobile = css.slice(css.indexOf('@media (max-width: 760px)'), css.indexOf('@media (max-width: 420px)'));
+ assert.match(mobile, /\.local-badge\s*\{\s*display:\s*none;/);
+ assert.match(css, /\.mobile-file-action\s*\{\s*display:\s*none;/);
+ assert.match(mobile, /\.mobile-file-action\s*\{\s*display:\s*inline-flex;/);
+ assert.match(html, /<input class="sr-only" id="videoInput" type="file" accept="video\/\*/);
+ assert.match(html, /<input class="sr-only" id="fileInput" type="file">/);
+ for (const id of ['chooseFileButton', 'retryFileButton', 'replaceFileButton']) {
+   assert.match(html, new RegExp('id="' + id + '"[^>]*data-i18n="chooseFile"'));
+ }
+ assert.match(html, /chooseFile: 'ファイルから選ぶ'/);
+ assert.match(html, /chooseFile: 'Browse files'/);
+ assert.match(html, /filePickerHint: '写真アプリで開けない場合/);
+});

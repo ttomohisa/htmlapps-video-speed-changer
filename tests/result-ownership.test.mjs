@@ -680,3 +680,31 @@ test('output audio summary is derived from source metadata without a full MP4 sc
   await h.api.convertCurrentVideo();
   assert.equal(h.api.state().resultSnapshot.audioMode, 'none');
 });
+
+test('Video and Files mobile picker routes share the same source-loading pipeline', async () => {
+  const h = harness();
+  await h.get('chooseVideoButton').emit('click');
+  assert.equal(h.get('videoInput').clicked, true);
+  assert.notEqual(h.get('fileInput').clicked, true);
+  await h.get('chooseFileButton').emit('click');
+  assert.equal(h.get('fileInput').clicked, true);
+  const file = { name: 'from-files.mp4', type: 'video/mp4', size: 4 };
+  h.get('fileInput').files = [file];
+  await h.get('fileInput').emit('change');
+  assert.equal(h.api.state().currentFile, file);
+  assert.equal(h.api.state().phase, 'loading');
+  assert.equal(h.get('videoInput').value, '');
+  assert.equal(h.get('fileInput').value, '');
+  await h.get('fileInput').emit('cancel');
+  assert.equal(h.api.state().currentFile, file);
+});
+
+test('Unfiltered mobile file picker rejects non-video files through the normal validation', async () => {
+  const h = harness();
+  h.get('fileInput').files = [{name:'notes.txt',type:'text/plain',size:8}];
+  await h.get('fileInput').emit('change');
+  assert.equal(h.api.state().currentFile, null);
+  assert.equal(h.api.state().phase, 'error');
+  await h.get('retryFileButton').emit('click');
+  assert.equal(h.get('fileInput').clicked, true);
+});
