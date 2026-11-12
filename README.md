@@ -76,7 +76,7 @@ On Windows, run `build-standalone.bat`. Normal builds need PowerShell; Node.js 2
 ./scripts/check-repository.ps1
 ```
 
-Both variants use FFmpeg WASM Builder **v1.10.6**, profile `video-speed-changer`, pinned by `ffmpeg.release.json` and `ffmpeg.release.lock.json`. Normal builds verify the exact release asset byte count/SHA-256 and both runtime variants before embedding them. They refresh both root download files. Custom output builds leave those checked-in downloads unchanged.
+Both variants use FFmpeg WASM Builder **v1.10.7**, profile `video-speed-changer`, pinned by `ffmpeg.release.json` and `ffmpeg.release.lock.json`. Normal builds verify the exact release asset byte count/SHA-256 and both runtime variants before embedding them. They refresh both root download files. Custom output builds leave those checked-in downloads unchanged.
 
 ```text
 src/index.template.html               Editable app source
@@ -102,6 +102,6 @@ The Node lifecycle tests execute the actual app script with synthetic DOM/media/
 
 ## License and dependencies
 
-Application source: [MIT](LICENSE). Embedded FFmpeg/x264 ST and MT binaries: GPL-2.0-or-later, with corresponding Builder v1.10.6 source obligations. Hosted Pages helper: coi-serviceworker 0.1.7, MIT, pinned by commit and SHA-256. See [THIRD_PARTY_NOTICES.md](THIRD_PARTY_NOTICES.md).
+Application source: [MIT](LICENSE). Embedded FFmpeg/x264 ST and MT binaries: GPL-2.0-or-later, with corresponding Builder v1.10.7 source obligations. Hosted Pages helper: coi-serviceworker 0.1.7, MIT, pinned by commit and SHA-256. See [THIRD_PARTY_NOTICES.md](THIRD_PARTY_NOTICES.md).
 
 Copyright © 2026 ttomohisa. Contributions and bug reports are welcome; see [CONTRIBUTING.md](CONTRIBUTING.md).

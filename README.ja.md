@@ -76,7 +76,7 @@ Windowsで `build-standalone.bat` を実行します。通常ビルドにはPowe
 ./scripts/check-repository.ps1
 ```
 
-ST／MTともにFFmpeg WASM Builder **v1.10.6** の `video-speed-changer` profileを使用します。`ffmpeg.release.json` と `ffmpeg.release.lock.json` でReleaseを固定し、Assetのbyte数・SHA-256と両variantを検証してから内包します。通常ビルドはルートの両配布HTMLも更新します。出力先を指定したビルドでは更新しません。
+ST／MTともにFFmpeg WASM Builder **v1.10.7** の `video-speed-changer` profileを使用します。`ffmpeg.release.json` と `ffmpeg.release.lock.json` でReleaseを固定し、Assetのbyte数・SHA-256と両variantを検証してから内包します。通常ビルドはルートの両配布HTMLも更新します。出力先を指定したビルドでは更新しません。
 
 ```text
 src/index.template.html               編集するアプリソース
@@ -102,6 +102,6 @@ Node状態テストは実際のアプリスクリプトを合成DOM・動画情�
 
 ## ライセンスと依存物
 
-アプリソースは [MIT](LICENSE)、内包するFFmpeg/x264のST／MTバイナリはGPL-2.0-or-laterです。Builder v1.10.6の対応ソースに関する条件を維持します。Pages補助スクリプトはcoi-serviceworker 0.1.7（MIT）をcommitとSHA-256で固定しています。詳しくは [THIRD_PARTY_NOTICES.md](THIRD_PARTY_NOTICES.md) を参照してください。
+アプリソースは [MIT](LICENSE)、内包するFFmpeg/x264のST／MTバイナリはGPL-2.0-or-laterです。Builder v1.10.7の対応ソースに関する条件を維持します。Pages補助スクリプトはcoi-serviceworker 0.1.7（MIT）をcommitとSHA-256で固定しています。詳しくは [THIRD_PARTY_NOTICES.md](THIRD_PARTY_NOTICES.md) を参照してください。
 
 Copyright © 2026 ttomohisa。バグ報告・提案はGitHub Issuesへ。[CONTRIBUTING.md](CONTRIBUTING.md) も参照してください。

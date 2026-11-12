@@ -1,0 +1,65 @@
+name: Pin official Builder v1.10.7 into PR #12 (temporary)
+
+on:
+  push:
+    branches:
+      - fix/video-speed-lifecycle-1-1-2
+    paths:
+      - ".github/workflows/pin-builder-v1-10-7.yml"
+
+permissions:
+  contents: write
+
+concurrency:
+  group: speed-changer-temporary-builder-pin
+  cancel-in-progress: false
+
+jobs:
+  pin:
+    if: github.repository == 'ttomohisa/htmlapps-video-speed-changer'
+    runs-on: windows-latest
+    timeout-minutes: 70
+    env:
+      POWERSHELL_TELEMETRY_OPTOUT: "1"
+    steps:
+      - name: Checkout PR source
+        uses: actions/checkout@v6
+        with:
+          persist-credentials: true
+
+      - name: Setup Node.js
+        uses: actions/setup-node@v6
+        with:
+          node-version: 24
+
+      - name: Verify official ST and MT release archives and update lock
+        shell: pwsh
+        run: |
+          $config = Get-Content -Raw -Encoding UTF8 ffmpeg.release.json | ConvertFrom-Json
+          if ($config.tag -ne 'v1.10.7' -or $config.builderVersion -ne '1.10.7') {
+            throw 'Refusing unexpected FFmpeg Builder release.'
+          }
+          ./scripts/pin-ffmpeg-release.ps1 -ForceDownload
+
+      - name: Rebuild ST and MT readable/self-extract distributions
+        shell: pwsh
+        run: ./build-standalone.ps1
+
+      - name: Full source, provenance, parity and Node regression checks
+        shell: pwsh
+        run: ./scripts/check-repository.ps1
+
+      - name: Commit verified official lock and generated download files
+        shell: pwsh
+        run: |
+          git add -- ffmpeg.release.lock.json video-speed-changer.html video-speed-changer.mt.html
+          git diff --cached --quiet
+          if ($LASTEXITCODE -eq 0) {
+            Write-Host 'No generated changes to commit.'
+            exit 0
+          }
+          if ($LASTEXITCODE -ne 1) { throw 'git diff --cached failed' }
+          git -c user.name='github-actions[bot]' -c user.email='41898282+github-actions[bot]@users.noreply.github.com' commit -m 'build: import verified Builder v1.10.7 ST/MT releases'
+          if ($LASTEXITCODE -ne 0) { throw 'Commit failed' }
+          git push origin 'HEAD:refs/heads/fix/video-speed-lifecycle-1-1-2'
+          if ($LASTEXITCODE -ne 0) { throw 'Cannot update PR branch' }

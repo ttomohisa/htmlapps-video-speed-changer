@@ -8,7 +8,7 @@
 - **Repository:** `ttomohisa/htmlapps-video-speed-changer`
 - **Current package version:** `1.1.2`
 - **Release artifacts:** ST `dist/index.html` / `dist/index.self-extract.html`; MT `dist/index.mt.html` / `dist/index.mt.self-extract.html`; root aliases `video-speed-changer.html` / `video-speed-changer.mt.html`
-- **Builder dependency:** `ttomohisa/htmlapps-ffmpeg-wasm-builder` v1.10.6 / `video-speed-changer`
+- **Builder dependency:** `ttomohisa/htmlapps-ffmpeg-wasm-builder` v1.10.7 / `video-speed-changer`
 
 ### One-sentence purpose
 
@@ -85,15 +85,15 @@ If browser-native metadata/preview loading fails, FFmpeg media inspection may re
 
 When inspection succeeds, the UI explicitly says preview is unavailable but conversion can be attempted. Preview failure must not be presented as proof that conversion will fail.
 
-## 4. v1.1.1 pinned ST / MT dependency contract
+## 4. v1.1.2 pinned ST / MT dependency contract
 
 `ffmpeg.release.json` and `ffmpeg.release.lock.json` use schemaVersion 2 and select exactly:
 
 - repository: `ttomohisa/htmlapps-ffmpeg-wasm-builder`
-- tag / Builder version: `v1.10.6` / `1.10.6`
+- tag / Builder version: `v1.10.7` / `1.10.7`
 - profile: `video-speed-changer`
-- ST asset: `ffmpeg-wasm-video-speed-changer-single-thread-v1.10.6.zip`
-- MT asset: `ffmpeg-wasm-video-speed-changer-multi-thread-v1.10.6.zip`
+- ST asset: `ffmpeg-wasm-video-speed-changer-single-thread-v1.10.7.zip`
+- MT asset: `ffmpeg-wasm-video-speed-changer-multi-thread-v1.10.7.zip`
 
 Pinning verifies each GitHub Release asset digest, actual SHA-256 and byte count, matching profile/version/threading capabilities, inflated JS/WASM bytes, browser runtime cancellation/inspection APIs, and MT pthread Worker payload. The lock records exact release/asset identities, sizes and hashes. It must be reviewed and committed; never invent a hash or resolve `latest` during a normal build.
 
@@ -248,7 +248,7 @@ Both runtime variants are pinned to Builder v1.10.6 for v1.1.1.
 ### Dependency pin / build
 
 - `app.config.json` version is `1.1.1`.
-- `ffmpeg.release.json` selects Builder v1.10.6 and both explicit video-speed-changer ST/MT assets.
+- `ffmpeg.release.json` selects Builder v1.10.7 and both explicit video-speed-changer ST/MT assets.
 - Each variant in `ffmpeg.release.lock.json` contains a real 64-hex SHA-256, positive release/asset IDs and byte count, and matching config fields.
 - Normal `build-standalone.bat` obtains FFmpeg only through the committed release lock.
 - Downloaded release ZIP must match the committed SHA-256 before extraction.

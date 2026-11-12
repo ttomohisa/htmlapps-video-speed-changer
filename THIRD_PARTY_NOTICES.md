@@ -1,6 +1,6 @@
 # Third-Party Notices
 
-Video Speed Changer v1.1.2 embeds separate single-thread and multi-thread `video-speed-changer` builds from the pinned [FFmpeg WASM Builder v1.10.6 release](https://github.com/ttomohisa/htmlapps-ffmpeg-wasm-builder/releases/tag/v1.10.6).
+Video Speed Changer v1.1.2 embeds separate single-thread and multi-thread `video-speed-changer` builds from the pinned [FFmpeg WASM Builder v1.10.7 release](https://github.com/ttomohisa/htmlapps-ffmpeg-wasm-builder/releases/tag/v1.10.7).
 
 ## FFmpeg / x264 core
 
@@ -8,10 +8,10 @@ The generated `ffmpeg.wasm` links FFmpeg with x264 and is distributed under **GP
 
 The pinned binary assets are:
 
-- `ffmpeg-wasm-video-speed-changer-single-thread-v1.10.6.zip`
-- `ffmpeg-wasm-video-speed-changer-multi-thread-v1.10.6.zip`
+- `ffmpeg-wasm-video-speed-changer-single-thread-v1.10.7.zip`
+- `ffmpeg-wasm-video-speed-changer-multi-thread-v1.10.7.zip`
 
-The matching Builder release and `ffmpeg-wasm-sources-v1.10.6.tar.gz` source package provide the corresponding distribution source. Preserve access to the exact FFmpeg, x264, Emscripten revisions, build recipes and license texts required to reproduce both variants. Review the [Builder v1.10.6 source tree](https://github.com/ttomohisa/htmlapps-ffmpeg-wasm-builder/tree/v1.10.6) and release source package when redistributing; the app's MIT license does not replace these obligations.
+The matching Builder release and `ffmpeg-wasm-sources-v1.10.7.tar.gz` source package provide the corresponding distribution source. Preserve access to the exact FFmpeg, x264, Emscripten revisions, build recipes and license texts required to reproduce both variants. Review the [Builder v1.10.7 source tree](https://github.com/ttomohisa/htmlapps-ffmpeg-wasm-builder/tree/v1.10.7) and release source package when redistributing; the app's MIT license does not replace these obligations.
 
 `ffmpeg.release.lock.json` records each exact binary release asset identity, byte count and SHA-256. Separate ST/MT dependency manifests record provenance and embedded payload hashes. FFmpeg JS/WASM, browser runtime and the MT pthread Worker are imported at build time and embedded; none is downloaded during video conversion.
 

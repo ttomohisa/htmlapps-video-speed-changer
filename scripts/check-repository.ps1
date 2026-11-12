@@ -238,7 +238,7 @@ if (-not $sourceText.Contains("'wasm-unsafe-eval'")) { throw "Video Speed Change
 $ffmpegReleaseConfig = Get-Content -Raw -Encoding UTF8 (Join-Path $Root "ffmpeg.release.json") | ConvertFrom-Json
 $ffmpegReleaseLock = Get-Content -Raw -Encoding UTF8 (Join-Path $Root "ffmpeg.release.lock.json") | ConvertFrom-Json
 Assert-ReleaseLock $ffmpegReleaseConfig $ffmpegReleaseLock
-if ([string]$ffmpegReleaseConfig.builderVersion -ne "1.10.6") { throw "This app requires Builder 1.10.6." }
+if ([string]$ffmpegReleaseConfig.builderVersion -ne "1.10.7") { throw "This app requires Builder 1.10.7." }
 $selfExtractBuilderText = Get-Content -Raw -Encoding UTF8 (Join-Path $Root "scripts\build-self-extract.ps1")
 if (-not $selfExtractBuilderText.Contains("'wasm-unsafe-eval'")) { throw "Self-extract CSP must allow wasm-unsafe-eval for the restored FFmpeg WASM app." }
 $verifyStandaloneText = Get-Content -Raw -Encoding UTF8 (Join-Path $Root "scripts\verify-standalone.ps1")

@@ -7,6 +7,7 @@
 - Restore the correct result-freshness label when an invalid speed is reset.
 - Determine audio presence from native metadata or optional local FFmpeg inspection, serialized with conversion.
 - Add deterministic regressions for the lifecycle and audio states.
+- Update the pinned FFmpeg WASM Builder dependency to v1.10.7 (ST/MT), with nonzero-start A/V synchronization, display aspect ratio and fast source-audio inspection fixes. Rebuild and verify both single-HTML release forms from the official archives.
 
 ## 1.1.1 - 2026-10-21
 

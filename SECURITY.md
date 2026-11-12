@@ -26,7 +26,7 @@ Do not describe loading a hosted MT URL as zero-network or offline operation. Ve
 
 ## Supply-chain integrity
 
-- Builder v1.10.6 `video-speed-changer` ST/MT assets are pinned by exact release/asset identity, size and SHA-256.
+- Builder v1.10.7 `video-speed-changer` ST/MT assets are pinned by exact release/asset identity, size and SHA-256.
 - Pin/import validates the selected variant, profile/version, threading flags, decompressed JS/WASM, and MT pthread payload; never edit a hash to bypass a mismatch.
 - Stable artifacts require `github-release` provenance. Local Builder output is for development and fails the release provenance gate.
 - Each variant has separate dependency/restoration manifests and size reports. Self-extract restoration must match its readable source byte-for-byte.
