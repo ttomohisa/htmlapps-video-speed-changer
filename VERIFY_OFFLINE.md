@@ -1,14 +1,14 @@
-# v1.1.1 release, offline and isolation verification
+# v1.1.2 release, offline and isolation verification
 
-ST and MT use separate Builder v1.10.6 assets and separate raw/self-extract artifacts. ST is the direct-file/offline requirement. MT needs isolated hosting; an embedded runtime does not remove that requirement. Record what was actually executed in `REGRESSION.md`.
+ST and MT use separate Builder v1.10.7 assets and separate raw/self-extract artifacts. ST is the direct-file/offline requirement. MT needs isolated hosting; an embedded runtime does not remove that requirement. Record what was actually executed in `REGRESSION.md`.
 
 ## 1. Pin and complete build
 
 Confirm schemaVersion 2 `ffmpeg.release.json` / `ffmpeg.release.lock.json` agree on:
 
-- `ttomohisa/htmlapps-ffmpeg-wasm-builder`, tag `v1.10.6`, profile `video-speed-changer`.
-- ST: `ffmpeg-wasm-video-speed-changer-single-thread-v1.10.6.zip`.
-- MT: `ffmpeg-wasm-video-speed-changer-multi-thread-v1.10.6.zip`.
+- `ttomohisa/htmlapps-ffmpeg-wasm-builder`, tag `v1.10.7`, profile `video-speed-changer`.
+- ST: `ffmpeg-wasm-video-speed-changer-single-thread-v1.10.7.zip`.
+- MT: `ffmpeg-wasm-video-speed-changer-multi-thread-v1.10.7.zip`.
 - Each variant's real SHA-256, positive release/asset identity and byte count.
 
 For an intentional upgrade only, run `pin-ffmpeg-release.bat`, review the downloaded assets and metadata, and commit the verified lock. Never hand-edit hashes or resolve `latest` in a normal build.
@@ -34,6 +34,10 @@ Open `dist/index.html` or `video-speed-changer.html` directly, with network disc
 5. Preview output, edit a filename and save; inspect the saved MP4's duration, orientation, audio and filename.
 6. Cancel conversion and confirm source/settings remain usable.
 7. With an older successful result, cancel/fail a reconversion and verify the older result and matching filename survive.
+   - After requesting Save MP4 (including cancelling the browser save dialog), verify choosing another video still asks for discard confirmation.
+   - Enter an invalid speed and restore the last valid value: stale-result warning must disappear.
+   - Check audio-less input: browser track APIs or local FFmpeg fallback must disable irrelevant controls. Check conversion does not overlap the fallback inspection.
+   - Navigate away/back with bfcache enabled: previews and conversion should remain usable; normal unload should release them.
 8. Replace/reset source during work and verify late callbacks cannot overwrite the new source.
 9. Exercise fallback inspection with a suitable native-preview-unavailable fixture, when available.
 

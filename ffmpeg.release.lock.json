@@ -1,25 +1,25 @@
 {
   "schemaVersion": 2,
   "repository": "ttomohisa/htmlapps-ffmpeg-wasm-builder",
-  "tag": "v1.10.6",
+  "tag": "v1.10.7",
   "profile": "video-speed-changer",
-  "builderVersion": "1.10.6",
-  "releaseId": 412105413,
+  "builderVersion": "1.10.7",
+  "releaseId": 442476512,
   "variants": {
     "single-thread": {
-      "asset": "ffmpeg-wasm-video-speed-changer-single-thread-v1.10.6.zip",
-      "assetId": 638241209,
-      "assetBytes": 3209895,
-      "sha256": "705a7b0047858c3b9a4d3b2b73181cc40146c40c4ed34ce4eb9d6a4bc4995a2f",
-      "browserDownloadUrl": "https://github.com/ttomohisa/htmlapps-ffmpeg-wasm-builder/releases/download/v1.10.6/ffmpeg-wasm-video-speed-changer-single-thread-v1.10.6.zip"
+      "asset": "ffmpeg-wasm-video-speed-changer-single-thread-v1.10.7.zip",
+      "assetId": 737971948,
+      "assetBytes": 3211340,
+      "sha256": "a841a801ce7509988fdb1c15fcb8074dd65f62036b7a40a88a9e9b2d0019e3ef",
+      "browserDownloadUrl": "https://github.com/ttomohisa/htmlapps-ffmpeg-wasm-builder/releases/download/v1.10.7/ffmpeg-wasm-video-speed-changer-single-thread-v1.10.7.zip"
     },
     "multi-thread": {
-      "asset": "ffmpeg-wasm-video-speed-changer-multi-thread-v1.10.6.zip",
-      "assetId": 638241253,
-      "assetBytes": 3260608,
-      "sha256": "a0fb319c8d035ce144cb8ee0bf257d16de14a1205675a274f67281f4507784c7",
-      "browserDownloadUrl": "https://github.com/ttomohisa/htmlapps-ffmpeg-wasm-builder/releases/download/v1.10.6/ffmpeg-wasm-video-speed-changer-multi-thread-v1.10.6.zip"
+      "asset": "ffmpeg-wasm-video-speed-changer-multi-thread-v1.10.7.zip",
+      "assetId": 737971977,
+      "assetBytes": 3262653,
+      "sha256": "37726a58c854c1ebe51b6243b802170cb5fa693eb0a343640d2b81a6c9032974",
+      "browserDownloadUrl": "https://github.com/ttomohisa/htmlapps-ffmpeg-wasm-builder/releases/download/v1.10.7/ffmpeg-wasm-video-speed-changer-multi-thread-v1.10.7.zip"
     }
   },
-  "pinnedAtUtc": "2026-10-13T21:12:42.0190287Z"
+  "pinnedAtUtc": "2026-11-12T04:10:45.5186282Z"
 }

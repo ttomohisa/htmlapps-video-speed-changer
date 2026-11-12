@@ -5,7 +5,7 @@
 
 [日本語版 README](README.ja.md)
 
-Change a video's speed from 0.25× to 4.00×, check its resulting duration, and save an MP4 entirely in your browser. Version 1.1.1 provides separate single-thread (ST) and multi-thread (MT) builds.
+Change a video's speed from 0.25× to 4.00×, check its resulting duration, and save an MP4 entirely in your browser. Version 1.1.2 provides separate single-thread (ST) and multi-thread (MT) builds.
 
 [Open the standard ST app](https://ttomohisa.github.io/htmlapps-video-speed-changer/) · [Open the hosted MT app](https://ttomohisa.github.io/htmlapps-video-speed-changer/mt/)
 
@@ -24,7 +24,7 @@ Change a video's speed from 0.25× to 4.00×, check its resulting duration, and 
 ## How to use
 
 1. Open the ST app, or use MT on a compatible isolated host.
-2. Choose or drop one video.
+2. Choose or drop one video. On mobile, if the photo picker (including Google Photos) does not open a video, save it to your device and use **Browse files**. The available file providers depend on your browser and OS.
 3. Set speed from 0.25× to 4.00×. Alternatively, open **Set by target duration**, check the available range, and deliberately edit the desired time. The initial value is only a rounded suggestion.
 4. Choose audio behavior and, if needed, output quality in **Advanced settings**.
 5. Check the filename, then choose **Convert with these settings** directly below the speed/target-duration controls. Progress and cancellation appear in the same place.
@@ -33,6 +33,8 @@ Change a video's speed from 0.25× to 4.00×, check its resulting duration, and 
 If native video preview fails, embedded FFmpeg can inspect some files and allow conversion without a native preview. Support for every codec or damaged file is not guaranteed.
 
 **Cancel conversion** stops the active Worker and retains the current source/settings. An older result remains saveable until a replacement conversion succeeds or you select another source. Switching to another app URL does not automatically transfer your selected video or result.
+
+**Before choosing another video:** You will be asked to confirm discarding a converted result, even after selecting Save MP4. Browsers cannot reliably tell this page whether a download was completed or cancelled. Audio presence is checked from browser metadata where available; otherwise the embedded FFmpeg runtime may inspect it locally before conversion.
 
 ## Privacy and local processing
 
@@ -74,7 +76,7 @@ On Windows, run `build-standalone.bat`. Normal builds need PowerShell; Node.js 2
 ./scripts/check-repository.ps1
 ```
 
-Both variants use FFmpeg WASM Builder **v1.10.6**, profile `video-speed-changer`, pinned by `ffmpeg.release.json` and `ffmpeg.release.lock.json`. Normal builds verify the exact release asset byte count/SHA-256 and both runtime variants before embedding them. They refresh both root download files. Custom output builds leave those checked-in downloads unchanged.
+Both variants use FFmpeg WASM Builder **v1.10.7**, profile `video-speed-changer`, pinned by `ffmpeg.release.json` and `ffmpeg.release.lock.json`. Normal builds verify the exact release asset byte count/SHA-256 and both runtime variants before embedding them. They refresh both root download files. Custom output builds leave those checked-in downloads unchanged.
 
 ```text
 src/index.template.html               Editable app source
@@ -100,6 +102,6 @@ The Node lifecycle tests execute the actual app script with synthetic DOM/media/
 
 ## License and dependencies
 
-Application source: [MIT](LICENSE). Embedded FFmpeg/x264 ST and MT binaries: GPL-2.0-or-later, with corresponding Builder v1.10.6 source obligations. Hosted Pages helper: coi-serviceworker 0.1.7, MIT, pinned by commit and SHA-256. See [THIRD_PARTY_NOTICES.md](THIRD_PARTY_NOTICES.md).
+Application source: [MIT](LICENSE). Embedded FFmpeg/x264 ST and MT binaries: GPL-2.0-or-later, with corresponding Builder v1.10.7 source obligations. Hosted Pages helper: coi-serviceworker 0.1.7, MIT, pinned by commit and SHA-256. See [THIRD_PARTY_NOTICES.md](THIRD_PARTY_NOTICES.md).
 
 Copyright © 2026 ttomohisa. Contributions and bug reports are welcome; see [CONTRIBUTING.md](CONTRIBUTING.md).

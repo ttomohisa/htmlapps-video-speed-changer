@@ -5,7 +5,7 @@
 
 [English README](README.md)
 
-動画の速度を0.25〜4.00倍で変更し、変換後の長さを確認してMP4として保存する、ブラウザー内で処理するアプリです。v1.1.1では標準のシングルスレッド（ST）版とマルチスレッド（MT）版を別々に配布します。
+動画の速度を0.25〜4.00倍で変更し、変換後の長さを確認してMP4として保存する、ブラウザー内で処理するアプリです。v1.1.2では標準のシングルスレッド（ST）版とマルチスレッド（MT）版を別々に配布します。
 
 [標準ST版を開く](https://ttomohisa.github.io/htmlapps-video-speed-changer/) · [ホストされたMT版を開く](https://ttomohisa.github.io/htmlapps-video-speed-changer/mt/)
 
@@ -24,7 +24,7 @@
 ## 使い方
 
 1. 標準ST版、または分離環境に対応するホスト上のMT版を開きます。
-2. 動画を1本選ぶか、ドラッグ＆ドロップします。
+2. 動画を1本選ぶか、ドラッグ＆ドロップします。スマホでGoogle フォトなどの写真アプリから開けない場合は、動画を端末に保存し、**ファイルから選ぶ**で開いてください。ファイルの選択画面はOS・ブラウザーによって異なります。
 3. 0.25×〜4.00×の速度を設定します。**目標時間から決める**では、入力できる範囲を確認して時間を編集します。最初に表示する値は丸めた目安です。
 4. 音声の扱いと、必要に応じて**詳細設定**の画質を選びます。
 5. ファイル名を確認し、速度・目標時間のすぐ下にある**この設定で動画を変換**を選びます。進捗と取消も同じ場所に表示します。
@@ -33,6 +33,8 @@
 標準の動画プレビューが使えなくても、内蔵FFmpegで情報を読み取れれば変換を試せます。すべてのCodecや壊れた動画への対応を保証するものではありません。
 
 **変換をキャンセル**すると実行中のWorkerを停止し、選択動画と設定を保持します。前の結果は新しい変換が成功するか入力動画を変更するまで保存できます。別のアプリURLへ移動しても、選択動画や変換結果は自動で引き継がれません。
+
+**別の動画へ切り替える場合：** 「MP4を保存」を押した後も、既存の変換結果を破棄するか確認します。ダウンロードの完了・キャンセルをアプリから確実に判定できないためです。音声の有無をブラウザーから判定できない場合は、変換前に内蔵FFmpegで追加確認することがあります。確認も端末内で行います。
 
 ## プライバシーとローカル処理
 
@@ -74,7 +76,7 @@ Windowsで `build-standalone.bat` を実行します。通常ビルドにはPowe
 ./scripts/check-repository.ps1
 ```
 
-ST／MTともにFFmpeg WASM Builder **v1.10.6** の `video-speed-changer` profileを使用します。`ffmpeg.release.json` と `ffmpeg.release.lock.json` でReleaseを固定し、Assetのbyte数・SHA-256と両variantを検証してから内包します。通常ビルドはルートの両配布HTMLも更新します。出力先を指定したビルドでは更新しません。
+ST／MTともにFFmpeg WASM Builder **v1.10.7** の `video-speed-changer` profileを使用します。`ffmpeg.release.json` と `ffmpeg.release.lock.json` でReleaseを固定し、Assetのbyte数・SHA-256と両variantを検証してから内包します。通常ビルドはルートの両配布HTMLも更新します。出力先を指定したビルドでは更新しません。
 
 ```text
 src/index.template.html               編集するアプリソース
@@ -100,6 +102,6 @@ Node状態テストは実際のアプリスクリプトを合成DOM・動画情�
 
 ## ライセンスと依存物
 
-アプリソースは [MIT](LICENSE)、内包するFFmpeg/x264のST／MTバイナリはGPL-2.0-or-laterです。Builder v1.10.6の対応ソースに関する条件を維持します。Pages補助スクリプトはcoi-serviceworker 0.1.7（MIT）をcommitとSHA-256で固定しています。詳しくは [THIRD_PARTY_NOTICES.md](THIRD_PARTY_NOTICES.md) を参照してください。
+アプリソースは [MIT](LICENSE)、内包するFFmpeg/x264のST／MTバイナリはGPL-2.0-or-laterです。Builder v1.10.7の対応ソースに関する条件を維持します。Pages補助スクリプトはcoi-serviceworker 0.1.7（MIT）をcommitとSHA-256で固定しています。詳しくは [THIRD_PARTY_NOTICES.md](THIRD_PARTY_NOTICES.md) を参照してください。
 
 Copyright © 2026 ttomohisa。バグ報告・提案はGitHub Issuesへ。[CONTRIBUTING.md](CONTRIBUTING.md) も参照してください。

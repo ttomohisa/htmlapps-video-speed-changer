@@ -10,6 +10,8 @@ Video Speed Changer has no application backend. Selected video, metadata and con
 
 Both ST and MT releases embed the FFmpeg browser runtime and JS/WASM core; MT embeds its pthread Worker too. CSP preserves `connect-src 'none'`, blocks frames/objects/forms/base URLs, and allows only the local Blob/script/media and WASM permissions required for conversion. `'wasm-unsafe-eval'` permits WASM compilation without generic JavaScript `'unsafe-eval'`.
 
+For source videos whose audio tracks cannot be determined through native browser metadata, the embedded FFmpeg runtime may inspect audio in the background. The selected video stays on-device. When the browser keeps a page in its back-forward cache, in-memory source/result Blob URLs remain valid so returning does not lose the work; on ordinary unload the URLs are revoked.
+
 ST supports direct-file/offline operation. MT requires a secure isolated host, `crossOriginIsolated === true` and SharedArrayBuffer. Direct-file or unsupported MT contexts must block runtime loading, conversion and fallback inspection; they must not silently fetch or switch runtimes. Moving to ST does not transfer a selected video.
 
 ## Hosted MT helper boundary
@@ -24,7 +26,7 @@ Do not describe loading a hosted MT URL as zero-network or offline operation. Ve
 
 ## Supply-chain integrity
 
-- Builder v1.10.6 `video-speed-changer` ST/MT assets are pinned by exact release/asset identity, size and SHA-256.
+- Builder v1.10.7 `video-speed-changer` ST/MT assets are pinned by exact release/asset identity, size and SHA-256.
 - Pin/import validates the selected variant, profile/version, threading flags, decompressed JS/WASM, and MT pthread payload; never edit a hash to bypass a mismatch.
 - Stable artifacts require `github-release` provenance. Local Builder output is for development and fails the release provenance gate.
 - Each variant has separate dependency/restoration manifests and size reports. Self-extract restoration must match its readable source byte-for-byte.

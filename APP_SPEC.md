@@ -6,9 +6,9 @@
 - **Japanese name:** 動画速度変更
 - **Slug:** `video-speed-changer`
 - **Repository:** `ttomohisa/htmlapps-video-speed-changer`
-- **Current package version:** `1.1.1`
+- **Current package version:** `1.1.2`
 - **Release artifacts:** ST `dist/index.html` / `dist/index.self-extract.html`; MT `dist/index.mt.html` / `dist/index.mt.self-extract.html`; root aliases `video-speed-changer.html` / `video-speed-changer.mt.html`
-- **Builder dependency:** `ttomohisa/htmlapps-ffmpeg-wasm-builder` v1.10.6 / `video-speed-changer`
+- **Builder dependency:** `ttomohisa/htmlapps-ffmpeg-wasm-builder` v1.10.7 / `video-speed-changer`
 
 ### One-sentence purpose
 
@@ -20,7 +20,7 @@ The app is a focused speed-changing utility, not a general-purpose video editor.
 
 Core user flow:
 
-1. Select or drop one video.
+1. Select or drop one video. On mobile, offer separate video/photo and unfiltered device-file pickers to work around photo-provider selection problems. Both use the same local validation and loading path; the browser/OS ultimately chooses the file provider.
 2. Preview the video or inspect it with FFmpeg when browser-native metadata fails.
 3. Choose a speed from 0.25x to 4.00x, or enter a target duration.
 4. See the resulting duration and time difference immediately.
@@ -50,7 +50,7 @@ Core user flow:
 - Preserve pitch: default ON.
 - Preserve pitch OFF: pitch changes with speed.
 - Remove audio: output contains no audio stream.
-- Audio-less source videos remain valid inputs.
+- Audio-less source videos remain valid inputs. When native metadata cannot reliably report audio presence, an optional embedded-FFmpeg inspection runs locally. Conversion waits for any pending inspection so the same runner is not used concurrently. A failed optional check must not block conversion.
 
 ### Output
 
@@ -70,7 +70,7 @@ Core user flow:
 - Cancellation retains the source/settings and does not turn into a user-facing error.
 - If an earlier successful result exists, cancelling or failing a reconversion keeps that older result, settings snapshot, preview URL, and automatic filename available.
 - The automatic filename changes to match the newly converted speed only when a replacement result succeeds. A user-edited filename is preserved across attempts for the same source.
-- Replacing/resetting the source clears the prior result and conversion error/details, aborts and invalidates any old conversion, and immediately restores usable controls. Late progress, results, errors, cancellation notices, and finalizers from an old conversion must not affect the newer source.
+- Replacing/resetting the source first confirms disposal whenever a converted result exists, including after a download was requested (which does not prove saving completed). It then clears the prior result and conversion error/details, aborts and invalidates any old conversion, and immediately restores usable controls. Late progress, results, errors, cancellation notices, and finalizers from an old conversion must not affect the newer source.
 - Generation guards prevent stale inspection/conversion results from overwriting a newer source.
 - Blob URLs and Workers are released on source replacement, reconversion, cancellation, and page exit.
 
@@ -85,15 +85,15 @@ If browser-native metadata/preview loading fails, FFmpeg media inspection may re
 
 When inspection succeeds, the UI explicitly says preview is unavailable but conversion can be attempted. Preview failure must not be presented as proof that conversion will fail.
 
-## 4. v1.1.1 pinned ST / MT dependency contract
+## 4. v1.1.2 pinned ST / MT dependency contract
 
 `ffmpeg.release.json` and `ffmpeg.release.lock.json` use schemaVersion 2 and select exactly:
 
 - repository: `ttomohisa/htmlapps-ffmpeg-wasm-builder`
-- tag / Builder version: `v1.10.6` / `1.10.6`
+- tag / Builder version: `v1.10.7` / `1.10.7`
 - profile: `video-speed-changer`
-- ST asset: `ffmpeg-wasm-video-speed-changer-single-thread-v1.10.6.zip`
-- MT asset: `ffmpeg-wasm-video-speed-changer-multi-thread-v1.10.6.zip`
+- ST asset: `ffmpeg-wasm-video-speed-changer-single-thread-v1.10.7.zip`
+- MT asset: `ffmpeg-wasm-video-speed-changer-multi-thread-v1.10.7.zip`
 
 Pinning verifies each GitHub Release asset digest, actual SHA-256 and byte count, matching profile/version/threading capabilities, inflated JS/WASM bytes, browser runtime cancellation/inspection APIs, and MT pthread Worker payload. The lock records exact release/asset identities, sizes and hashes. It must be reviewed and committed; never invent a hash or resolve `latest` during a normal build.
 
@@ -109,7 +109,7 @@ Each ST or MT readable HTML embeds UI/CSS/JavaScript, browser runtime, gzip-comp
 
 ST supports direct `file://` opening and offline processing after the file is obtained. MT is a one-file processing artifact, but requires isolated hosting: a secure HTTP(S) context, `crossOriginIsolated === true`, and a `SharedArrayBuffer` function. MT must refuse direct-file, unisolated or missing-SharedArrayBuffer execution before cached/fresh loader use, conversion or FFmpeg fallback inspection. It must not silently switch to ST.
 
-The runtime variant is derived from build metadata and retained in the local-processing badge tooltip. The visible badge says only “完全ローカル処理” / “Fully local processing” for both editions. The bilingual blocked-state explanation distinguishes direct-file opening from browser/host capability and links to the standard ST app. The selected video and result do not automatically transfer to another page.
+The runtime variant is derived from build metadata and retained in the local-processing badge tooltip. The visible badge says only “完全ローカル処理” / “Fully local processing” for both editions on desktop; it is hidden in narrow/mobile layouts (at or below 760 CSS px). The bilingual blocked-state explanation distinguishes direct-file opening from browser/host capability and links to the standard ST app. The selected video and result do not automatically transfer to another page.
 
 MT budgets are pthread pool 8, video decoder 2, H.264 encoder 4, x264 lookahead 1. Audio codecs and filtergraphs remain single-threaded. No universal speedup is promised.
 
@@ -248,7 +248,7 @@ Both runtime variants are pinned to Builder v1.10.6 for v1.1.1.
 ### Dependency pin / build
 
 - `app.config.json` version is `1.1.1`.
-- `ffmpeg.release.json` selects Builder v1.10.6 and both explicit video-speed-changer ST/MT assets.
+- `ffmpeg.release.json` selects Builder v1.10.7 and both explicit video-speed-changer ST/MT assets.
 - Each variant in `ffmpeg.release.lock.json` contains a real 64-hex SHA-256, positive release/asset IDs and byte count, and matching config fields.
 - Normal `build-standalone.bat` obtains FFmpeg only through the committed release lock.
 - Downloaded release ZIP must match the committed SHA-256 before extraction.
@@ -308,3 +308,10 @@ ST and MT retain the same speed/audio, source/result ownership, cancellation, fa
 - At widths up to 420 px, allow the title and version to wrap without clipping the version or shrinking the language/Help actions; preserve desktop header layout.
 
 - Change settings focuses and scrolls the existing speed input into view together, without changing its value; reduced-motion preferences disable smooth scrolling.
+
+## v1.1.2 lifecycle regression
+
+- Preserve Object URLs and the FFmpeg runner when `pagehide.persisted` places the page in the back-forward cache; clean them up on ordinary unload.
+- Normalize result freshness after invalid speed input is restored to the last valid value.
+- Detect audio-less sources using browser track APIs when trustworthy; otherwise inspect locally with the embedded FFmpeg runner and serialize inspection with conversion.
+- Always confirm before discarding an existing result; a requested MP4 download is not a confirmed completed save.

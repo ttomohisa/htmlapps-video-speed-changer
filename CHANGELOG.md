@@ -1,6 +1,18 @@
 # Changelog
 
-## 1.1.1 - Unreleased
+## 1.1.2 - Unreleased
+
+- Hide the local-processing badge at mobile widths while keeping desktop disclosure and the Help privacy description.
+- Offer a second, unrestricted system-file picker on mobile for videos that cannot be opened through the video/photo picker. Both selectors share file validation, change/cancel, and unsaved-result confirmation; retain drag-and-drop and the original video picker.
+
+- Confirm before discarding converted results even after a download request, because browsers cannot verify completed saving.
+- Preserve video URLs and runtime across back-forward-cache navigation and clean them up on ordinary unload.
+- Restore the correct result-freshness label when an invalid speed is reset.
+- Determine audio presence from native metadata or optional local FFmpeg inspection, serialized with conversion.
+- Add deterministic regressions for the lifecycle and audio states.
+- Update the pinned FFmpeg WASM Builder dependency to v1.10.7 (ST/MT), with nonzero-start A/V synchronization, display aspect ratio and fast source-audio inspection fixes. Rebuild and verify both single-HTML release forms from the official archives.
+
+## 1.1.1 - 2026-10-21
 
 - Label original and converted video regions, place desktop results and saving below the source preview, and move source information/replacement out of the settings column.
 - Remove redundant introduction/section copy while retaining live-preview guidance inside the current-speed card; compact controls and reveal completed results with reduced-motion and stale-generation/modal focus guards.
