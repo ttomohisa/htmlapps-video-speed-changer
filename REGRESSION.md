@@ -1,3 +1,13 @@
+# v1.1.2 Builder v1.10.7 official release pin — 2026-11-12
+
+- Builder tag `v1.10.7` targets merge commit `3f3c97b4238fba823b8f350937295608575124ba`. Official release `442476512` was published by GitHub Actions after its tagged full-profile build and browser smoke succeeded: [Release run 43148375715](https://github.com/ttomohisa/htmlapps-ffmpeg-wasm-builder/actions/runs/43148375715).
+- Independently checked official Builder release metadata. ST asset `737971948` is 3,211,340 bytes, SHA-256 `a841a801ce7509988fdb1c15fcb8074dd65f62036b7a40a88a9e9b2d0019e3ef`; MT asset `737971977` is 3,262,653 bytes, SHA-256 `37726a58c854c1ebe51b6243b802170cb5fa693eb0a343640d2b81a6c9032974`.
+- A temporary Windows GitHub Actions build downloaded the official archives, validated actual bytes, updated the atomic ST/MT pin, generated both root readable downloads and corresponding self-extract files, and checked runtime provenance and exact release parity. [Pinned app run 43153032379](https://github.com/ttomohisa/htmlapps-video-speed-changer/actions/runs/43153032379) passed: **135/135 Node tests; zero failures; repository gate green**.
+- Builder's real Chromium ST/MT transcoding suite, including synthetic nonzero-start audio synchronization in both audio modes and non-square pixel aspect ratio, passed before the release. The app's deployment preview / responsive / end-to-end browser checks after this repin are tracked separately; this result does not claim physical-device testing.
+- The one-time import workflow was removed after the verified generated files and lock were committed; long-term release builds continue importing SHA-256-pinned official release assets.
+
+---
+
 # v1.1.0 ST/MT deployment regression (2026-10-13, unreleased)
 
 ## 2026-10-14 v1.1.1 conversion-action follow-up
