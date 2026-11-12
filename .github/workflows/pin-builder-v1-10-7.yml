@@ -1,4 +1,4 @@
-name: Pin official Builder v1.10.7 into PR #12 (temporary)
+name: Pin verified Builder v1.10.7 into PR #12 (temporary)
 
 on:
   push:

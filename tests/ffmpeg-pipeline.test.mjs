@@ -20,15 +20,15 @@ function fixture(variant) {
   const files = {};
   for (const [name, bytes] of Object.entries(raw)) { fs.writeFileSync(path.join(dir,name),bytes); files[name]={bytes:bytes.length,sha256:hash(bytes)}; const gz=gzipSync(bytes); fs.writeFileSync(path.join(dir,name+'.gz'),gz); files[name+'.gz']={bytes:gz.length}; }
   fs.writeFileSync(path.join(dir,'browser-ffmpeg.js'),'options.preservePitch === false; options.signal; videoSpeedChangerInspectArgs');
-  const manifest = {schemaVersion:8,builderVersion:'1.10.6',profile:'video-speed-changer',runtime:{threading:variant,fileProtocolSingleHtml:!mt,requiresSharedArrayBuffer:mt,requiresCrossOriginIsolation:mt},files};
+  const manifest = {schemaVersion:8,builderVersion:'1.10.7',profile:'video-speed-changer',runtime:{threading:variant,fileProtocolSingleHtml:!mt,requiresSharedArrayBuffer:mt,requiresCrossOriginIsolation:mt},files};
   fs.writeFileSync(path.join(dir,'manifest.json'),JSON.stringify(manifest));
   return {dir,manifest};
 }
 function validate(dir,variant) {return invoke(`$c=Get-Content -Raw ${q(path.join(root,'ffmpeg.release.json'))}|ConvertFrom-Json; Assert-ReleasePayload ${q(dir)} $c ${q(variant)} | Out-Null`);}
 test('dedicated ST and MT release configuration uses the shared schema 2 pin',()=>{
   const config=JSON.parse(fs.readFileSync(path.join(root,'ffmpeg.release.json')));
-  assert.equal(config.schemaVersion,2); assert.equal(config.tag,'v1.10.6');
-  for(const variant of ['single-thread','multi-thread']) assert.equal(config.variants[variant].asset,`ffmpeg-wasm-video-speed-changer-${variant}-v1.10.6.zip`);
+  assert.equal(config.schemaVersion,2); assert.equal(config.tag,'v1.10.7');
+  for(const variant of ['single-thread','multi-thread']) assert.equal(config.variants[variant].asset,`ffmpeg-wasm-video-speed-changer-${variant}-v1.10.7.zip`);
 });
 test('release payload validation is shared by pinning, import, and builds',()=>{
   assert.ok(fs.existsSync(toolsPath),'shared release verifier must exist');
