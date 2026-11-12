@@ -1,0 +1,52 @@
+name: Regenerate mobile source-picker HTML (temporary)
+
+on:
+  push:
+    branches:
+      - fix/video-speed-lifecycle-1-1-2
+    paths:
+      - .github/workflows/regenerate-mobile-html.yml
+
+permissions:
+  contents: write
+
+concurrency:
+  group: mobile-picker-rebuild
+  cancel-in-progress: false
+
+jobs:
+  rebuild:
+    if: github.repository == 'ttomohisa/htmlapps-video-speed-changer'
+    runs-on: windows-latest
+    timeout-minutes: 60
+    env:
+      POWERSHELL_TELEMETRY_OPTOUT: "1"
+    steps:
+      - name: Checkout PR branch
+        uses: actions/checkout@v6
+        with:
+          persist-credentials: true
+      - name: Set up Node.js
+        uses: actions/setup-node@v6
+        with:
+          node-version: 24
+      - name: Build the updated official v1.10.7 ST and MT editions
+        shell: pwsh
+        run: ./build-standalone.ps1
+      - name: Run source, generated HTML and Node regressions
+        shell: pwsh
+        run: ./scripts/check-repository.ps1
+      - name: Commit regenerated official single-file downloads
+        shell: pwsh
+        run: |
+          git add -- video-speed-changer.html video-speed-changer.mt.html
+          git diff --cached --quiet
+          if ($LASTEXITCODE -eq 0) {
+            Write-Host 'Already up to date.'
+            exit 0
+          }
+          if ($LASTEXITCODE -ne 1) { throw 'Diff check failed' }
+          git -c user.name='github-actions[bot]' -c user.email='41898282+github-actions[bot]@users.noreply.github.com' commit -m 'build: regenerate ST and MT HTML with mobile Files picker'
+          if ($LASTEXITCODE -ne 0) { throw 'Commit failed' }
+          git push origin 'HEAD:refs/heads/fix/video-speed-lifecycle-1-1-2'
+          if ($LASTEXITCODE -ne 0) { throw 'Push failed' }
