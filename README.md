@@ -24,7 +24,7 @@ Change a video's speed from 0.25× to 4.00×, check its resulting duration, and 
 ## How to use
 
 1. Open the ST app, or use MT on a compatible isolated host.
-2. Choose or drop one video.
+2. Choose or drop one video. On mobile, if the photo picker (including Google Photos) does not open a video, save it to your device and use **Browse files**. The available file providers depend on your browser and OS.
 3. Set speed from 0.25× to 4.00×. Alternatively, open **Set by target duration**, check the available range, and deliberately edit the desired time. The initial value is only a rounded suggestion.
 4. Choose audio behavior and, if needed, output quality in **Advanced settings**.
 5. Check the filename, then choose **Convert with these settings** directly below the speed/target-duration controls. Progress and cancellation appear in the same place.

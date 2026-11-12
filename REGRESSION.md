@@ -1,3 +1,13 @@
+# 2026-11-13 — v1.1.2 mobile Files picker and badge adjustment
+
+- The original video-restricted picker remains available. A separate unfiltered system-file input is shown on narrow screens in empty, error and loaded-source states; both inputs use the same filename/MIME validation and local preview/FFmpeg fallback.
+- Hide only the visible fully-local badge at CSS widths up to 760px. Keep the Help/privacy explanation and unchanged data-handling/CSP behavior.
+- Added source-generated regression contracts for mobile visibility, both picker routes and non-video rejection. New ready-state picker shares the existing unsaved-result confirmation.
+- [One-time official ST/MT rebuild and full gate](https://github.com/ttomohisa/htmlapps-video-speed-changer/actions/runs/43266732775) passed on Windows / Node 24: **138/138 tests**, no failures. Both root single-HTML downloads were regenerated from the pinned official Builder v1.10.7.
+- Real Android Google Photos / Files provider switching, iOS, browser network tracing and physical-device video conversion were **not tested** by that Node suite. Preview/browser checks are tracked separately.
+
+---
+
 # v1.1.2 Builder v1.10.7 official release pin — 2026-11-12
 
 - Builder tag `v1.10.7` targets merge commit `3f3c97b4238fba823b8f350937295608575124ba`. Official release `442476512` was published by GitHub Actions after its tagged full-profile build and browser smoke succeeded: [Release run 43148375715](https://github.com/ttomohisa/htmlapps-ffmpeg-wasm-builder/actions/runs/43148375715).
