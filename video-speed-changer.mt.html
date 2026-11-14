@@ -71,7 +71,7 @@
     .version-badge {
       display: inline-flex; align-items: center; margin-left: 7px; padding: 1px 6px;
       border: 1px solid var(--line); border-radius: 999px; color: var(--muted);
-      background: var(--surface-muted); font-size: 10px; font-weight: 650; vertical-align: 2px;
+      background: var(--surface-muted); font-size: 11px; font-weight: 650; vertical-align: 2px;
     }
     .brand-meta {
       margin: 2px 0 0; color: var(--muted); font-size: 12px; white-space: nowrap;
@@ -108,9 +108,9 @@
     .page-intro p { margin: 5px 0 0; max-width: 760px; color: var(--muted); font-size: 13px; }
     .local-badge {
       display: inline-flex; align-items: center; gap: 7px; flex: 0 0 auto; margin-top: 3px;
-      padding: 7px 10px; border: 1px solid color-mix(in srgb, var(--accent) 24%, var(--line));
-      border-radius: 999px; color: var(--accent); background: var(--accent-soft);
-      font-size: 12px; font-weight: 700; white-space: nowrap;
+      padding: 7px 0; border: 0;
+      border-radius: 0; color: var(--accent); background: transparent;
+      font-size: 12px; font-weight: 500; white-space: nowrap;
     }
     .runtime-notice { margin: 0 0 20px; padding: 16px 20px; border: 1px solid var(--line); border-radius: 14px; background: var(--surface); line-height: 1.65; }
     .runtime-notice p { margin: 0 0 8px; }
@@ -150,6 +150,11 @@
     .button.primary:hover { border-color: var(--accent-hover); background: var(--accent-hover); }
     .button.ghost { border-color: transparent; background: transparent; color: var(--accent); }
     .button.ghost:hover { background: var(--accent-soft); }
+    .button.file-picker-secondary {
+      min-height: 40px; padding: 8px 10px; border-color: transparent;
+      background: transparent; color: var(--muted); font-size: 12px; font-weight: 500;
+    }
+    .button.file-picker-secondary:hover { border-color: transparent; background: var(--surface-muted); color: var(--text); }
     .format-hint { margin-top: 12px !important; font-size: 11px !important; }
     .status-panel { display: grid; place-items: center; min-height: 330px; padding: 34px 24px; text-align: center; }
     .status-spinner {
@@ -393,6 +398,8 @@
       padding: 15px 18px 13px; border-bottom: 1px solid var(--line);
     }
     .app-confirm-title { margin: 0; font-size: 17px; }
+    .dialog-close { display: grid; place-items: center; width: 34px; height: 34px; padding: 0; border: 0; border-radius: 9px; background: transparent; cursor: pointer; }
+    .dialog-close svg { width: 18px; height: 18px; }
     .app-confirm-close {
       display: grid; place-items: center; width: 36px; height: 36px; padding: 0; border: 0;
       border-radius: 10px; background: transparent; color: var(--text); cursor: pointer;
@@ -424,7 +431,9 @@
       .local-badge { display: none; }
       .mobile-file-action { display: inline-flex; align-items: center; justify-content: center; }
       .file-picker-hint.mobile-file-action { display: block; }
-      .drop-actions .button { flex: 1 1 135px; }
+      .drop-actions { flex-direction: column; align-items: center; gap: 2px; }
+      .drop-actions .button { flex: 0 0 auto; }
+      .drop-actions .button:not(.file-picker-secondary) { width: min(100%, 240px); }
       .preview-heading { align-items: flex-start; flex-wrap: wrap; }
       .preview-actions { max-width: 100%; }
       .drop-stage { padding: 12px; }
@@ -520,7 +529,7 @@
             <p data-i18n="dropBody">動画をここにドロップするか、ファイルを選択してください。</p>
             <div class="drop-actions">
               <button class="button primary" id="chooseVideoButton" type="button" data-i18n="chooseVideo">動画を選択</button>
-              <button class="button mobile-file-action" id="chooseFileButton" type="button" data-i18n="chooseFile">ファイルから選ぶ</button>
+              <button class="button mobile-file-action file-picker-secondary" id="chooseFileButton" type="button" data-i18n="chooseFile">ファイルから選ぶ</button>
             </div>
             <p class="file-picker-hint mobile-file-action" data-i18n="filePickerHint">写真アプリで開けない場合は、端末に保存してファイルから選んでください。</p>
             <p class="format-hint" data-i18n="formatHint">MP4 / MOV / WebM など</p>
@@ -543,7 +552,7 @@
           </div>
           <h2 data-i18n="errorTitle">動画を読み込めませんでした</h2>
           <p id="errorMessage" data-i18n="errorDecode">このブラウザーで再生できない形式か、ファイルが破損している可能性があります。</p>
-          <div class="drop-actions"><button class="button" id="retryChooseButton" type="button" data-i18n="chooseAnother">別の動画を選択</button><button class="button mobile-file-action" id="retryFileButton" type="button" data-i18n="chooseFile">ファイルから選ぶ</button></div>
+          <div class="drop-actions"><button class="button" id="retryChooseButton" type="button" data-i18n="chooseAnother">別の動画を選択</button><button class="button mobile-file-action file-picker-secondary" id="retryFileButton" type="button" data-i18n="chooseFile">ファイルから選ぶ</button></div>
         </div>
       </div>
 
@@ -553,7 +562,7 @@
             <div><h2 id="sourcePreviewTitle" data-i18n="sourcePreviewTitle">元動画</h2><p data-i18n="sourcePreviewHint">選択した速度でプレビュー</p></div>
             <div class="preview-actions">
               <button class="button" id="replaceVideoButton" type="button" data-i18n="chooseAnother">別の動画を選択</button>
-              <button class="button mobile-file-action" id="replaceFileButton" type="button" data-i18n="chooseFile">ファイルから選ぶ</button>
+              <button class="button mobile-file-action file-picker-secondary" id="replaceFileButton" type="button" data-i18n="chooseFile">ファイルから選ぶ</button>
             </div>
           </div>
           <div class="preview-frame">
@@ -733,8 +742,8 @@
   <dialog class="app-confirm-dialog" id="appConfirmDialog" aria-labelledby="appConfirmTitle" aria-describedby="appConfirmMessage">
     <div class="app-confirm-header">
       <h2 class="app-confirm-title" id="appConfirmTitle">確認</h2>
-      <button class="app-confirm-close" id="appConfirmClose" type="button" data-i18n-aria-label="close" aria-label="閉じる">
-        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" aria-hidden="true"><path d="M6 6l12 12M18 6 6 18"/></svg>
+      <button class="dialog-close" id="appConfirmClose" type="button" data-i18n-aria-label="close" aria-label="閉じる">
+        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" aria-hidden="true"><path d="m6 6 12 12"/><path d="M18 6 6 18"/></svg>
       </button>
     </div>
     <div class="app-confirm-body">
@@ -749,8 +758,8 @@
   <dialog id="helpDialog" aria-labelledby="helpTitle">
     <div class="dialog-header">
       <h2 id="helpTitle" data-i18n="helpTitle">使い方と注意事項</h2>
-      <button class="icon-button" id="closeHelpButton" type="button" data-i18n-title="close" data-i18n-aria-label="close" title="閉じる" aria-label="閉じる">
-        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.9" stroke-linecap="round" aria-hidden="true"><path d="m7 7 10 10M17 7 7 17"/></svg>
+      <button class="dialog-close" id="closeHelpButton" type="button" data-i18n-title="close" data-i18n-aria-label="close" title="閉じる" aria-label="閉じる">
+        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" aria-hidden="true"><path d="m6 6 12 12"/><path d="M18 6 6 18"/></svg>
       </button>
     </div>
     <div class="dialog-body">
@@ -1401,7 +1410,7 @@
       'use strict';
 
       const APP_CONFIG = {"$schema":"./schemas/app-config.schema.json","name":"Video Speed Changer","nameJa":"動画速度変更","slug":"video-speed-changer","version":"1.1.2","description":"Change video speed locally from 0.25× to 4.00×, preview the result, choose audio behavior and quality, and save an MP4 with an editable file name.","descriptionJa":"動画を0.25〜4.00倍で速度変更し、変換結果をプレビューしながら音声・画質・ファイル名を確認してMP4として保存できるブラウザーツールです。","defaultLanguage":"auto","repository":{"owner":"ttomohisa","name":"htmlapps-video-speed-changer"},"build":{"output":"dist/index.html","blockRuntimeNetwork":true,"selfExtract":{"enabled":true,"output":"dist/index.self-extract.html","multiThreadOutput":"dist/index.mt.self-extract.html"},"sizeBudget":{"readableWarningMb":8,"selfExtractWarningMb":5},"multiThreadOutput":"dist/index.mt.html"},"runtimeVariant":"multi-thread"};
-      const BUILD_MANIFEST = {"schemaVersion":2,"builder":"single-html-app-template/1.2","generatedAtUtc":"2026-11-12T17:11:45.4574599Z","app":{"name":"Video Speed Changer","slug":"video-speed-changer","version":"1.1.2"},"dependencies":[],"embeddedRuntime":{"ffmpeg":{"threading":"multi-thread","profile":"video-speed-changer","builderVersion":"1.10.7","fileProtocolSingleHtml":false,"requiresSharedArrayBuffer":true,"requiresCrossOriginIsolation":true,"source":{"type":"github-release","repository":"ttomohisa/htmlapps-ffmpeg-wasm-builder","tag":"v1.10.7","asset":"ffmpeg-wasm-video-speed-changer-multi-thread-v1.10.7.zip","releaseId":442476512,"assetId":737971977,"assetBytes":3262653,"assetSha256":"37726a58c854c1ebe51b6243b802170cb5fa693eb0a343640d2b81a6c9032974"},"files":{"ffmpeg.js.gz":{"bytes":22799,"sha256":"8b4ea994bc401ad68b3d7e889d8917527599dbe64b0e72ee039d48d20564d284"},"ffmpeg.wasm.gz":{"bytes":1588151,"sha256":"4d4cd4f6aad2f3881d7fa1b0b8c5cf55858d125932471ae0109c558468dcb969"},"browser-ffmpeg.js":{"bytes":29868,"sha256":"33a818fbe6aba183f3fd521a911845bbbc22ae694313d9641bc779c4743e650c"}}}}};
+      const BUILD_MANIFEST = {"schemaVersion":2,"builder":"single-html-app-template/1.2","generatedAtUtc":"2026-11-14T01:52:19.5778943Z","app":{"name":"Video Speed Changer","slug":"video-speed-changer","version":"1.1.2"},"dependencies":[],"embeddedRuntime":{"ffmpeg":{"threading":"multi-thread","profile":"video-speed-changer","builderVersion":"1.10.7","fileProtocolSingleHtml":false,"requiresSharedArrayBuffer":true,"requiresCrossOriginIsolation":true,"source":{"type":"github-release","repository":"ttomohisa/htmlapps-ffmpeg-wasm-builder","tag":"v1.10.7","asset":"ffmpeg-wasm-video-speed-changer-multi-thread-v1.10.7.zip","releaseId":442476512,"assetId":737971977,"assetBytes":3262653,"assetSha256":"37726a58c854c1ebe51b6243b802170cb5fa693eb0a343640d2b81a6c9032974"},"files":{"ffmpeg.js.gz":{"bytes":22799,"sha256":"8b4ea994bc401ad68b3d7e889d8917527599dbe64b0e72ee039d48d20564d284"},"ffmpeg.wasm.gz":{"bytes":1588151,"sha256":"4d4cd4f6aad2f3881d7fa1b0b8c5cf55858d125932471ae0109c558468dcb969"},"browser-ffmpeg.js":{"bytes":29868,"sha256":"33a818fbe6aba183f3fd521a911845bbbc22ae694313d9641bc779c4743e650c"}}}}};
       const RUNTIME_THREADING = BUILD_MANIFEST.embeddedRuntime?.ffmpeg?.threading || 'single-thread';
       const assetBundle = {"schemaVersion":2,"dependencies":{}};
       const blobUrls = new Set();
@@ -1493,7 +1502,7 @@
           outputSettingsTitle: '出力', outputSettingsHint: 'MP4で保存', outputNameLabel: 'ファイル名', advancedSettingsTitle: '詳細設定', qualityTitle: '画質', qualityHint: '再エンコード品質', qualityHigh: '高画質', qualityStandard: '標準', qualitySmall: 'ファイルを小さく', qualityBody: '画質を上げるとファイルが大きく、ファイルを小さくすると画質が下がる場合があります。',
           convertButton: 'この設定で動画を変換', reconvertButton: '変更した設定で再変換', repeatConvertButton: '同じ設定でもう一度変換', convertingLabel: '動画を変換しています', progressTimeLabel: '処理位置の目安', cancelConvertButton: '変換をキャンセル', cancellingLabel: 'キャンセルしています…', cancelledToast: '変換をキャンセルしました。設定はそのままです。', technicalDetails: '詳細情報', convertDoneTitle: '変換が完了しました', downloadResultButton: 'MP4を保存', editSettingsButton: '設定を変更', resultPreviewLabel: '変換後動画のプレビュー', resultDurationLabel: '動画の長さ', resultSizeLabel: 'ファイルサイズ', resultStaleNotice: '現在の設定は変換時から変更されています。保存されるのは下の変換結果です。', convertSummary: '{speed}× · {audio} · {quality}', audioSummaryPreserve: '音程を保つ', audioSummaryShift: '音程も変える', audioSummaryNone: '音声なし', convertErrorMessage: '動画を変換できませんでした。もう一度試してください。', convertErrorMemory: '端末のメモリが不足した可能性があります。他のタブを閉じるか、短い動画でお試しください。', convertErrorUnsupported: 'この動画の形式を変換できませんでした。別の動画でお試しください。', convertErrorRuntime: '動画変換の処理を開始できませんでした。ブラウザーを再読み込みしてお試しください。', wasmCspErrorMessage: '動画変換の実行がブラウザーのセキュリティ設定でブロックされました。配布用HTMLを再ビルドしてください。', saveStartedToast: 'MP4の保存を開始しました', unsavedResultTitle: '変換結果を破棄しますか？', unsavedResultMessage: '別の動画を選ぶと現在の変換結果は消えます。保存が済んでいない場合は、先にMP4を保存してください。', discardAndChoose: '破棄して選ぶ',
           sourceDetailsSummary: '元動画の情報', durationLabel: '長さ', resolutionLabel: '解像度', sizeLabel: '容量', formatLabel: '形式',
-          developmentNote: 'v1.0.0 正式版です。動画の読み込みから速度変更、変換、保存までブラウザー内で完結します。', footer: '完全ローカル処理',
+          developmentNote: 'v1.0.0 正式版です。動画の読み込みから速度変更、変換、保存までブラウザー内で完結します。', footer: '動画の変換はブラウザー内で完結',
           helpBasicsTitle: '使い方', helpStep1: '「動画を選択」から動画を選ぶか、画面へ動画をドロップします。スマホで写真アプリから読み込めない場合は、動画を端末に保存して「ファイルから選ぶ」をお試しください。', helpStep2: 'スライダーまたは倍率入力で速度を決めます。「元動画」のプレビューで速度感を確認できます。', helpStep3: '「目標時間から決める」には入力できる1秒単位の範囲を表示します。開くだけでは速度は変わりません。時間を編集すると必要な倍率を逆算します。', helpStep4: '必要に応じて音声・出力設定を調整し、速度設定の下にある変換ボタンを押します。「変換後の動画」で仕上がりを確認し、MP4を保存します。',
            helpFormatsTitle: '対応形式', helpFormatsBody: 'プレビューはブラウザー標準の動画再生機能を使います。再生できない動画でも、動画情報を読み取れた場合は変換を試せます。',
           helpPrivacyTitle: 'プライバシー', helpPrivacyBody: '選択した動画はブラウザー内だけで扱います。このアプリから外部サーバーへアップロードしません。',
@@ -1521,7 +1530,7 @@
           outputSettingsTitle: 'Output', outputSettingsHint: 'Save as MP4', outputNameLabel: 'File name', advancedSettingsTitle: 'Advanced settings', qualityTitle: 'Quality', qualityHint: 'Re-encode quality', qualityHigh: 'High quality', qualityStandard: 'Standard', qualitySmall: 'Smaller file', qualityBody: 'Higher quality can create a larger file. Smaller file can reduce image quality.',
           convertButton: 'Convert with these settings', reconvertButton: 'Reconvert with changed settings', repeatConvertButton: 'Convert again with same settings', convertingLabel: 'Converting video', progressTimeLabel: 'Approx. media position', cancelConvertButton: 'Cancel conversion', cancellingLabel: 'Cancelling…', cancelledToast: 'Conversion cancelled. Your settings are unchanged.', technicalDetails: 'Technical details', convertDoneTitle: 'Conversion complete', downloadResultButton: 'Save MP4', editSettingsButton: 'Change settings', resultPreviewLabel: 'Preview of the converted video', resultDurationLabel: 'Video duration', resultSizeLabel: 'File size', resultStaleNotice: 'The current settings have changed since this result was created. Save downloads the result shown below.', convertSummary: '{speed}× · {audio} · {quality}', audioSummaryPreserve: 'Preserve pitch', audioSummaryShift: 'Shift pitch', audioSummaryNone: 'No audio', convertErrorMessage: 'Could not convert the video. Try again.', convertErrorMemory: 'The device may be low on memory. Close other tabs or try a shorter video.', convertErrorUnsupported: 'This video format could not be converted. Try another video.', convertErrorRuntime: 'Video conversion could not start. Reload the browser and try again.', wasmCspErrorMessage: 'Video conversion was blocked by the page security policy. Rebuild the distributable HTML.', saveStartedToast: 'Started saving the MP4', unsavedResultTitle: 'Discard the converted video?', unsavedResultMessage: 'Choosing another video will discard this result. If you have not saved the MP4 yet, save it first.', discardAndChoose: 'Discard and choose',
           sourceDetailsSummary: 'Source video information', durationLabel: 'Duration', resolutionLabel: 'Resolution', sizeLabel: 'File size', formatLabel: 'Format',
-          developmentNote: 'v1.0.0 is the stable release. Loading, speed adjustment, conversion, and saving run in the browser.', footer: 'Fully local processing',
+          developmentNote: 'v1.0.0 is the stable release. Loading, speed adjustment, conversion, and saving run in the browser.', footer: 'Video conversion stays in the browser',
           helpBasicsTitle: 'How to use', helpStep1: 'Choose a video or drop a video onto the page. On mobile, if the photo picker cannot open your video, save it to your device and try Browse files.', helpStep2: 'Use the slider or enter a speed directly. Original video previews the selected speed.', helpStep3: 'Set by target duration shows the available whole-second range. Opening it keeps your selected speed; editing the time calculates and applies a new speed.', helpStep4: 'Adjust Audio and Output if needed, then use the conversion button below the speed settings. Review Converted video and save the MP4.',
            helpFormatsTitle: 'Formats', helpFormatsBody: 'Preview uses the browser’s native video playback support. If preview is unavailable but media information can be read, conversion can still be attempted.',
           helpPrivacyTitle: 'Privacy', helpPrivacyBody: 'The selected video is handled only inside your browser. This app does not upload it to any server.',
