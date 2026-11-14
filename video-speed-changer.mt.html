@@ -150,6 +150,11 @@
     .button.primary:hover { border-color: var(--accent-hover); background: var(--accent-hover); }
     .button.ghost { border-color: transparent; background: transparent; color: var(--accent); }
     .button.ghost:hover { background: var(--accent-soft); }
+    .button.file-picker-secondary {
+      min-height: 40px; padding: 8px 10px; border-color: transparent;
+      background: transparent; color: var(--muted); font-size: 12px; font-weight: 500;
+    }
+    .button.file-picker-secondary:hover { border-color: transparent; background: var(--surface-muted); color: var(--text); }
     .format-hint { margin-top: 12px !important; font-size: 11px !important; }
     .status-panel { display: grid; place-items: center; min-height: 330px; padding: 34px 24px; text-align: center; }
     .status-spinner {
@@ -426,7 +431,9 @@
       .local-badge { display: none; }
       .mobile-file-action { display: inline-flex; align-items: center; justify-content: center; }
       .file-picker-hint.mobile-file-action { display: block; }
-      .drop-actions .button { flex: 1 1 135px; }
+      .drop-actions { flex-direction: column; align-items: center; gap: 2px; }
+      .drop-actions .button { flex: 0 0 auto; }
+      .drop-actions .button:not(.file-picker-secondary) { width: min(100%, 240px); }
       .preview-heading { align-items: flex-start; flex-wrap: wrap; }
       .preview-actions { max-width: 100%; }
       .drop-stage { padding: 12px; }
@@ -522,7 +529,7 @@
             <p data-i18n="dropBody">動画をここにドロップするか、ファイルを選択してください。</p>
             <div class="drop-actions">
               <button class="button primary" id="chooseVideoButton" type="button" data-i18n="chooseVideo">動画を選択</button>
-              <button class="button mobile-file-action" id="chooseFileButton" type="button" data-i18n="chooseFile">ファイルから選ぶ</button>
+              <button class="button mobile-file-action file-picker-secondary" id="chooseFileButton" type="button" data-i18n="chooseFile">ファイルから選ぶ</button>
             </div>
             <p class="file-picker-hint mobile-file-action" data-i18n="filePickerHint">写真アプリで開けない場合は、端末に保存してファイルから選んでください。</p>
             <p class="format-hint" data-i18n="formatHint">MP4 / MOV / WebM など</p>
@@ -545,7 +552,7 @@
           </div>
           <h2 data-i18n="errorTitle">動画を読み込めませんでした</h2>
           <p id="errorMessage" data-i18n="errorDecode">このブラウザーで再生できない形式か、ファイルが破損している可能性があります。</p>
-          <div class="drop-actions"><button class="button" id="retryChooseButton" type="button" data-i18n="chooseAnother">別の動画を選択</button><button class="button mobile-file-action" id="retryFileButton" type="button" data-i18n="chooseFile">ファイルから選ぶ</button></div>
+          <div class="drop-actions"><button class="button" id="retryChooseButton" type="button" data-i18n="chooseAnother">別の動画を選択</button><button class="button mobile-file-action file-picker-secondary" id="retryFileButton" type="button" data-i18n="chooseFile">ファイルから選ぶ</button></div>
         </div>
       </div>
 
@@ -555,7 +562,7 @@
             <div><h2 id="sourcePreviewTitle" data-i18n="sourcePreviewTitle">元動画</h2><p data-i18n="sourcePreviewHint">選択した速度でプレビュー</p></div>
             <div class="preview-actions">
               <button class="button" id="replaceVideoButton" type="button" data-i18n="chooseAnother">別の動画を選択</button>
-              <button class="button mobile-file-action" id="replaceFileButton" type="button" data-i18n="chooseFile">ファイルから選ぶ</button>
+              <button class="button mobile-file-action file-picker-secondary" id="replaceFileButton" type="button" data-i18n="chooseFile">ファイルから選ぶ</button>
             </div>
           </div>
           <div class="preview-frame">
