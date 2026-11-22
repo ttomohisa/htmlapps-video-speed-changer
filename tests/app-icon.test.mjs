@@ -7,7 +7,7 @@ import { test } from 'node:test';
 import { gunzipSync } from 'node:zlib';
 
 const root = path.resolve(path.dirname(fileURLToPath(import.meta.url)), '..');
-const expectedHash = '23e3c01e3200313e365dbe38e9e7329eb5e6121822a04355b37a2716c6f25843';
+const expectedHash = '7d0afb5e191318d95a887cdd0c83063f2a9c6be9e3be197557981d926a869ebc';
 const icon = fs.readFileSync(path.join(root, 'assets/favicon.svg'));
 const expectedSvg = icon.toString('utf8').trim();
 const sources = ['src/index.template.html', 'video-speed-changer.html', 'dist/index.html'];
@@ -35,7 +35,7 @@ for (const [name, html] of variants) {
       ? Buffer.from(href.slice(comma + 1), 'base64')
       : Buffer.from(decodeURIComponent(href.slice(comma + 1)), 'utf8');
     assert.deepEqual(bytes, icon);
-    assert.match(svg, /viewBox="0 0 1095 1095"/);
+    assert.match(svg, /viewBox="47.05078 47.05078 1000.89844 1000.89844"/);
     assert.match(html, /\.brand-mark\s+svg\s*\{\s*width:\s*100%;\s*height:\s*100%;/);
     assert.match(header, /class="brand-mark"[^>]*aria-hidden="true"/);
   });
